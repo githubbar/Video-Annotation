@@ -1,0 +1,295 @@
+from Ui_window import Ui_MainWindow
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from heatmap import HeatMap        
+from path import Path
+from annotateview import AnnotateScene
+from delegates import *
+import os, threading, logging, time
+
+
+class SearchWidget:
+    matches = []
+    def initSearchWidget(self):
+        self.results.setItemDelegate(URLDelegate())        
+        self.results.cellDoubleClicked.connect(self.playResultItem)
+        self.addFilterWidget(self.checkboxArea, self.listArea, False)
+
+    def addFilterWidget(self, cbParent,  lParent, trackLvl=True):
+        import operator
+        if cbParent != None:
+            for i in range(self.checkboxArea.count()): cbParent.itemAt(i).widget().close()
+        if lParent != None:
+            for i in range(self.listArea.count()): lParent.removeItem(i)        
+        sortedList = sorted(self.graphicsView.scene.variables.keys(), key=operator.itemgetter(0))
+        # BEGIN TEMP
+        special = "Trip Purpose" 
+        if special in sortedList:
+            sortedList.remove(special)
+            sortedList.insert(0,  QString(special))
+        # END TEMP            
+        for name in sortedList:
+            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+            if not vShow.toBool():
+                continue
+            if trackLvl and vEachNode.toBool(): 
+                continue                
+            if vType == 'Yes/No' and cbParent != None:
+                cbParent.addWidget(QCheckBox(name))
+            elif vType in ['DropDown', 'MultiChoice'] and lParent != None:
+                w = QTableWidget(self)
+                w.setColumnCount(1)                
+                w.verticalHeader().setVisible(False)
+                w.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+                w.setHorizontalHeaderLabels([name])
+#                w.setMinimumHeight(120)
+                lParent.addItem(w,  name)
+                for i,  item in enumerate(vChoices.toList()):
+                    w.insertRow(i)
+                    w.setItem(i, 0,  QTableWidgetItem(item.toString()))        
+
+    def searchClicked(self):
+        # clear results
+        self.matches = []            
+        self.results.clearContents()
+        self.results.setRowCount(0)        
+        self.guiMode(self.GUI_SEARCH)                  
+        threading.Thread(target=self.doSearch, name="doSearch").start()
+
+    def matchByCheckable(self, item, cbParent, idx=None):
+        # ---------------- filter by CheckBox fields
+        for i in range(cbParent.count()): 
+            if cbParent.itemAt(i).widget().isChecked():
+                name = self.checkboxArea.itemAt(i).widget().text()
+                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+                if vEachNode.toBool():
+                    if idx != None and not item.variables[name].toList()[idx].toBool(): return False
+                else:
+                    if not item.variables[name].toBool(): return False
+        return True
+                    
+    def matchByList(self, item, lParent, idx=None):
+        for i in range(lParent.count()): # over all widgets
+            widget = lParent.widget(i)
+            widgetMatch = len(widget.selectedItems()) == 0            
+            name = widget.horizontalHeaderItem(0).text()
+            for c in widget.selectedItems():  # over all selected options
+                singleMatch = False
+                value = c.text()
+                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+                if vEachNode.toBool():
+                    if idx == None or item.variables[name].toList()[idx].toString() == value:  
+                        widgetMatch = True
+                        break
+                else:
+                    choices = item.variables[name].toString().split(', ')
+                    if value in choices: 
+                        widgetMatch = True
+                        break
+            if not widgetMatch: return False
+        return True
+
+                            
+    def matchByTime(self, item, idx):
+        t1 = item.startTime[idx].toTime()
+        t2 = item.stopTime[idx].toTime()
+        if not self.timeCheckBox.isChecked() or (t1 > self.startTimeFilter.time() and t2 < self.stopTimeFilter.time()):
+            return True
+        return False
+
+    def doSearch(self):
+        # scan all items
+        for i in range(self.items.rowCount()):
+            if not self.go: break                            
+            item = self.items.item(i, 0).g
+            self.emit(SIGNAL("updateProgress"), int(100.0*i/self.items.rowCount()) )
+            # scan all nodes
+            if not self.matchByCheckable(item, self.checkboxArea): continue
+            if not self.matchByList(item, self.listArea): continue
+            
+            for n in range(len(item.polygon)):            
+                if not self.matchByCheckable(item, self.checkboxArea, n): continue
+                if not self.matchByList(item, self.listArea, n): continue
+                if not self.matchByTime(item,  n):continue
+                self.matches.append(Match(item, n))
+                
+        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        
+       
+    def refreshResults(self):
+        for i,  match in enumerate(self.matches):
+            self.results.insertRow(i)
+            cID = QTableWidgetItem(match.item.id.toString())
+            cTime = QTableWidgetItem(match.toString())
+            cID.setData(Qt.UserRole, match.item.id)
+            cTime.setData(Qt.UserRole , QVariant(match))
+            cID.setForeground(QBrush(QColor("blue")))
+            cTime.setForeground(QBrush(QColor("blue")))
+            self.results.setItem(i, 0,  cID)    
+            self.results.setItem(i, 1,  cTime)    
+
+    def playResultItem(self, row, col):
+        # FIXME: double-click event handler is called twice
+        self.tabWidget.setCurrentIndex(0)
+        self.checkAllItems(False)       
+        result = self.results.item(row,  1).data(Qt.UserRole).toPyObject()        
+        self.graphicsView.scene.currentPath = result.item
+        self.graphicsView.scene.currentPath.indP = result.n
+        self.changeCurrentItem()      
+        if self.mediaPlayer.play() != -1:            
+            self.playButton.setIcon(QIcon('icons/player_pause.png'))
+            self.timer.start()
+            self.isPaused = False        
+        # Wait for mediPlayer  to play after playClicked()        
+        for i in range(100): 
+            time.sleep(0.01) 
+            if self.mediaPlayer.is_playing(): break
+        self.updateVideo(self.graphicsView.scene.currentPath)        
+        
+
+    def visClicked(self):
+        self.guiMode(self.GUI_EXPORT)                  
+        paletteFile='palettes/jet.png'
+        W = int(self.graphicsView.scene.width())
+        H = int(self.graphicsView.scene.height())
+        heatmapBox=[0,  W,  0,  H]
+        hm = HeatMap(heatmapBox[0], heatmapBox[1], heatmapBox[2],  heatmapBox[3],  paletteFile)
+        # add data points        
+        hp = []
+        for i,  match in enumerate(self.matches):
+            self.progressBar.setValue(int(100.0*i/len(self.matches)))         
+            self.searchWidget.repaint()          
+            if not self.go: 
+                hp = []
+                break                
+            n = match.n
+            addThis = True
+#            if self.visPurchased.isChecked(): addThis &= match.item.purchased[n].toBool()
+#            if self.visShopped.isChecked(): addThis &= match.item.shopped[n].toBool()
+            if not addThis: continue
+            # create as many points as there are seconds
+            if self.visUseTime.isChecked():
+                count = match.item.startTime[n].toTime().secsTo(match.item.stopTime[n].toTime())
+            else: count = 1
+            for c in range(count):
+                hp += [(match.item.polygon.at(n).x(), match.item.polygon.at(n).y())]
+
+        hm.add_points(hp, self.visRadius.value()) 
+        hm.transform_color(0.01*self.visAlpha.value())
+        p = QPixmap.fromImage(QImage(hm.get_image_buffer(), hm.width,  hm.height,  QImage.Format_ARGB32))
+        self.graphicsView.scene.heatmap.setPixmap(p)
+        self.graphicsView.scene.heatmap.setVisible(True)          
+        self.guiMode(self.GUI_NORMAL)          
+        
+    def exportVideoClicked(self):
+        # choose export folder
+        outDir = QFileDialog.getExistingDirectory(self, "Choose Folder to Export To", os.getcwdu())
+        if not outDir:
+            return        
+        self.guiMode(self.GUI_EXPORT)                  
+        threading.Thread(target=self.doExportVideo, name="exportVideoThread",  args=(outDir, )).start()
+        
+    def doExportVideo(self, outDir):
+        import subprocess, re        
+ 
+        for i,  match in enumerate(self.matches):
+#            print str(int(100.0*i/len(self.matches)))            
+            self.emit(SIGNAL("updateProgress"), int(100.0*i/len(self.matches)))
+            
+            inFileName = os.path.join(os.path.dirname(str(self.graphicsView.scene.filename)), str(match.item.videoname.toString()))
+  
+            t1 = match.item.startTime[match.n].toTime()
+            t2 = match.item.stopTime[match.n].toTime()
+           
+            cat = match.item.variables[QString('category')].toList()[match.n].toString()
+            cat = cat.replace('/', '-')
+            cat = cat.replace(':', '-')
+            outFileName = os.path.join(str(outDir), str(match.item.id.toString()+' from '+t1.toString('hh-mm-ss')+' to '+t2.toString('hh-mm-ss')+' ' +cat+'.avi'))
+            if os.path.exists(inFileName):
+                logging.debug('Current working directory is '+str(os.getcwd()))              
+                p = subprocess.Popen(['ffmpeg', '-ss', str(QTime().secsTo(t1)), '-t',  str(t1.secsTo(t2)), '-i', str(inFileName), \
+                '-async',  '1', '-y',  str(outFileName)],  shell=True)
+                p.wait()
+                logging.debug('ffmpeg'+ ' -ss '+ str(QTime().secsTo(t1))+ ' -t ' +  str(t1.secsTo(t2)) + ' -i ' + str(inFileName)+ ' -y '+  str(outFileName))
+            if not self.go: break
+        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+       
+    def exportDataClicked(self):
+        # choose export file
+        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwdu())
+        if not outFileName:
+            return
+        self.guiMode(self.GUI_EXPORT)                  
+        threading.Thread(target=self.doExportData, name="exportDataThread",  args=(outFileName, )).start()
+
+    def doExportData(self, outFileName):
+        import subprocess, csv
+        writer = csv.writer(open(outFileName, 'wb'))         
+        varNames = ['id', 'node number', 'startTime', 'stopTime',  'videoName']
+        varNames.extend([str(key) for key in self.graphicsView.scene.variables.keys()])   
+        writer.writerow(varNames)
+        for i,  match in enumerate(self.matches):
+            self.emit(SIGNAL("updateProgress"), int(100.0*i/len(self.matches)))
+            varList = match.item.getVariableValuesList(match.n)
+            row = [ str(match.item.id.toString()), str(match.n), str(match.item.videoname.toString()), \
+              str(match.item.startTime[match.n].toTime().toString('hh-mm-ss')),  \
+              str(match.item.stopTime[match.n].toTime().toString('hh-mm-ss')) ]
+            row.extend(varList)
+            #TODO: write unicode to CSV, also in Path.py line 335
+            try:
+                writer.writerow(row)
+            except UnicodeEncodeError: 
+                continue
+            if not self.go: break
+        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        
+    def cancelClicked(self):
+        self.go = False
+        
+    def updateProgress(self,  now):
+        self.progressBar.setValue(now)
+        self.searchWidget.repaint()     
+        
+    def guiMode(self,  searchMode=None):
+        if searchMode == self.GUI_NORMAL or searchMode == None:
+            self.go = False
+            self.searchCancel.hide()                     
+            self.exportCancel.hide()                  
+            self.progressBar.reset()
+            self.progressBar.hide() 
+            self.searchButton.setEnabled(True) 
+            self.exportData.setEnabled(True) 
+            self.exportVideo.setEnabled(True)       
+            self.refreshResults()
+            
+        elif searchMode == self.GUI_EXPORT:
+            self.go = True
+            self.exportCancel.show()            
+            self.progressBar.reset()
+            self.progressBar.show() 
+            self.searchButton.setEnabled(False) 
+            self.exportVideo.setEnabled(False) 
+            self.exportData.setEnabled(False) 
+            self.exportVideo.setEnabled(False) 
+            self.progressBar.setValue(0)     
+            self.searchWidget.repaint() 
+        elif searchMode == self.GUI_SEARCH:
+            self.go = True
+            self.progressBar.setValue(100)         
+            self.searchCancel.show()            
+            self.progressBar.reset()
+            self.progressBar.show() 
+            self.searchButton.setEnabled(False) 
+            self.exportVideo.setEnabled(False) 
+            self.exportData.setEnabled(False) 
+            self.exportVideo.setEnabled(False) 
+            self.progressBar.setValue(0)     
+            self.searchWidget.repaint() 
+        
+class Match:
+    def __init__(self, item,  n):
+        self.item = item
+        self.n = n
+
+    def toString(self):
+        return self.item.startTime[self.n].toTime().toString('hh:mm:ss')

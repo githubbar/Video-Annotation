@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'D:\Projects\Video Annotation\Video Annotation Tool\project.ui'
+#
+# Created: Thu Sep 26 13:11:11 2013
+#      by: PyQt4 UI code generator 4.9.4
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt4 import QtCore, QtGui
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+
+class Ui_projectDialog(object):
+    def setupUi(self, projectDialog):
+        projectDialog.setObjectName(_fromUtf8("projectDialog"))
+        projectDialog.resize(394, 416)
+        self.buttonBox = QtGui.QDialogButtonBox(projectDialog)
+        self.buttonBox.setGeometry(QtCore.QRect(270, 40, 81, 61))
+        self.buttonBox.setOrientation(QtCore.Qt.Vertical)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.groupBox = QtGui.QGroupBox(projectDialog)
+        self.groupBox.setGeometry(QtCore.QRect(20, 30, 201, 81))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.gridLayout = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.label = QtGui.QLabel(self.groupBox)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.spinnerW = QtGui.QDoubleSpinBox(self.groupBox)
+        self.spinnerW.setMinimum(1.0)
+        self.spinnerW.setMaximum(1000.0)
+        self.spinnerW.setObjectName(_fromUtf8("spinnerW"))
+        self.gridLayout.addWidget(self.spinnerW, 0, 1, 1, 1)
+        self.label_2 = QtGui.QLabel(self.groupBox)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.spinnerH = QtGui.QDoubleSpinBox(self.groupBox)
+        self.spinnerH.setMinimum(1.0)
+        self.spinnerH.setMaximum(1000.0)
+        self.spinnerH.setObjectName(_fromUtf8("spinnerH"))
+        self.gridLayout.addWidget(self.spinnerH, 1, 1, 1, 1)
+        self.backgroundFileGroupBox = QtGui.QGroupBox(projectDialog)
+        self.backgroundFileGroupBox.setGeometry(QtCore.QRect(20, 160, 361, 51))
+        self.backgroundFileGroupBox.setObjectName(_fromUtf8("backgroundFileGroupBox"))
+        self.backgroundFileEdit = QtGui.QLineEdit(self.backgroundFileGroupBox)
+        self.backgroundFileEdit.setGeometry(QtCore.QRect(20, 20, 281, 20))
+        self.backgroundFileEdit.setObjectName(_fromUtf8("backgroundFileEdit"))
+        self.backgroundFileButton = QtGui.QPushButton(self.backgroundFileGroupBox)
+        self.backgroundFileButton.setGeometry(QtCore.QRect(310, 20, 41, 23))
+        self.backgroundFileButton.setObjectName(_fromUtf8("backgroundFileButton"))
+        self.pathSmoothingGroupBox = QtGui.QGroupBox(projectDialog)
+        self.pathSmoothingGroupBox.setGeometry(QtCore.QRect(19, 279, 361, 51))
+        self.pathSmoothingGroupBox.setObjectName(_fromUtf8("pathSmoothingGroupBox"))
+        self.pathSmoothingSlider = QtGui.QSlider(self.pathSmoothingGroupBox)
+        self.pathSmoothingSlider.setGeometry(QtCore.QRect(10, 20, 341, 19))
+        self.pathSmoothingSlider.setMaximum(100)
+        self.pathSmoothingSlider.setProperty("value", 1)
+        self.pathSmoothingSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.pathSmoothingSlider.setObjectName(_fromUtf8("pathSmoothingSlider"))
+
+        self.retranslateUi(projectDialog)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), projectDialog.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), projectDialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(projectDialog)
+
+    def retranslateUi(self, projectDialog):
+        projectDialog.setWindowTitle(QtGui.QApplication.translate("projectDialog", "Project Properties", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("projectDialog", "Size", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("projectDialog", "Width", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinnerW.setSuffix(QtGui.QApplication.translate("projectDialog", " ft", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("projectDialog", "Height", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinnerH.setSuffix(QtGui.QApplication.translate("projectDialog", " ft", None, QtGui.QApplication.UnicodeUTF8))
+        self.backgroundFileGroupBox.setTitle(QtGui.QApplication.translate("projectDialog", "Background Image File", None, QtGui.QApplication.UnicodeUTF8))
+        self.backgroundFileButton.setText(QtGui.QApplication.translate("projectDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.pathSmoothingGroupBox.setTitle(QtGui.QApplication.translate("projectDialog", "Path Smoothing Factor", None, QtGui.QApplication.UnicodeUTF8))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtGui.QApplication(sys.argv)
+    projectDialog = QtGui.QDialog()
+    ui = Ui_projectDialog()
+    ui.setupUi(projectDialog)
+    projectDialog.show()
+    sys.exit(app.exec_())
+

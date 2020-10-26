@@ -1,0 +1,9 @@
+/__init__.pyc
+/baseplatform.pyc
+/ctypesloader.pyc
+/darwin.pyc
+/egl.pyc
+/entrypoint31.pyc
+/glx.pyc
+/osmesa.pyc
+/win32.pyc

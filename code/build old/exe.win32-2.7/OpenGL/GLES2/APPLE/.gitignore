@@ -1,0 +1,7 @@
+/__init__.pyc
+/copy_texture_levels.pyc
+/framebuffer_multisample.pyc
+/rgb_422.pyc
+/sync.pyc
+/texture_format_BGRA8888.pyc
+/texture_max_level.pyc

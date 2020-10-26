@@ -1,0 +1,214 @@
+# -*- coding: utf-8 -*-
+"""
+Annotation Tool: For annotating path time series over human tracking video
+Copyright: Alex Leykin @ CIL
+Email: cil@indiana.edu
+http://indiana.edu/~cil
+Software bindings: 
+"""
+
+# Import modules
+import os,sys
+from random import randint, shuffle
+from Ui_window import Ui_MainWindow
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from label import *
+from path import *
+from polygon import *
+from rectangle import *
+from ellipse import *
+from commands import *
+
+class AnnotateScene(QGraphicsScene):
+    loadSignal  = pyqtSignal(QGraphicsItem)
+    saveSignal  = pyqtSignal(QGraphicsItem)      
+    updateVideoSignal = pyqtSignal(QGraphicsItem)      
+    addItemListSignal = pyqtSignal(QGraphicsItem)          
+    removeItemListSignal = pyqtSignal(QGraphicsItem)          
+    updateItemListSignal = pyqtSignal(QGraphicsItem)              
+    changeCurrentItemSignal = pyqtSignal()        
+    modes = ('Select', 'Path', 'Separator', 'Edit', 'Polygon',  'Rectangle', 'Ellipse',  'Label')    
+    gridD = 1
+    currentPath = None        
+    currentPolygon = None        
+    def __init__(self):
+        QGraphicsScene.__init__(self)
+        # Undo stack
+        self.undoStack = QUndoStack(self)        
+        self.setSceneRect(0,  0,  320.0, 180.0)
+
+    def removeItem(self,  item):
+        if type(item) == Path:
+            self.removeItemListSignal.emit(item)
+            self.currentPath = None
+        QGraphicsScene.removeItem(self, item)
+
+    def addItem(self,  item):
+        QGraphicsScene.addItem(self, item)
+        if type(item) == Path:
+            self.addItemListSignal.emit(item)
+            self.currentPath = item
+
+        
+class AnnotateView(QGraphicsView):
+    time = QTime()
+    s = None
+    
+    def __init__(self, parent):
+        QGraphicsView.__init__(self,  parent)
+        self.scene= AnnotateScene()
+        self.setScene(self.scene)
+#        self.scene.setSceneRect(0, 0, 320, 180)
+        Z = 1.0
+        self.FONT_ZOOM_FACTOR = 1.1
+        self.scale(Z, Z)
+        self.scene.mode = self.scene.modes[0]
+        self.font = QFont('Verdana', 2.2)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
+        self.scene.videoname = ''
+        self.scene.filename = ''
+        zoomInFontKey = QAction(self)
+        zoomInFontKey.setShortcut(QKeySequence('Ctrl+='))
+        zoomInFontKey.triggered.connect(self.zoomInFontPressed)                 
+        self.addAction(zoomInFontKey)
+        zoomOutFontKey = QAction(self)
+        zoomOutFontKey.setShortcut(QKeySequence('Ctrl+-'))
+        zoomOutFontKey.triggered.connect(self.zoomOutFontPressed)                 
+        self.addAction(zoomOutFontKey)
+        startTimeKey = QAction(self)
+        startTimeKey.setShortcut(Qt.Key_F1)        
+        startTimeKey.triggered.connect(self.startTimeKeyPressed)           
+        self.addAction(startTimeKey)        
+        stopTimeKey = QAction(self)
+        stopTimeKey.setShortcut(Qt.Key_F2)        
+        stopTimeKey.triggered.connect(self.stopTimeKeyPressed)           
+        self.addAction(stopTimeKey)
+        purchaseKey = QAction(self)
+        purchaseKey.setShortcut(Qt.Key_F3)        
+        purchaseKey.triggered.connect(self.purchaseKeyPressed)           
+        self.addAction(purchaseKey)
+        interactionKey = QAction(self)
+        interactionKey.setShortcut(Qt.Key_F4)        
+        interactionKey.triggered.connect(self.interactionKeyPressed)           
+        self.addAction(interactionKey)
+        phoneKey = QAction(self)
+        phoneKey.setShortcut(Qt.Key_F5)        
+        phoneKey.triggered.connect(self.phoneKeyPressed)           
+        self.addAction(phoneKey)
+        employeeKey = QAction(self)
+        employeeKey.setShortcut(Qt.Key_F6)        
+        employeeKey.triggered.connect(self.employeeKeyPressed)           
+        self.addAction(employeeKey)
+        
+    def zoomInFontPressed(self):
+        for i in self.scene.selectedItems():
+            f = i.font.toPyObject() 
+            f.setPointSizeF(f.pointSizeF()*self.FONT_ZOOM_FACTOR)
+            i.font = QVariant(f)
+            self.scene.loadSignal.emit(i)
+        self.scene.update()    
+
+    def zoomOutFontPressed(self):
+        for i in self.scene.selectedItems():
+            f = i.font.toPyObject() 
+            f.setPointSizeF(f.pointSizeF()/self.FONT_ZOOM_FACTOR)
+            i.font = QVariant(f)
+            self.scene.loadSignal.emit(i)
+        self.scene.update()    
+
+    def startTimeKeyPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP:
+            self.scene.currentPath.startTime[self.scene.currentPath.indP] = QVariant(self.time)
+            self.scene.loadSignal.emit(self.scene.currentPath)
+            
+    def stopTimeKeyPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP:
+            self.scene.currentPath.stopTime[self.scene.currentPath.indP] = QVariant(self.time)
+            self.scene.loadSignal.emit(self.scene.currentPath)
+
+    def purchaseKeyPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP:
+            self.scene.currentPath.purchased[self.scene.currentPath.indP] = QVariant(not self.scene.currentPath.purchased[self.scene.currentPath.indP].toBool())
+            self.scene.loadSignal.emit(self.scene.currentPath)
+            
+    def interactionKeyPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP:
+            self.scene.currentPath.shopped[self.scene.currentPath.indP] = QVariant(not self.scene.currentPath.shopped[self.scene.currentPath.indP].toBool() )
+            self.scene.loadSignal.emit(self.scene.currentPath)
+
+    def phoneKeyPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP:
+            self.scene.currentPath.phone[self.scene.currentPath.indP] = QVariant(not self.scene.currentPath.phone[self.scene.currentPath.indP].toBool() )
+            self.scene.loadSignal.emit(self.scene.currentPath)
+
+    def employeeKeyPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP:
+            self.scene.currentPath.employee[self.scene.currentPath.indP] = QVariant(not self.scene.currentPath.employee[self.scene.currentPath.indP].toBool() )
+            self.scene.loadSignal.emit(self.scene.currentPath)
+            
+            
+    def mousePressEvent(self, event):
+        # cycle through stacking order if more than 1 item under mouse
+        items = self.items(event.pos())        
+        if event.modifiers() == Qt.NoModifier and len(items) > 1: 
+            if not self.s: self.s = items[0]       
+            else:
+                try:
+                    N = items.index(self.s)
+                except ValueError:
+                    N = 0
+                self.s = items[(N+1) % len(items)]
+                self.s.stackBefore(items[N])
+          
+        if (event.buttons() & Qt.LeftButton):
+            sp = self.mapToScene(event.pos())
+            # copy item with alt+Drag
+            if self.scene.mode == 'Edit' and (event.modifiers() & Qt.AltModifier):
+                for i in self.scene.selectedItems():
+                    item = eval('i.clone()')
+                    self.scene.undoStack.push(AddCommand(self.scene, item))                                             
+            elif self.scene.mode == 'Path':                
+                # Add new path
+                if (not self.scene.currentPath or event.modifiers() & Qt.ShiftModifier):
+                    self.scene.currentPath = Path(self.scene.videoname,  self.font, 1.0)
+                    self.scene.undoStack.push(AddCommand(self.scene, self.scene.currentPath))                                             
+                if not self.scene.currentPath.choosingOrientation and not event.modifiers() & Qt.ControlModifier:
+                    self.scene.currentPath.handleLeftMousePress(sp, event.modifiers(), self.time)
+            elif self.scene.mode == 'Polygon':           
+                if (not self.scene.currentPolygon or event.modifiers() & Qt.ShiftModifier):   
+                    self.scene.currentPolygon = Polygon(self.font, 0.4)
+                    self.scene.undoStack.push(AddCommand(self.scene, self.scene.currentPolygon))                                             
+                self.scene.currentPolygon.addPoint(sp, self.time)                                 
+            elif self.scene.mode == 'Rectangle':             
+                self.scene.undoStack.push(AddCommand(self.scene, Rectangle(sp,  self.font, 0.4)))                                             
+            elif self.scene.mode == 'Ellipse':                
+                self.scene.undoStack.push(AddCommand(self.scene, Ellipse(sp,  self.font, 0.4))) 
+            elif self.scene.mode == 'Label':                
+                self.scene.undoStack.push(AddCommand(self.scene, Label(sp,  self.font, 0.4)))                 
+        elif (event.buttons() & Qt.RightButton):
+            sp = self.mapToScene(event.pos())
+            if self.scene.mode == 'Path':                
+                self.scene.currentPath.handleRightMousePress(sp, event.modifiers(), self.time)
+                    
+        QGraphicsView.mousePressEvent(self,  event)        
+
+    def wheelEvent(self, event):
+        factor = 1.2
+        if event.delta() < 0:
+            factor = 1.0 / factor
+        self.scale(factor, factor)
+
+    def drawBackground (self, painter,  r):
+        QGraphicsView.drawBackground(self,  painter,  r)
+        painter.setPen(QColor("black"))
+        painter.setOpacity(0.1)
+        r = self.sceneRect()
+        x = r.left()
+        while x <= r.right():
+            painter.drawLine(x, r.top(), x, r.bottom())     
+            x += self.scene.gridD
+        y = r.top()            
+        while y <= r.bottom():
+            painter.drawLine(r.left(), y, r.right(), y)     
+            y += self.scene.gridD          

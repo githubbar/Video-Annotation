@@ -1,0 +1,11 @@
+# Project Dialog wrapper
+
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from Ui_project import Ui_projectDialog
+class ProjectDialog(QDialog, Ui_projectDialog):
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
+        Ui_projectDialog.__init__(self)
+        self.setupUi(self)
+

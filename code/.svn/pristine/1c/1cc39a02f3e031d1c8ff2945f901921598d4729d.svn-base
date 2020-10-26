@@ -1,0 +1,71 @@
+# -*- coding: utf-8 -*-
+"""Define button/checkbox/tab event handlers for the main window"""
+import logging
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+import os, datetime, threading, subprocess, time, sys
+from annotateview import *
+
+class ButtonEvents():
+    def tabChanged(self,  index):
+        self.actions[0].trigger() # switch to select mode        
+        self.graphicsView.scene.heatmap.setVisible(False)
+        if index == 0: # edit
+            self.splitterEditTop.insertWidget(0, self.graphicsView)
+        if index == 1: # search
+            self.splitterSearch.insertWidget(0, self.graphicsView)
+            self.readCategoriesFromFile('categories.txt')        
+        if index == 2: # visualize
+            for i in self.graphicsView.scene.items():
+                if type(i) == Path:
+                    i.setVisible(False)        
+            self.graphicsView.scene.heatmap.setVisible(True)                    
+            self.splitterVisualize.insertWidget(0, self.graphicsView)
+
+
+    def handleToolbarButton(self):
+        sender = self.sender()
+        if not sender.isChecked():
+            sender.toggle()
+        for a in self.actions: 
+            if a != sender:
+                a.setChecked(False)
+        self.graphicsView.scene.mode = sender.text()
+        # Select or Path modes: show Paths and disable static figures
+        paths = (self.graphicsView.scene.mode == 'Select' or self.graphicsView.scene.mode == 'Path')
+        for i in self.graphicsView.scene.items():
+            if type(i) == Path:
+                i.setVisible(paths)
+            else:
+                i.setEnabled(not paths)
+                if paths: i.setAcceptedMouseButtons(Qt.NoButton)
+                else: i.setAcceptedMouseButtons(Qt.LeftButton | Qt.RightButton)
+        # Update path visibility based on items list checkboxes
+        self.updateGItems()
+        
+    def handleFullScreen(self):
+        qtMax = 16777215
+        if self.fullScreen:
+            self.upperPanel.setMaximumHeight(qtMax) 
+            self.items.setMaximumWidth(qtMax) 
+            self.checkAll.setMaximumWidth(qtMax) 
+        else:
+            self.upperPanel.setMaximumHeight(0)
+            self.items.setMaximumWidth(0) 
+            self.checkAll.setMaximumWidth(0) 
+        self.fullScreen = not self.fullScreen
+        
+    def playClicked(self):
+        if self.mediaPlayer.is_playing():
+            self.mediaPlayer.pause()
+            self.playButton.setIcon(QIcon('icons/player_play.png'))
+            self.isPaused = True
+        else:
+            
+            if self.mediaPlayer.play() == -1:
+                self.videoOpen()
+                return
+            self.mediaPlayer.play()
+            self.playButton.setIcon(QIcon('icons/player_pause.png'))
+            self.timer.start()
+            self.isPaused = False        

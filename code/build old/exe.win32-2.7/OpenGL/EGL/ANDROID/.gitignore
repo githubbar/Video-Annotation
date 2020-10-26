@@ -1,0 +1,6 @@
+/__init__.pyc
+/blob_cache.pyc
+/framebuffer_target.pyc
+/image_native_buffer.pyc
+/native_fence_sync.pyc
+/recordable.pyc

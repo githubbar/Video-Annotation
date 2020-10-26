@@ -1,0 +1,11 @@
+/__init__.pyc
+/buffer_age.pyc
+/client_extensions.pyc
+/create_context_robustness.pyc
+/image_dma_buf_import.pyc
+/multiview_window.pyc
+/platform_base.pyc
+/platform_wayland.pyc
+/platform_x11.pyc
+/protected_surface.pyc
+/swap_buffers_with_damage.pyc

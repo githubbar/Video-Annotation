@@ -1,0 +1,26 @@
+# Project Dialog wrapper
+import os
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from Ui_project import Ui_projectDialog
+class ProjectDialog(QDialog, Ui_projectDialog):
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
+        Ui_projectDialog.__init__(self)
+        self.setupUi(self)
+        self.categoryFileButton.clicked.connect(self.categoryFileButtonClicked)
+        self.backgroundFileButton.clicked.connect(self.backgroundFileButtonClicked)
+
+    def categoryFileButtonClicked(self):
+        filename = QFileDialog.getOpenFileName(self, "Choose Categories File", os.path.dirname(str(self.parent().graphicsView.scene.filename)))
+        if not filename:
+            return        
+        relname = os.path.relpath(str(filename),  os.path.dirname(str(self.parent().graphicsView.scene.filename)))
+        self.categoryFileEdit.setText(relname)
+        
+    def backgroundFileButtonClicked(self):
+        filename = QFileDialog.getOpenFileName(self, "Choose Background Image File", os.path.dirname(str(self.parent().graphicsView.scene.filename)))
+        if not filename:
+            return        
+        relname = os.path.relpath(str(filename),  os.path.dirname(str(self.parent().graphicsView.scene.filename)))
+        self.backgroundFileEdit.setText(relname)

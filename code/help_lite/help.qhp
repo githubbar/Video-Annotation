@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QtHelpProject version="1.0">
+	<namespace>cil.com.va.38</namespace>
+	<virtualFolder>help</virtualFolder>
+	<customFilter name="Video Annotation 1.0">
+		<filterAttribute>cil.com.va.38</filterAttribute>
+		<filterAttribute>all</filterAttribute>
+	</customFilter>
+	<filterSection>
+		<filterAttribute>cil.com.va.38</filterAttribute>
+		<filterAttribute>all</filterAttribute>
+		<toc>
+			<section title="Video Annotation Manual" ref="manual.html">
+				<section title="Edit Tab" ref="manual.html#editTab">
+                    <section title="Track Preview Area" ref="manual.html#editTab.drawingArea"/>
+                    <section title="Video Area" ref="manual.html#editTab.videoArea"/>
+                    <section title="Field Viewer" ref="manual.html#editTab.fieldEditor"/>
+                    <section title="Track List" ref="manual.html#editTab.objectList"/>
+                </section>
+                <section title="Search Tab" ref="manual.html#searchTab"/>
+			</section>
+		</toc>
+		<files>
+			<file>*.html</file>
+            <file>images/*</file>
+		</files>
+	</filterSection>
+</QtHelpProject>

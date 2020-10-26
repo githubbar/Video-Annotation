@@ -1,0 +1,6 @@
+/__init__.pyc
+/mali_program_binary.pyc
+/mali_shader_binary.pyc
+/rgba8.pyc
+/shader_framebuffer_fetch.pyc
+/shader_framebuffer_fetch_depth_stencil.pyc

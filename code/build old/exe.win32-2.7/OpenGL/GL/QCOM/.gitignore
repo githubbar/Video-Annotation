@@ -1,0 +1,9 @@
+/__init__.pyc
+/alpha_test.pyc
+/binning_control.pyc
+/driver_control.pyc
+/extended_get.pyc
+/extended_get2.pyc
+/perfmon_global_mode.pyc
+/tiled_rendering.pyc
+/writeonly_rendering.pyc

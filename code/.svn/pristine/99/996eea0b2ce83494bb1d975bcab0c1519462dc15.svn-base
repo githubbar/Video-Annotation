@@ -1,0 +1,66 @@
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from Ui_variabledialog import Ui_Dialog
+from variablewidget import *
+
+class VariableDialog(QDialog, Ui_Dialog):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
+        Ui_Dialog.__init__(self)
+        self.setupUi(self)
+        self.addVariable.setIcon(QIcon('icons/plus.png'))
+        self.removeVariable.setIcon(QIcon('icons/minus.png'))
+        self.addVariable.clicked.connect(self.table.addVariable)
+        self.removeVariable.clicked.connect(self.table.removeVariable)
+        self.table.setHorizontalHeaderLabels(('Name', 'Type', 'Show?', 'Keyboard Shortcut', 'Apply to Each Node?', 'Group'))
+        self.table.horizontalHeader().setResizeMode(QHeaderView.Stretch | QHeaderView.ResizeToContents)
+        self.loadVariables(self.parent().graphicsView.scene.variables)
+        
+    def loadVariables(self, variables):
+        self.table.clearContents()
+        for v in variables:
+            row = self.table.rowCount()
+            self.table.insertRow(row)
+            for i, col in enumerate(v.cols):
+                item = QTableWidgetItem()
+                item.setData(Qt.DisplayRole, col)
+                self.table.setItem(row,  i,  item)        
+            self.table.setCellWidget(row, 1, VariableTypeCombo(self.table))             
+            self.table.setCellWidget(row, 2, CenteredCheckBox())          
+            self.table.setCellWidget(row, 4, CenteredCheckBox())  
+            
+#            self.table.setItem(row,  1,  QTableWidgetItem(v.type()))            
+#            self.table.setItem(row,  2,  QTableWidgetItem(v.show()))                        
+        
+    def saveVariables(self):
+        scene = self.parent().graphicsView.scene        
+        scene.variables = []        
+        for i in range(self.table.rowCount()):
+            cols = [self.table.item(i, j).data(Qt.DisplayRole) for j in range(self.table.columnCount())]
+            # TODO: serilize to QDataStream, only takes simple objects?
+            scene.variables.append(Variable(cols))
+        self.accept()
+            
+            
+class Variable():
+    def __init__(self, cols=[]):
+        self.cols = cols
+
+    def name(self):
+        return self.cols[0]
+    def type(self):        
+        return self.cols[1]
+    def show(self):       
+       return self.cols[2] 
+    def shortcut(self):       
+       return self.cols[3] 
+    def node(self):       
+       return self.cols[4] 
+    def group(self):       
+       return self.cols[5]        
+        
+    def write(self, s):
+        s.writeQVariantList(self.cols)
+        
+    def read(self, s):
+        self.cols = s.readQVariantList()

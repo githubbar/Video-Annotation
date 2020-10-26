@@ -1,0 +1,19 @@
+QTreeWidget {
+    color: #55AAFF;
+}
+
+QTableWidget {
+    color: #55AAFF;
+}
+
+QToolBox::tab {
+     height: 300px;
+}
+
+QPlainTextEdit {
+    background-color:#3a3a3a;color:#EEE;border:1px;border-style:solid;border-color:#999;
+}
+
+QPalette : Link {
+    color: #33D4FF;
+}

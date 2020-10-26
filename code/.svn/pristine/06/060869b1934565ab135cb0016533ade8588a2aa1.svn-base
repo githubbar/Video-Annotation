@@ -1,0 +1,102 @@
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from Ui_variabledialog import Ui_VariablesDialog
+from variablewidget import *
+from path import *
+from settings import *
+# TODO: export/import variables
+# TODO: import Tobii eye-tracking data
+
+
+class VariableDialog(QDialog, Ui_VariablesDialog):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
+        Ui_VariablesDialog.__init__(self)
+        self.setupUi(self)
+        self.buttonOk.clicked.connect(self.onOkClicked)
+        self.buttonCancel.clicked.connect(self.onCancelClicked)
+        self.addVariable.setIcon(QIcon('icons/plus.png'))
+        self.removeVariable.setIcon(QIcon('icons/minus.png'))
+        self.addVariable.clicked.connect(self.table.addVariable)
+        self.removeVariable.clicked.connect(self.table.removeVariable)
+        self.table.setHorizontalHeaderLabels(('Name', 'Type', 'Show?', 'Keyboard Shortcut', 'Apply to Each Node?', 'Group', 'Choices'))
+        self.table.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.loadVariables(self.parent().graphicsView.scene.variables)
+        
+    def loadVariables(self, variables):
+        self.table.clearContents()
+        # add permanent fields
+        if variables == {}:
+            for i, name in enumerate(self.table.permanentVariableNames):
+                self.table.insertRow(i)
+                item = QTableWidgetItem()
+                item.setData(Qt.DisplayRole, QVariant(name))
+                self.table.setItem(i,  0,  item)                    
+                for j, param in enumerate(self.table.permanentVariableParams[i]):
+                    item = QTableWidgetItem()
+                    item.setData(Qt.DisplayRole, QVariant(param))
+                    self.table.setItem(i,  j+1,  item)
+
+        for name in variables:
+            row = self.table.rowCount()
+            self.table.insertRow(row)
+            item = QTableWidgetItem()
+            item.setData(Qt.DisplayRole, QVariant(name))
+            self.table.setItem(row,  0,  item)                    
+            for i, col in enumerate(variables[name].toList()):
+                item = QTableWidgetItem()
+                item.setData(Qt.DisplayRole, col)
+                self.table.setItem(row,  i+1,  item)        
+                    
+        # Set Choices for dropdowns
+        for i in range(self.table.rowCount()):
+            self.table.item(i, 6).setData(EditorEnabledRole, self.table.item(i, 1).data(Qt.DisplayRole)=='DropDown');
+            self.table.item(i, 2).setData(EditorEnabledRole,  True)
+            self.table.item(i, 4).setData(EditorEnabledRole,  True)
+            isReadOnly = self.table.item(i, 0).data(Qt.DisplayRole) in self.table.permanentVariableNames
+            if isReadOnly:
+                self.table.item(i, 0).setFlags(self.table.item(i, 0).flags() &~ Qt.ItemIsEditable)
+                self.table.item(i, 1).setFlags(self.table.item(i, 0).flags() &~ Qt.ItemIsEditable)
+                self.table.item(i, 2).setData(EditorReadOnlyRole,  isReadOnly)          
+#                self.table.item(i, 3).setFlags(self.table.item(i, 3).flags() &~ Qt.ItemIsEditable)
+                self.table.item(i, 4).setData(EditorReadOnlyRole,  isReadOnly)            
+                self.table.item(i, 5).setFlags(self.table.item(i, 5).flags() &~ Qt.ItemIsEditable)
+                
+#            item.setFlags(item.flags() &~ Qt.ItemIsEditable)
+#            readonly = False
+#            if item in self.table.permanentVariableNames:
+#                item.setFlags(item.flags() &~ Qt.ItemIsEditable)
+#                readonly = True                    
+#                if readonly:
+#                    item.setFlags(item.flags() &~ Qt.ItemIsEditable)
+                    
+    def onCancelClicked(self):
+        self.reject()
+        
+    def onOkClicked(self):
+        onename = ''
+        self.table.sortItems(0)
+        for i in range(self.table.rowCount()):
+            name = self.table.item(i, 0).data(Qt.DisplayRole).toString()
+            if name == onename:
+                QMessageBox.warning(self,  'Warning!',  'The names of the variables must be unique and not blank! Please fix the names highlighted in red.')
+                return
+            onename = name
+        
+        if QMessageBox.question(self,  'Warning!', 'Saving these changes to your project will affect all the existing data! Are you sure you want to proceed?', \
+            QMessageBox.Yes | QMessageBox.No) == QMessageBox.No: 
+                return
+        scene = self.parent().graphicsView.scene        
+        scene.variables.clear()
+        
+        for i in range(self.table.rowCount()):
+            name = self.table.item(i, 0).data(Qt.DisplayRole).toString()
+            cols = QVariant([self.table.item(i, j).data(Qt.DisplayRole) for j in range(1, self.table.columnCount())])
+            scene.variables[name] = cols
+        
+        # make sure all current paths are updated
+        for item in scene.items():
+            if type(item) == Path: 
+                item.populateVariables()
+        
+        self.accept()

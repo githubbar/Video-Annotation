@@ -1,0 +1,118 @@
+# -*- coding: utf-8 -*-
+""" PrepertyTree View/Model is a widget for editing object's properties stored in a dictionary attribute *data* """
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+import sys
+from label import *
+from path import *
+from polygon import *
+from rectangle import *
+from ellipse import *
+from delegates import *
+
+CheckBoxType = QStandardItem.UserType+1
+class PropertyTreeView(QTreeView,  object):
+    def __init__(self,parent,task=None):
+        QTreeView.__init__(self,parent)
+        self.setModel(PropertyTreeModel())     
+        self.setAlternatingRowColors(True)     
+        self.currentItem = None
+        
+    def dataChanged(self,  topLeft,  bottomRight):
+        QTreeView.dataChanged(self,  topLeft,  bottomRight)
+        if self.currentItem:
+            self.saveItem(self.currentItem)
+            self.currentItem.update()
+            
+    def loadItem(self, item):
+        self.currentItem = item
+        self.model().removeRows(0,  self.model().rowCount())
+        """Load selected item properties"""
+        self.delegates = []
+        for k in item.shownFields:
+            v = getattr(item, k)
+            col1 = PropertyTreeItem(k)
+            col1.setFlags(col1.flags()  & ~Qt.ItemIsEditable)            
+            # if list, get current element
+            if type(v) == list:
+                if item.indP == None: continue
+                v = v[item.indP]
+#            # BEGIN TEMP
+#            # format date time
+#            if k == 'startTime' or k == 'stopTime':
+#                t = QTime()
+#                t = t.addMSecs(v.toInt()[0])
+#                v = QVariant(t)
+#            # END TEMP                
+        
+            col2 = PropertyTreeItem(v)                
+            col2.setEditable(True)
+            col2.setData(QColor("#0000FF"), Qt.TextColorRole)
+            if k in item.checkableFields:
+                col2.setCheckable(True)
+                if v.toBool(): col2.setData(Qt.Checked,  Qt.CheckStateRole)
+                col2.setData('',  Qt.DisplayRole)
+                col2.setEditable(False)
+
+            self.model().appendRow([col1,  col2])     
+            row = self.model().rowCount()-1                
+            # custom delegates
+            if k == 'startTime' or k == 'stopTime':
+                self.delegates.append(TimeDelegate())
+                self.setItemDelegateForRow(row,  self.delegates[-1])               
+            if k == 'tripType':
+                self.delegates.append(DropDownDelegate(item.tripTypeChoices, v))
+                self.setItemDelegateForRow(row,  self.delegates[-1])   
+            if k == 'category':
+                self.delegates.append(DropDownDelegate(item.categoryChoices,  v))
+                self.setItemDelegateForRow(row,  self.delegates[-1])                   
+            if k == 'videoname' or k == 'imagename':
+                sceneDir = os.path.dirname(str(self.currentItem.scene().filename))
+                self.delegates.append(FileOpenDelegate(sceneDir))
+                self.setItemDelegateForRow(row,  self.delegates[-1])                                   
+            # font delegate
+            if k == 'font':
+                self.delegates.append(FontOpenDelegate())
+                self.setItemDelegateForRow(row,  self.delegates[-1])       
+                
+    def saveItem(self, item):
+        """Save item properties: passing a PropertyTreeView properties"""
+        for row in range(self.model().rowCount()):
+            name = str(self.model().item(row,  0).data(Qt.EditRole).toPyObject())
+
+            if name in item.checkableFields:
+                if self.model().item(row,  1).checkState() == Qt.Checked:
+                    value = QVariant(True)
+                else:
+                    value = QVariant(False)
+            else:
+                value = self.model().item(row,  1).data(Qt.EditRole)
+
+            # if list: write to list element
+            l = getattr(item, name)
+            if type(l) == list:
+                if item.indP == None:
+                    continue
+                else:
+#                    # BEGIN TEMP
+#                    if name == 'startTime' or name == 'stopTime':
+#                        value = QVariant(-value.toTime().msecsTo(QTime()))
+#                    # END TEMP
+                    l[item.indP] = value
+                    value = l
+            setattr(item, name, value)
+            if type(item) == Path:
+                item.scene().updateItemListSignal.emit(item)
+
+class PropertyTreeItem(QStandardItem):
+    def __init__(self, data=None):
+        QStandardItem.__init__(self)
+        self.setData(data,  Qt.EditRole)
+
+class PropertyTreeModel(QStandardItemModel):
+    def __init__(self, parent=None):
+        QStandardItemModel.__init__(self,  parent)
+        self.setColumnCount (2)
+        self.setHeaderData(0,  Qt.Horizontal,  'Property')
+        self.setHeaderData(1,  Qt.Horizontal,  'Value')
+

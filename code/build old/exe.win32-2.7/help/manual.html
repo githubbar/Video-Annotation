@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>Video Annotation Tool Interface</title>
+<style type="text/css">ol{margin:0;padding:0}.c6{max-width:468pt;background-color:#ffffff;padding:72pt 72pt 72pt 72pt}.c0{height:11pt;direction:ltr}.c4{text-decoration:underline}.c3{font-style:italic}.c1{direction:ltr}.c5{text-align:center}.c2{font-weight:bold}.title{padding-top:24pt;line-height:1.15;text-align:left;color:#000000;font-size:36pt;font-family:"Arial";font-weight:bold;padding-bottom:6pt}.subtitle{padding-top:18pt;line-height:1.15;text-align:left;color:#666666;font-style:italic;font-size:24pt;font-family:"Georgia";padding-bottom:4pt}li{color:#000000;font-size:11pt;font-family:"Arial"}p{color:#000000;font-size:11pt;margin:0;font-family:"Arial"}h1{padding-top:24pt;line-height:1.15;text-align:left;color:#000000;font-size:18pt;font-family:"Arial";font-weight:bold;padding-bottom:6pt}h2{padding-top:18pt;line-height:1.15;text-align:left;color:#000000;font-size:14pt;text-decoration:underline;font-family:"Arial";font-weight:bold;padding-bottom:4pt}h3{padding-top:14pt;line-height:1.15;text-align:left;color:#666666;font-size:12pt;font-family:"Arial";font-weight:bold;padding-bottom:4pt}h4{padding-top:12pt;line-height:1.15;text-align:left;color:#666666;font-style:italic;font-size:11pt;font-family:"Arial";padding-bottom:2pt}h5{padding-top:11pt;line-height:1.15;text-align:left;color:#666666;font-size:10pt;font-family:"Arial";font-weight:bold;padding-bottom:2pt}h6{padding-top:10pt;line-height:1.15;text-align:left;color:#666666;font-style:italic;font-size:10pt;font-family:"Arial";padding-bottom:2pt}</style>
+</head>
+
+<body class="c6"><h1 class="c1 c5"><span>Video Annotation Tool </span></h1><h3 class="c1 c5"></a><span>Cusomer Interface Lab &copy; 2012</span></h3><h1 class="c1 c5">
+<span>User Interface Manual</span></h1><p class="c0"><span></span></p></a>
+
+<a name="menu"><h1 class="c1"><span>Menu</span></h1>
+<p class="c1"><span>Load or save the annotation map. (</span><span class="c4">Ctrl+O</span><span>, </span><span class="c4">Ctrl+S</span><span>)</span></p>
+<p class="c1"><span>You can also load individual shopper video files. (</span><span class="c4">Ctrl+L</span><span>)</span></p>
+<a name="menu.projectProperties"><h2 class="c1"><span>Project Properties</span></h2> 
+<p class="c1"><span>These settings apply to the entire project and let you choose floorplan dimensions, background as well as modify Path variables used in the project.</span></p>
+<p class="c1">Clicking "Variables" button invokes variables dialog. <img src="images/variables.png" height="501" width="668" > You can add, delete and edit existing variables. Variables marked in bold are permanent and cannot be deleted. For variables of type "DropDown' clicking on the last column opens the editor of dropdown choices. These can be manually added or imported/exported from/to a comma separated file (CSV). The variables themselves can also be exported or added to/from a CSV file.</p>
+
+
+
+<a name="editTab"></a><h1 class="c1"><span>Edit Tab</span></h1>
+<p class="c1"><img height="501" src="images/image00.png" width="668"></p>
+<h2 class="c1"><a name="editTab.tabs"></a><span>Tabs/Working modes</span>
+</h2><p class="c1"><span>The software has two major operation modes represented by the tabs on top of the window: </span><span class="c4">Edit</span><span>&nbsp;- for data entry and </span><span class="c4">Search</span><span>&nbsp;- for data/video search and extraction</span></p>
+
+<h2 class="c1"><a name="editTab.toolbar"></a><span>Toolbar</span></h2>
+<p class="c1"><span class="c2">Select </span><span>&nbsp;Mouse click to select object and edit its fields in the Field Editor. In Path and Polygon you can select individual points. </span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span class="c2">Path: </span><span>&nbsp;</span><span class="c3">Path is not related to the floorplan but represent the individual shopper events and tracks. </span><span>Left</span><span class="c3">&nbsp;</span><span class="c4">click</span><span>&nbsp;to add points. </span><span class="c4">Shift+click</span><span>&nbsp;to start a new path. </span><span class="c4">Crtl+Click</span><span>&nbsp;inserts a node between the two existing nodes. Every </span><span class="c4">left-click</span><span>&nbsp;creates a new node, with a </span><span class="c4">right-click</span><span>&nbsp;choosing subjects orientation.</span></p>
+<p>To change a position of any node, first switch to select/arrow mode (Ctrl+1) and select the desired node. Next, switch to path/edit mode (Ctrl+2) and drag the selected node to edit its position</p>
+<p class="c1"><span>Path as a whole has these attributes: tags, description, tripType. Trip type can be one of: </span><span class="c3">stock up, fill in, routine and occasion.</span></p>
+<p class="c1"><span>A path consists of waypoints connected by straight lines. Each waypoint has the following attributes associated with it: startTime, stopTime, category, purchased, shopped, phone, employee. &lsquo;Category&rsquo; combo box can assign a product category to the current location of the customer. You can either select one from the list or type the first letters of the category name.</span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span>Start time is automatically taken from the video when the node is created. Stop time is set to start time. Start/Stop times can also be set to current video time by pressing. When playing back the video, current position in the path is show with a red disk moving along the path. </span><span class="c2">F1</span><span>&nbsp;or </span><span class="c2">F2. </span></p>
+<p class="c1"><span>Purchased </span><span class="c2">(F3)</span><span>, shopped </span><span class="c2">(F4)</span><span>, phone interaction </span><span class="c2">(F5) </span><span>and employee contact </span><span class="c2">(F6) </span><span>are checkboxes to tag special event types. Note: shopped is defined as </span><span class="c3">&lsquo;either looking at the products for over 4 sec or touching the products</span><span>&rsquo; Selecting an individual point seeks the video to the points timestamp. Press </span><span class="c2">Delete </span><span>to delete a selected point. Deleting the last point deletes the whole path.</span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span class="c2">Edit</span><span>: In this mode you can move and resize scene objects with a mouse. Drag the bottom right part of the object to resize. </span><span class="c2">Ctrl+click</span><span>&nbsp;to insert additional points. For Polygon click and drag to move existing points. You can also Alt+Drag objects to create a copy.</span></p>
+<p class="c1"><span>Press </span><span class="c2">Delete</span><span>&nbsp;to remove objects from the scene</span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span class="c2">Polygon</span><span>&nbsp; Click to add points. </span><span class="c2">Ctrl+click</span><span>&nbsp;to start a new polygon. Press </span><span class="c2">Delete </span><span>to delete a selected point. Deleting the last point deletes the whole polygon.</span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span class="c2">Rectangle:</span><span>&nbsp; Click and drag to create a rectangle. The id will be displayed in the center.</span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span class="c2">Label:</span><span>&nbsp; Click and type to create a text label</span></p>
+<p class="c0"><span></span></p>
+<p class="c1"><span class="c2">Snapshot:</span><span>&nbsp; Allows you to tie a static image with any position on the floorplan. Double-clicking the thumbnail will show the image.</span></p>
+<p class="c0"><span class="c2"></span></p>
+<p class="c0"><span class="c2"></span></p>
+<p class="c1"><span>You can change the font size for floorplan objects either by modifying the font property in the field editor or by using </span><span class="c2">Ctrl+/Ctrl- </span><span>shortcuts to increase/decrease the font 10% for the selected objects</span></p>
+
+<h2 class="c1"><a name="editTab.drawingArea"></a><span>Drawing Area</span></h2><p class="c1"><span>The drawing area and video area can be resized by dragging the splitter between them.</span></p><p class="c1"><span>Main area to draw the floorplan and subject&#39;s paths. The objects snap to the grid. The area can be zoomed in and out with a mouse wheel (scroll pad). It can also be panned when the cursor shows a hand. </span></p><p class="c1"><span>If the cursor is an arrow it is over on object to be selected.</span></p>
+<p class="c1"><span>While the video is played back, the red disk moving along the path will indicated the current position of the track. The variables in the <a href="#editTab.fieldEditor">Field Editor</a> will also update to reflect the current state</span></p>
+
+<h2 class="c1"><a name="editTab.videoArea"></a><span>Video Area</span></h2><p class="c1"><span>Play/pause video or use the slider to jump to a specific time. Time is shown on the right. </span><span class="c2">Space </span><span>anywhere in the window to play/pause. Press </span><span class="c2">Ctrl-R</span><span>&nbsp;to enter video playback rate: from 0.2 to 100 (1 is normal speed). Press </span><span class="c2">F11 </span><span>to toggle video view between normal and maximized.</span></p><p class="c1"><span>Use </span><span class="c2">left/right arrows</span><span>&nbsp;to REW/FF </span><span class="c2">1 sec</span><span>&nbsp;and </span><span class="c2">Ctrl+left/right</span><span>&nbsp;arrows to REW/FF </span><span class="c2">5 sec</span><span>.</span></p>
+
+<h2 class="c1"><a name="editTab.fieldEditor"></a><span>Field Editor</span></h2><p class="c1"><span>Lets you edit the attributes of each object. For &quot;Path&quot; objects the time (video frame number) is taken automatically from the video. At the bottom of the field editro there is a button for quick access to <a href="#menu.projectProperties">project variables</a></span></p>
+
+<h2 class="c1"><a name="editTab.objectList"></a><span>Object List</span></h2><p class="c1"><span>The object list on the bottom right allows you to show/hide </span><span class="c2">Path </span><span>objects in the drawing area (checkboxes). You can also press </span><span class="c2">Delete </span><span>to remove selected objects from the map.</span></p>
+<h3 class="c1"><a name="editTab.objectList.filter"></a><span>Filter Button</span></h3><p class="c1"><span>The filter button displays a dialog which allows you to show/hide </span><span class="c2">Path </span><span>objects in the drawing area based on their field values.</span></p>
+<p class="c1"><img height="501" src="images/imageFilterDialog.png" width="668"></p>
+<p class="c0"><span></span></p>
+<p class="c0"><span></span></p>
+
+<h1 class="c1"><a name="searchTab"></a><span>Search Tab</span></h1><p class="c1"><img height="501" src="images/image01.png" width="668"></p><p class="c1">
+<p class="c0"><span></span></p>
+<span>Search Tab lets the user search, export and visualize coded track data and video segments. You can search by time interval, trip type or any other user variable. The results are displayed as a clickable list of found path segments at the bottom-right part of the screen. Double-click on the segment to play back corresponding portion of the video in the <a href="#editTab">Edit Tab</a>. Click "Visualize" to generate a heatmap of the search results. Click "Export Video" to save found video segments or click "Export Data" to save all user variables related to found segments into a CSV file.</span></p>
+
+</body>
+</html>

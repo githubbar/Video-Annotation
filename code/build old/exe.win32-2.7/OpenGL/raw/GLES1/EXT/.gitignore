@@ -1,0 +1,14 @@
+/__init__.pyc
+/blend_minmax.pyc
+/discard_framebuffer.pyc
+/map_buffer_range.pyc
+/multi_draw_arrays.pyc
+/multisampled_render_to_texture.pyc
+/read_format_bgra.pyc
+/robustness.pyc
+/sRGB.pyc
+/texture_compression_dxt1.pyc
+/texture_filter_anisotropic.pyc
+/texture_format_BGRA8888.pyc
+/texture_lod_bias.pyc
+/texture_storage.pyc

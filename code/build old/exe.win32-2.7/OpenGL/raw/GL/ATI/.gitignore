@@ -1,0 +1,17 @@
+/__init__.pyc
+/draw_buffers.pyc
+/element_array.pyc
+/envmap_bumpmap.pyc
+/fragment_shader.pyc
+/map_object_buffer.pyc
+/meminfo.pyc
+/pixel_format_float.pyc
+/pn_triangles.pyc
+/separate_stencil.pyc
+/text_fragment_shader.pyc
+/texture_env_combine3.pyc
+/texture_float.pyc
+/texture_mirror_once.pyc
+/vertex_array_object.pyc
+/vertex_attrib_array_object.pyc
+/vertex_streams.pyc

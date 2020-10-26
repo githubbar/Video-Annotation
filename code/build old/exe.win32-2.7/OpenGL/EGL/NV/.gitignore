@@ -1,0 +1,11 @@
+/EGL_3dvision_surface.pyc
+/__init__.pyc
+/coverage_sample.pyc
+/coverage_sample_resolve.pyc
+/depth_nonlinear.pyc
+/native_query.pyc
+/post_convert_rounding.pyc
+/post_sub_buffer.pyc
+/stream_sync.pyc
+/sync.pyc
+/system_time.pyc

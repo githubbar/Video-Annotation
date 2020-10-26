@@ -1,0 +1,12 @@
+/__init__.pyc
+/buffer_age.pyc
+/create_context_es2_profile.pyc
+/create_context_es_profile.pyc
+/fbconfig_packed_float.pyc
+/framebuffer_sRGB.pyc
+/import_context.pyc
+/swap_control.pyc
+/swap_control_tear.pyc
+/texture_from_pixmap.pyc
+/visual_info.pyc
+/visual_rating.pyc

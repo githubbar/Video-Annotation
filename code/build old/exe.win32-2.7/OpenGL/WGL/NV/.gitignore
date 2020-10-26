@@ -1,0 +1,15 @@
+/DX_interop.pyc
+/DX_interop2.pyc
+/__init__.pyc
+/copy_image.pyc
+/delay_before_swap.pyc
+/float_buffer.pyc
+/gpu_affinity.pyc
+/multisample_coverage.pyc
+/present_video.pyc
+/render_depth_texture.pyc
+/render_texture_rectangle.pyc
+/swap_group.pyc
+/vertex_array_range.pyc
+/video_capture.pyc
+/video_output.pyc
