@@ -1,7 +1,7 @@
 """ 
 Build script for cxFreeze library
 
-add ""from PyQt4 import QtNetwork"" to Ui_window.py
+add ""from PyQt5 import QtNetwork"" to Ui_window.py
 
 Run this file with "build" command line argument to build an exe. Run as administrator to access dll's in system dir.
 egg includes (e.g. elixir library) must by unzipped for cx_freeze to find them
@@ -11,7 +11,7 @@ from cx_Freeze import setup, Executable
 import sys
 import os
 import glob
-import PyQt4.Qt as qt
+import PyQt5.Qt as qt
 from main import Main
 
 Target_1 = Executable(

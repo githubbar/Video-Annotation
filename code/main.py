@@ -18,19 +18,21 @@ logging.basicConfig(filename='error.log', level=logging.ERROR)
 
 import os, sys
 from Ui_window import Ui_MainWindow
-from PyQt4.QtGui import *
-import PyQt4.QtGui
-import qdarkstyle
-from PyQt4.QtCore import *
+import PyQt5
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from annotateview import *
 from fileio import *
 from pathtablewidget import *
 from subprocess import *
 import vlc
 import menu, buttonevents, searchwidget
+import qdarkstyle
+
 
 # Create a class for our main window
-class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, searchwidget.SearchWidget):
+class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, searchwidget.SearchWidget):
     GUI_NORMAL = 0
     GUI_SEARCH = 1
     GUI_EXPORT = 2
@@ -39,6 +41,10 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
     READ_ONLY = False  # Global switch to prevent the user from editing 
     go = False  # search/export thread is not running
         
+    updateProgress = pyqtSignal(int)        
+    updateProgressEdit = pyqtSignal(int)
+    completeProgress = pyqtSignal(int)
+    
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -140,7 +146,7 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
         self.useAOIs.clicked.connect(self.useAOIsTrigger)
 
         self.timer.timeout.connect(self.updateUI)
-        self.connect(self.tabWidget, SIGNAL("currentChanged(int)"), self.tabChanged)
+        self.tabWidget.currentChanged.connect(self.tabChanged)
         self.progressBarEdit.hide()
         
         # Search tab
@@ -157,10 +163,11 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
         self.showHistogram.clicked.connect(self.showHistogramClicked)        
         self.searchCancel.clicked.connect(self.cancelClicked)        
         self.exportCancel.clicked.connect(self.cancelClicked)
-        self.connect(self, SIGNAL("updateProgress"), self.updateProgress)       
-        self.connect(self, SIGNAL("updateProgressEdit"), self.updateProgressEdit)
-        self.connect(self, SIGNAL("completeProgress"), self.guiMode)       
-        self.guiMode(self.GUI_NORMAL)
+        self.updateProgress.connect(self.OnUpdateProgress)       
+        self.updateProgressEdit.connect(self.OnUpdateProgressEdit)
+        self.completeProgress.connect(self.OnGUIMode)      
+        
+        self.completeProgress.emit(self.GUI_NORMAL)
         self.tabChanged(self.tabWidget.currentIndex())
         
         # Visualize tab
@@ -327,7 +334,7 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
 #             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # sort indexes by ascending start time 
             idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k].toPyObject())
-            self.emit(SIGNAL("updateProgressEdit"), int(100.0 * i / self.items.rowCount()))
+            self.updateProgressEdit.emit(int(100.0 * i / self.items.rowCount()))
           
 #             stimes = sorted(item.startTime)
 
@@ -381,7 +388,7 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
                     writer.writerow(row)
                 except UnicodeEncodeError: 
                     continue
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
 
     def changeVideoPaths(self, dirname=''):
         if dirname == False:
@@ -642,8 +649,7 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
         return
             
     def initHelp(self):
-        from PyQt4 import QtHelp
-        from PyQt4.QtWebKit import QWebView
+        from PyQt5 import QtHelp
         import helpbrowser
         self.help = QtHelp.QHelpEngine('help/help.qhc', self)
         ok = self.help.setupData()
@@ -659,7 +665,8 @@ class Main(PyQt4.QtGui.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, se
         self.helpWindow.layout().addWidget(helpPanel)
         self.helpWindow.setMinimumSize(800, 800)
         self.help.contentWidget().linkActivated.connect(helpBrowser.load)
-        
+    
+            
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName('Video Annotation Tool')
@@ -669,10 +676,10 @@ def main():
     elif __file__:
         application_path = os.path.dirname(__file__)
     
-    stylesheet_path = os.path.join(application_path, "mydark.stylesheet")    
-    with open(stylesheet_path,"r") as fh:
-        app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt()+fh.read())
-#     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt())
+#     stylesheet_path = os.path.join(application_path, "mydark.stylesheet")    
+#     with open(stylesheet_path,"r") as fh:
+#         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt()+fh.read())
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     window = Main()
     window.appPath = application_path
     window.show()

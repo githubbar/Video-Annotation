@@ -11,8 +11,8 @@ Software bindings:
 import os,sys
 from random import randint, shuffle
 from Ui_window import Ui_MainWindow
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from label import *
 from track import *
 from aoi import *
@@ -24,9 +24,10 @@ from snapshot import *
 from variabledialog import *
 
 class AnnotateScene(QGraphicsScene):
+    
     loadSignal  = pyqtSignal(QGraphicsItem)
     saveSignal  = pyqtSignal(QGraphicsItem)
-    loadVideoSignal  = pyqtSignal(QString)    
+    loadVideoSignal  = pyqtSignal('QString')    
     initCategoriesSignal  = pyqtSignal()    
     updateVideoSignal = pyqtSignal(QGraphicsItem)      
     addItemListSignal = pyqtSignal(QGraphicsItem)          
@@ -62,7 +63,7 @@ class AnnotateScene(QGraphicsScene):
         self.undoStack = QUndoStack(self)      
         self.setSceneRect(0,  0,  320.0, 180.0)
         self.clear()
-        
+   
     def clear(self):
         QGraphicsScene.clear(self)
         self.heatmap = QGraphicsPixmapItem()

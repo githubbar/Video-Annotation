@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Define button/checkbox/tab event handlers for the main window"""
 import logging
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import os, datetime, threading, subprocess, time, sys
 from annotateview import *
 from projectdialog import ProjectDialog
@@ -147,7 +147,7 @@ class ButtonEvents():
                     self.items.item(i, 0).setCheckState(Qt.Unchecked)
                     item.setVisible(False)                    
             progress.setValue(self.items.rowCount())
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
             
         
     def variablesClicked(self):

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """ Help browser panel """
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from PyQt4.QtWebKit import *
-import PyQt4.QtNetwork
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+import PyQt5.QtNetwork
 
 
-class HelpBrowser(QWebView):
+class HelpBrowser(QWebEngineView):
     def __init__(self, helpEngine, parent=None):    
         import os
-        QWebView.__init__(self, parent)
+        QWebEngineView.__init__(self, parent)
         self.helpEngine = helpEngine
         path = QFileInfo(self.helpEngine.collectionFile()).path()
         url = QUrl.fromLocalFile( os.path.join(str(path), 'manual.html'))
-        QWebView.load(self, url)        
+        QWebEngineView.load(self, url)        
         self.helpEngine.contentWidget().expandAll()
         
 #        QWebSettings.globalSettings().setAttribute(QWebSettings.AutoLoadImages, True)
@@ -36,6 +36,6 @@ class HelpBrowser(QWebView):
             fileName = QFileInfo(url.path()).fileName()
             localurl = QUrl.fromLocalFile( os.path.join(str(path), str(fileName)))
             localurl.setFragment(url.fragment())
-        QWebView.setUrl(self, localurl)
+        QWebEngineView.setUrl(self, localurl)
 
         

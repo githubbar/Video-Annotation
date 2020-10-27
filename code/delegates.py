@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """ Delegates """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
 import sys
 
 from settings import *
@@ -227,7 +229,7 @@ class FileOpen(QLineEdit):
         self.setStyleSheet(QString("QLineEdit { padding-right: %1px; }").arg(sz.width() + frameWidth + 1))
         msz = self.minimumSizeHint()
         self.setMinimumSize(max(msz.width(), sz.height() + frameWidth * 2 + 2), max(msz.height(), sz.height() + frameWidth * 2 + 2))
-        self.connect(self.button, SIGNAL("clicked()"), self.openFileName)
+        self.button.clicked.connect(self.openFileName)
 
     def resizeEvent(self, event):
         sz = self.button.sizeHint()

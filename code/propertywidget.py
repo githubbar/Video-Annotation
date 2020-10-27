@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """ PrepertyTree View/Model is a widget for editing object's properties stored in a dictionary attribute *data* """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import sys
 from label import *
 from track import *
@@ -17,7 +18,7 @@ class PropertyWidget(QTreeWidget,  object):
         QTreeWidget.__init__(self,parent)
         self.expandedCategories = []
         self.currentItem = None
-        self.header().setResizeMode(0, QHeaderView.ResizeToContents)
+#         self.headerItem().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.itemExpanded.connect(self.onItemExpanded)
         self.itemCollapsed.connect(self.onItemCollapsed)
         

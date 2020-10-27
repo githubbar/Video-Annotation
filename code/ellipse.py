@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """ Graphics Items """
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import os, datetime, threading, subprocess, time, sys, csv
 
 from settings import *
@@ -15,7 +15,7 @@ class Ellipse(QGraphicsEllipseItem):
     browsableFields = ['fileName']
     colorFields = ['fontColor', 'color']
     dropdownFields = []     
-    id, description, tags = QVariant(''), QVariant(''), QVariant('')
+    id, description, tags = '', '', ''
     D = 10.0
     penR = 1.0 # edge width    
     resizing = False

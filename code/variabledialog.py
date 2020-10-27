@@ -1,5 +1,5 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from Ui_variabledialog import Ui_VariablesDialog
 from variablewidget import *
 from track import *

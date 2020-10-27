@@ -1,5 +1,7 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
 import os, sys
 from Ui_imagepopup import Ui_Dialog
 class ImagePopupDialog(QDialog, Ui_Dialog):

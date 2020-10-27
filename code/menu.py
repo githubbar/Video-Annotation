@@ -4,8 +4,9 @@
 #Email: cil@indiana.edu
 #http://indiana.edu/~cil
 """ Creates a main menu """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 def createMenu(w):
         menubar = w.menuBar()

@@ -1,10 +1,10 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtWidgets import QDialog, QFileDialog, QListWidgetItem
 from Ui_choicesdialog import Ui_ChoicesDialog
-from track import *
+# from track import *
 
 class ChoicesDialog(QDialog, Ui_ChoicesDialog):
     def __init__(self, choices=None, parent=None):
+        
         QDialog.__init__(self, parent)
         Ui_ChoicesDialog.__init__(self)
         self.setupUi(self)

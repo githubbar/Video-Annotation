@@ -4,7 +4,8 @@ Created on Feb 21, 2017
 @author: oleykin
 '''
 
-import csv, codecs, cStringIO
+import csv, codecs
+from io import StringIO
 
 class UTF8Recoder:
     """

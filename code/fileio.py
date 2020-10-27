@@ -6,9 +6,9 @@ Created on Jul 11, 2017
 
 import logging
 import os, sys,time
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-import vlc
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import menu, buttonevents, searchwidget
 
 

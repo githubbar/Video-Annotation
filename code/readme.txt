@@ -1,17 +1,13 @@
 Annotation Tool: For annotating track time series over tracking video
 Copyright: Alex Leykin @ CIL
 Email: cil@indiana.edu
-http://indiana.edu/~cil
+https://www.iub.edu/~cil
         
-        
-        
-Software bindings: 
-    
 Developed with: 
-    Python 2.7 x32bit (http://www.python.org/download/releases/2.7.1/)
+    Python 3.6.8 x64bit
     
     Python modules: 
-        PyQt: http://www.riverbankcomputing.co.uk/software/pyqt/download    
+        PyQt5: http://www.riverbankcomputing.co.uk/software/pyqt/download    
         PyWin32: http://sourceforge.net/projects/pywin32/ (windows extensions, need it for system uptime)
         PyOpenGL: https://pypi.python.org/pypi/PyOpenGL (pip install from http://www.lfd.uci.edu/~gohlke/pythonlibs/)
         OpenGLContext: pip install PyDispatcher PyVRML97 OpenGLContext

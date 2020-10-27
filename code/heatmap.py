@@ -5,8 +5,8 @@ Modified from:
 PyHeat http://github.com/amccollum/pyheat
 Andrew McCollum <amccollum@gmail.com>
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 import io, os, struct, sys
 from PIL import Image

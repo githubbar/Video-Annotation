@@ -1,6 +1,6 @@
 from Ui_window import Ui_MainWindow
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from heatmap import HeatMap        
 from track import Path
 from annotateview import AnnotateScene
@@ -28,7 +28,7 @@ class SearchWidget:
         hm = HeatMap(heatmapBox[0], int(heatmapBox[1] * heatmapScale), heatmapBox[2], int(heatmapBox[3] * heatmapScale), paletteFile)
         hm.add_points(hp, self.visRadius.value() * W/100, self.colorScale.value()*256.0 / len(hp))
         heat = hm.get_min_max_heat()
-        print 'minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1])
+        print('minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1]))
         hm.transform_color(0.01 * self.visAlpha.value())
         p = QPixmap.fromImage(QImage(hm.get_image_buffer(), hm.width, hm.height, QImage.Format_ARGB32))
         self.graphicsView.scene.heatmap.setPixmap(p)
@@ -87,7 +87,7 @@ class SearchWidget:
         self.matches = []            
         self.results.clearContents()
         self.results.setRowCount(0)        
-        self.guiMode(self.GUI_SEARCH)                  
+        self.OnGUIMode(self.GUI_SEARCH)                  
         threading.Thread(target=self.doSearch, name="doSearch").start()
 
     def matchByCheckable(self, item, cbParent, idx=None):
@@ -142,7 +142,7 @@ class SearchWidget:
         for i in range(self.items.rowCount()):
             if not self.go: break                            
             item = self.items.item(i, 0).g
-            self.emit(SIGNAL("updateProgress"), int(100.0 * i / self.items.rowCount()))
+            self.updateProgress.emit(int(100.0 * i / self.items.rowCount()))
             # scan all nodes
             if not self.matchByCheckable(item, self.checkboxArea): continue
             if not self.matchByList(item, self.listArea): continue
@@ -170,7 +170,7 @@ class SearchWidget:
                     clusterTime = match.item.startTime[match.n].toTime()
                     clusterCount += 1                
                     self.matches.pop(i)
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
         
        
     def refreshResults(self):
@@ -205,7 +205,7 @@ class SearchWidget:
         
 
     def visClicked(self):
-        self.guiMode(self.GUI_EXPORT)
+        self.OnGUIMode(self.GUI_EXPORT)
         ids = set()  # set of subject ids found in matches
         paletteFile = 'palettes/jet.png'
         heatmapScale = 4.0
@@ -243,15 +243,15 @@ class SearchWidget:
 #         hm.add_points(hp, self.visRadius.value() * heatmapScale, self.colorScale.value() / len(ids))
         hm.add_points(hp, self.visRadius.value() * W/100, self.colorScale.value()*256.0 / len(hp))
         heat = hm.get_min_max_heat()
-        print "N.Subjects = " + str(len(ids))
-        print 'minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1])
+        print("N.Subjects = " + str(len(ids)))
+        print('minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1]))
 #         hm.transform_color(0.01 * self.visAlpha.value())
         hm.transform_color(0.01 * self.visAlpha.value())
         p = QPixmap.fromImage(QImage(hm.get_image_buffer(), hm.width, hm.height, QImage.Format_ARGB32))
         self.graphicsView.scene.heatmap.setPixmap(p)
         self.graphicsView.scene.heatmap.setScale(1.0 / heatmapScale)
         self.graphicsView.scene.heatmap.setVisible(True)          
-        self.guiMode(self.GUI_NORMAL)          
+        self.OnGUIMode(self.GUI_NORMAL)          
 
     def exportImageClicked(self):
         # choose export file
@@ -265,14 +265,14 @@ class SearchWidget:
         outDir = QFileDialog.getExistingDirectory(self, "Choose Folder to Export To", os.getcwdu())
         if not outDir:
             return        
-        self.guiMode(self.GUI_EXPORT)                  
+        self.OnGUIMode(self.GUI_EXPORT)                  
         threading.Thread(target=self.doExportVideo, name="exportVideoThread", args=(outDir,)).start()
         
     def doExportVideo(self, outDir):
         import subprocess, re        
  
         for i, match in enumerate(self.matches):
-            self.emit(SIGNAL("updateProgress"), int(100.0 * i / len(self.matches)))
+            self.updateProgress.emit(int(100.0 * i / len(self.matches)))
             
             inFileName = os.path.join(os.path.dirname(str(self.graphicsView.scene.filename)), str(match.item.videoname.toString()))
   
@@ -290,14 +290,14 @@ class SearchWidget:
                 p.wait()
                 logging.debug('ffmpeg' + ' -ss ' + str(QTime().secsTo(t1)) + ' -t ' + str(t1.secsTo(t2)) + ' -i ' + str(inFileName) + ' -y ' + str(outFileName))
             if not self.go: break
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
        
     def exportDataClicked(self):
         # choose export file
         outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwdu())
         if not outFileName:
             return
-        self.guiMode(self.GUI_EXPORT)
+        self.OnGUIMode(self.GUI_EXPORT)
         threading.Thread(target=self.doExportMatchData, name="exportDataThread", args=(outFileName,)).start()
 
     def doExportMatchData(self, outFileName):
@@ -306,29 +306,29 @@ class SearchWidget:
 #         ids = set() # set of subject ids found in matches
 #         for i,  match in enumerate(self.matches):
 #             id = match.item.id
-#             self.emit(SIGNAL("updateProgress"), int(100.0*i/len(self.matches)), 2)        
+#             self.updateProgress.emit(int(100.0*i/len(self.matches)), 2)        
 #             if not id in ids:
 #                 ids.add(id) 
 #         writer = csv.writer(open(outFileName, 'wb'))         
 #         for id in ids:
 #             writer.writerow([id.toString()])
-#         self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+#         self.completeProgress.emit(self.GUI_NORMAL)
 #         return
         # END TEMP
-        print 'running 1'
+        print('running 1')
         writer = csv.writer(open(outFileName, 'wb'))         
         varNames = ['id', 'node number', 'x', 'y', 'video name', 'startTime', 'stopTime']
         varNames.extend([str(key) for key in self.graphicsView.scene.variables.keys()])   
         writer.writerow(varNames)
         for i, match in enumerate(self.matches):
-            self.emit(SIGNAL("updateProgress"), int(100.0 * i / len(self.matches)))
+            self.updateProgress.emit(int(100.0 * i / len(self.matches)))
             varList = match.item.getVariableValuesList(match.n)
             row = [ str(match.item.id.toString()), str(match.n), \
                    str(match.item.polygon.at(match.n).x()), str(match.item.polygon.at(match.n).y()), \
                    str(match.item.videoname.toString()), \
               str(match.item.startTime[match.n].toTime().toString('hh-mm-ss')), \
               str(match.item.stopTime[match.n].toTime().toString('hh-mm-ss')) ]
-            print 'running 2'
+            print('running 2')
             row.extend(varList)
             # TODO: write unicode to CSV, also in Path.py line 335
             try:
@@ -336,11 +336,11 @@ class SearchWidget:
             except UnicodeEncodeError: 
                 continue
             if not self.go: break
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
  
     def updateStatsClicked(self):
         # clear results        
-        self.guiMode(self.GUI_UPDATESTATS)                  
+        self.OnGUIMode(self.GUI_UPDATESTATS)                  
         threading.Thread(target=self.doUpdateStats, name="updateStatsThread").start()
 
     def exportAOIDataClicked(self):
@@ -348,7 +348,7 @@ class SearchWidget:
         outFileName = QFileDialog.getSaveFileName(self, "Choose File for Individual AOI Data Export", os.getcwdu())
         if not outFileName:
             return
-        self.guiMode(self.GUI_EXPORT)                  
+        self.OnGUIMode(self.GUI_EXPORT)                  
         threading.Thread(target=self.doExportIndividualAOIData, name="exportAOIDataThread", args=(outFileName,)).start()
         
     def doExportIndividualAOIData(self, outFileName):
@@ -358,7 +358,7 @@ class SearchWidget:
         duration = {}    
         for i, match in enumerate(self.matches):
             subjID = match.item.id.toInt()[0]
-            self.emit(SIGNAL("updateProgress"), int(100.0 * i / len(self.matches)), 2)
+            self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)
             if not subjID in ids:
                 duration[subjID] = [0] * self.aois.rowCount()
                 items[subjID] = match.item        
@@ -393,11 +393,11 @@ class SearchWidget:
                 continue
             if not self.go: break
                                
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
         
     def doUpdateStats(self):
         # add data points        
-        print 'updating stats!'
+        print('updating stats!')
         ids = set()  # set of subject ids found in matches
         duration = {}  # dictionary of fixation durations
         durationNoClusters = {}  # dictionary of fixation durations exluding clusters > x sec
@@ -411,7 +411,7 @@ class SearchWidget:
          
         for i, match in enumerate(self.matches):
             id = match.item.id
-            self.emit(SIGNAL("updateProgress"), int(100.0 * i / len(self.matches)), 2)        
+            self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)        
             if not id in ids:
                 minTime = maxTime = QTime().msecsTo(match.item.startTime[0].toTime())
                 for t in match.item.startTime:
@@ -447,14 +447,14 @@ class SearchWidget:
             self.aois.horizontalHeaderItem(3).setText('Number of Subjects: Total =' + str(len(ids)) + ' (avg. trip = ' + str(0.001 * tripDuration / len(ids)) + ' sec.)' + \
                                                       ' (avg. video = ' + str(0.001 * videoDuration / len(ids)) + ' sec.)')
              
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
     
     def showHistogramClicked(self):
         from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
         from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
         from matplotlib.figure import Figure
         from collections import OrderedDict
-        self.guiMode(self.GUI_UPDATESTATS)                  
+        self.OnGUIMode(self.GUI_UPDATESTATS)                  
         dlg = QDialog(self, Qt.Window)
         dlg.setWindowTitle('Data Distribution for Subjects')
         plot = QWidget()
@@ -475,7 +475,7 @@ class SearchWidget:
         
         for i, match in enumerate(self.matches):
             id = match.item.id.toString()
-            self.emit(SIGNAL("updateProgress"), int(100.0 * i / len(self.matches)), 2)
+            self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)
             if not id in ids:
                 duration[id] = 0        
             ids.add(id)  # add subject id to the set        
@@ -505,7 +505,7 @@ class SearchWidget:
 
         fig.savefig('gazepoint histogram.png', dpi=300)
         dlg.exec_() 
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
 
         
     def exportStatsClicked(self):
@@ -513,7 +513,7 @@ class SearchWidget:
         outFileName = QFileDialog.getSaveFileName(self, "Choose File for AOI Statistics Export", os.getcwdu())
         if not outFileName:
             return
-        self.guiMode(self.GUI_EXPORT)                  
+        self.OnGUIMode(self.GUI_EXPORT)                  
         threading.Thread(target=self.doExportStats, name="exportStatsThread", args=(outFileName,)).start()
 
     def doExportStats(self, outFileName):
@@ -522,27 +522,27 @@ class SearchWidget:
         varNames = ['AOI', 'Average Duration', 'Percentage Fixated', 'Number of Subjects']
         writer.writerow(varNames)
         for row in range(self.aois.rowCount()):
-            self.emit(SIGNAL("updateProgress"), int(100.0 * row / self.aois.rowCount()))           
+            self.updateProgress.emit(int(100.0 * row / self.aois.rowCount()))           
             row = [ str(self.aois.item(row, 0).text()), str(self.aois.item(row, 1).text()), str(self.aois.item(row, 2).text()), str(self.aois.item(row, 3).text())]
             try:
                 writer.writerow(row)
             except UnicodeEncodeError: 
                 continue
             if not self.go: break
-        self.emit(SIGNAL("completeProgress"), self.GUI_NORMAL)
+        self.completeProgress.emit(self.GUI_NORMAL)
 
     def cancelClicked(self):
         self.go = False
         
-    def updateProgress(self, now):
+    def OnUpdateProgress(self, now):
         self.progressBar.setValue(now)
         self.searchWidget.repaint()     
     
-    def updateProgressEdit(self, now):
+    def OnUpdateProgressEdit(self, now):
         self.progressBarEdit.setValue(now)
         self.repaint()   
                                
-    def guiMode(self, searchMode=None):
+    def OnGUIMode(self, searchMode=None):
         if searchMode == self.GUI_NORMAL or searchMode == None:
             self.go = False
             self.searchCancel.hide()                     

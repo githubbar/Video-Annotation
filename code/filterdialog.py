@@ -1,5 +1,5 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from Ui_filterdialog import Ui_FilterDialog
 from variablewidget import *
 from track import *

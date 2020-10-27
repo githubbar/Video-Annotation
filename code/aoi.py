@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """ Path Item"""
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import os, datetime, threading, subprocess, time, sys, csv
 
 from settings import *
@@ -11,7 +11,7 @@ from delegates import *
 
 
 class AOI(QGraphicsPolygonItem):
-    id, description, tags = QVariant(''), QVariant(''), QVariant('')
+    id, description, tags = '', '', ''
     shownFields = ['id', 'description', 'tags', 'font']
     checkableFields = []
     browsableFields = ['fileName']
@@ -117,7 +117,7 @@ class AOI(QGraphicsPolygonItem):
     
     def update(self, rect=QRectF()):        
         QGraphicsPolygonItem.update(self, rect)
-        self.setToolTip(self.description.toString())
+        self.setToolTip(self.description)
  
     def deletePoint(self, i):
         poly = self.polygon()
@@ -133,8 +133,8 @@ class AOI(QGraphicsPolygonItem):
             self.scene().removeItem(self)
         
     def addPoint(self, p):
-        self.tags = QVariant('')
-        self.description = QVariant('')
+        self.tags = ''
+        self.description = ''
         poly = self.polygon()
         poly.append(p)
         self.setPolygon(poly)
@@ -143,8 +143,8 @@ class AOI(QGraphicsPolygonItem):
     def insertPoint(self, i, p):
         if len(self.polygon()) < 2: 
             return
-        self.tags = QVariant('')
-        self.description = QVariant('')
+        self.tags = ''
+        self.description = ''
         poly = self.polygon()
         poly.insert(i + 1, p)
         self.indP = i + 1    
