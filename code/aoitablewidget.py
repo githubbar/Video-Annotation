@@ -22,7 +22,7 @@ class AOITableWidget(QTableWidget):
 
        
     def addItem(self, item):
-        entry = AOITableItem(item.id.toString(), item)
+        entry = AOITableItem(item.id, item)
         entry.setCheckState(Qt.Checked)                     
         nRow = self.rowCount()
         self.insertRow(nRow)
@@ -41,8 +41,8 @@ class AOITableWidget(QTableWidget):
     def updateItem(self, item):
         for n in range(self.rowCount()):
             if self.item(n, 0).g == item:
-                self.item(n, 0).setText(item.id.toString())
-#                self.setItem(n, 0, PathTableItem(item.id.toString(), item))
+                self.item(n, 0).setText(item.id)
+#                self.setItem(n, 0, PathTableItem(item.id, item))
 
 
     def getAllItems(self):

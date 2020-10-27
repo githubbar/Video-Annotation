@@ -9,7 +9,7 @@ from settings import *
 from propertywidget import *
 from delegates import *
 from subprocess import *
-
+        
 class Path(QGraphicsPathItem):
     id, videoname = '', ''
     shownFields = ['id', 'videoname', 'startTime', 'stopTime']
@@ -25,7 +25,7 @@ class Path(QGraphicsPathItem):
         self.stroker = QPainterPathStroker()        
         self.stroker.setWidth(1 * self.R)        
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemClipsToShape | QGraphicsItem.ItemSendsGeometryChanges)
-        self.videoname = QVariant(QString(''))
+        self.videoname = ''
         self.setBrush(QColor(Qt.transparent))
         self.setPen(QPen(QBrush(Qt.blue), self.penR))
         self.setCursor(Qt.ArrowCursor)
@@ -39,7 +39,8 @@ class Path(QGraphicsPathItem):
         self.variables = dict()
         self.gyro = dict()
         self.accel = dict()
-                      
+        
+                              
     def shape(self):
 #        if self.scene().showOnlyCurrent:
 #            sh = self.stroker.createStroke(QPainterPath())
@@ -51,18 +52,18 @@ class Path(QGraphicsPathItem):
             sh.addEllipse(self.polygon[i], self.K, self.K)
             if self.scene().currentPath == self:
                 # Expand for video position indicator
-                if i > 0 and self.scene().time > self.stopTime[i - 1].toTime() and self.scene().time < self.startTime[i].toTime():
+                if i > 0 and self.scene().time > self.stopTime[i - 1] and self.scene().time < self.startTime[i]:
                     sh.addEllipse(self.getSegmentPosInTime(i - 1, self.scene().time), 2 * self.R + 2, 2 * self.R + 2) 
         return sh
 
     def write(self, s):
 #        for i in range(len(self.description)):
-#            if self.tags[i].toString() == '':
+#            if self.tags[i] == '':
 #                self.tags[i] = self.description[i]
 #                self.description[i] = QVariant('')
 #            i += 1
 
-#        self.videoname = QVariant(os.path.join('videos',os.path.split(str(self.videoname.toString()))[1]))        
+#        self.videoname = QVariant(os.path.join('videos',os.path.split(str(self.videoname))[1]))        
 
 
         s.writeQVariant(self.id)
@@ -106,10 +107,11 @@ class Path(QGraphicsPathItem):
             vars[6] = s.readQVariantList()        
             vars[7] = s.readQVariantList()        
         if (buildNumber >= 41):            
+#             FIXME: below returns empty dict
             self.variables = s.readQVariantMap()  
         else:
             for i, name in enumerate(['tripType', 'description', 'tags', 'purchased', 'shopped', 'category', 'phone', 'employee']):
-                self.variables[QString(name)] = QVariant(vars[i])
+                self.variables[name] = QVariant(vars[i])
                 
         s >> self.polygon
         s >> self.orientation
@@ -128,7 +130,6 @@ class Path(QGraphicsPathItem):
 #             print len(self.polygon)
 #             return        
         # temp
-
         
     def addQuadFromPolygon(self, path, polygon):
         if polygon.count() == 0:
@@ -205,24 +206,24 @@ class Path(QGraphicsPathItem):
                 painter.setPen(QPen(Qt.blue, 1))
             else:
                 painter.setPen(QPen(self.scene().nodeColor, 1))                
-            if (not self.scene().showOnlyCurrent) or (self.startTime[i].toTime() <= self.scene().time <= self.stopTime[i].toTime()):
+            if (not self.scene().showOnlyCurrent) or (self.startTime[i] <= self.scene().time <= self.stopTime[i]):
                 painter.drawEllipse(self.polygon.at(i), self.R * self.scene().nodeSize, self.R * self.scene().nodeSize)
                 
             # Paint video position indicator and auto-load properties during playback
             if self.scene().currentPath == self and len(self.stopTime) > 0 :
                 painter.setBrush(QBrush(Qt.transparent))                                
                 painter.setPen(QPen(QBrush(Qt.red), 2))                 
-                if i > 0 and self.scene().time > self.stopTime[i - 1].toTime() and self.scene().time < self.startTime[i].toTime():
+                if i > 0 and self.scene().time > self.stopTime[i - 1] and self.scene().time < self.startTime[i]:
                     painter.drawEllipse(self.getSegmentPosInTime(i - 1, self.scene().time), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize) 
-                elif self.scene().time > self.startTime[i].toTime() and self.scene().time < self.stopTime[i].toTime():
+                elif self.scene().time > self.startTime[i] and self.scene().time < self.stopTime[i]:
                     painter.drawEllipse(self.polygon.at(i), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize) 
                     self.indP = i
                     self.scene().loadSignal.emit(self)     
 
     def getSegmentPosInTime(self, i, t, linear=False):
         t0 = QTime().msecsTo(t)
-        t1 = QTime().msecsTo(self.stopTime[i].toTime())
-        t2 = QTime().msecsTo(self.startTime[i + 1].toTime())
+        t1 = QTime().msecsTo(self.stopTime[i])
+        t2 = QTime().msecsTo(self.startTime[i + 1])
         p1 = self.polygon.at(i)
         p2 = self.polygon.at(i + 1)       
         if linear:
@@ -331,7 +332,7 @@ class Path(QGraphicsPathItem):
             p2 = self.polygon.at(i + 1)
             l = l + QLineF(p1, p2).length()
         return l
-             
+
     def focusInEvent (self, event):
         QGraphicsItem.focusInEvent(self, event)
         # save existing currentPath path
@@ -348,7 +349,7 @@ class Path(QGraphicsPathItem):
 #            self.scene().saveSignal.emit(self)
 
     def handleMousePress(self, event):
-        print('handle mouse over path ' + self.id.toString())
+        print('handle mouse over path ' + self.id)
         # get new point closest to mouse and load it        
         sp = event.scenePos()        
 #         QGraphicsPathItem.mousePressEvent(self, event)
@@ -370,8 +371,7 @@ class Path(QGraphicsPathItem):
             self.choosingOrientation = True    
             
     def mousePressEvent(self, event):
-        # FIXME: clicking to create a new node shifts the time slightly (~50 msec)
-        print('mouse press over path ' + self.id.toString())
+        print('mouse press over path ' + self.id)
         if not self.scene().showOnlyCurrent:
             self.indP = self.getNearestPoint(event.scenePos())
             self.scene().loadSignal.emit(self)
@@ -410,10 +410,12 @@ class Path(QGraphicsPathItem):
     def populateVariables(self):
         # add missing vars
         for name in self.scene().variables:
-            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name].toList()
+            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
             if not name in self.variables:        
-                val = defaultVariableValues[variableTypes.index(vType.toString())]
-                if vEachNode.toBool():
+                val = defaultVariableValues[variableTypes.index(vType)]
+                if isinstance(vEachNode, str):
+                    vEachNode = vEachNode.lower() == True
+                if vEachNode:
                     self.variables[name] = QVariant([val] * len(self.polygon))
                 else:
                     self.variables[name] = QVariant(val)                
@@ -450,6 +452,7 @@ class Path(QGraphicsPathItem):
                 self.setPen(QPen(QBrush(Qt.blue), self.penR))      
         return QGraphicsItem.itemChange(self, change, value)
         
+        
     def mouseReleaseEvent(self, event):                
             # TODO: choosing orientation undo !!!
 #            self.updateOrientationCommand(self.indP, sp)
@@ -474,7 +477,7 @@ class Path(QGraphicsPathItem):
         return self.id
     
     def loadgyroacceldata(self, path):
-        filename = os.path.join(os.path.dirname(str(self.scene().filename)), str(path), str(self.id.toString())+'.tsv')
+        filename = os.path.join(os.path.dirname(str(self.scene().filename)), str(path), self.id+'.tsv')
         gyro = dict()
         accel = dict()
         if os.path.isfile(filename):
@@ -492,7 +495,7 @@ class Path(QGraphicsPathItem):
         print('Trying to predict path based on accelerometer data')
         # convert current node's time to msec
         i = self.indP
-        msec = QTime().msecsTo(self.stopTime[i].toTime())
+        msec = QTime().msecsTo(self.stopTime[i])
         # get current point and orientation point
         p = self.polygon.at(i)
         o = self.orientation.at(i)
@@ -505,3 +508,4 @@ class Path(QGraphicsPathItem):
         
         
         # here is why: http://stackoverflow.com/questions/5550453/ios-movement-precision-in-3d-space
+                     

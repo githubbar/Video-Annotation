@@ -68,7 +68,7 @@ class SearchWidget:
                 lParent.addItem(w, name)
                 for i, item in enumerate(vChoices.toList()):
                     w.insertRow(i)
-                    tableItem = QTableWidgetItem(item.toString())
+                    tableItem = QTableWidgetItem(item)
                     tableItem.setFlags(tableItem.flags() & ~Qt.ItemIsEditable)
                     w.setItem(i, 0, tableItem)
                    
@@ -79,7 +79,7 @@ class SearchWidget:
 #                 for i,  item in enumerate(vChoices.toList()):
 #                     w.insertRow(i)
 #                     i.setFlags(i.flags() & ~Qt.ItemIsEditable)
-#                     w.setItem(i, 0,  QTableWidgetItem(item.toString()))
+#                     w.setItem(i, 0,  QTableWidgetItem(item))
       
 
     def searchClicked(self):
@@ -112,11 +112,11 @@ class SearchWidget:
                 value = c.text()
                 vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
                 if vEachNode.toBool():
-                    if idx == None or item.variables[name].toList()[idx].toString() == value:  
+                    if idx == None or item.variables[name].toList()[idx] == value:  
                         widgetMatch = True
                         break
                 else:
-                    choices = item.variables[name].toString().split(', ')
+                    choices = item.variables[name].split(', ')
                     if value in choices: 
                         widgetMatch = True
                         break
@@ -124,15 +124,15 @@ class SearchWidget:
         return True
 
     def matchByLineLength(self, item):
-        name = QString('lineLength')
+        name = 'lineLength'
         vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
         if item.variables[name].toInt()[0] < 2: return True
         else: return False
     
                             
     def matchByTime(self, item, idx):
-        t1 = item.startTime[idx].toTime()
-        t2 = item.stopTime[idx].toTime()
+        t1 = item.startTime[idx]
+        t2 = item.stopTime[idx]
         if not self.timeCheckBox.isChecked() or (t1 > self.startTimeFilter.time() and t2 < self.stopTimeFilter.time()):
             return True
         return False
@@ -162,12 +162,12 @@ class SearchWidget:
                 p = QPointF(match.item.polygon.at(match.n).x(), match.item.polygon.at(match.n).y())
                 if clusterCount > 0 and (\
                 (clusterCenter - p).manhattanLength() > 0.01 * self.maxClusterDistance.value() * int(self.graphicsView.scene.width()) \
-                or clusterTime.msecsTo(match.item.startTime[match.n].toTime()) > 1000 * self.maxClusterTime.value() \
+                or clusterTime.msecsTo(match.item.startTime[match.n]) > 1000 * self.maxClusterTime.value() \
                 ):                    
                     clusterCount = 0
                 else:
                     clusterCenter = clusterCenter * clusterCount + p * 1
-                    clusterTime = match.item.startTime[match.n].toTime()
+                    clusterTime = match.item.startTime[match.n]
                     clusterCount += 1                
                     self.matches.pop(i)
         self.completeProgress.emit(self.GUI_NORMAL)
@@ -176,8 +176,8 @@ class SearchWidget:
     def refreshResults(self):
         for i, match in enumerate(self.matches):
             self.results.insertRow(i)
-            cID = QTableWidgetItem(match.item.id.toString())
-            cTime = QTableWidgetItem(match.toString())
+            cID = QTableWidgetItem(match.item.id)
+            cTime = QTableWidgetItem(match)
             cID.setData(Qt.UserRole, match.item.id)
             cTime.setData(Qt.UserRole , QVariant(match))
 #             cID.setForeground(QBrush(QColor("blue")))
@@ -233,7 +233,7 @@ class SearchWidget:
             if not addThis: continue
             # create as many points as there are seconds
             if self.visUseTime.isChecked():
-                count = match.item.startTime[n].toTime().secsTo(match.item.stopTime[n].toTime())
+                count = match.item.startTime[n].secsTo(match.item.stopTime[n])
             else: count = 1
             for c in range(count):
                 hp += [(match.item.polygon.at(n).x() * heatmapScale, match.item.polygon.at(n).y() * heatmapScale)]
@@ -274,15 +274,15 @@ class SearchWidget:
         for i, match in enumerate(self.matches):
             self.updateProgress.emit(int(100.0 * i / len(self.matches)))
             
-            inFileName = os.path.join(os.path.dirname(str(self.graphicsView.scene.filename)), str(match.item.videoname.toString()))
+            inFileName = os.path.join(os.path.dirname(str(self.graphicsView.scene.filename)), str(match.item.videoname))
   
-            t1 = match.item.startTime[match.n].toTime()
-            t2 = match.item.stopTime[match.n].toTime()
+            t1 = match.item.startTime[match.n]
+            t2 = match.item.stopTime[match.n]
            
-            cat = match.item.variables[QString('category')].toList()[match.n].toString()
+            cat = match.item.variables[QString('category')].toList()[match.n]
             cat = cat.replace('/', '-')
             cat = cat.replace(':', '-')
-            outFileName = os.path.join(str(outDir), str(match.item.id.toString() + ' from ' + t1.toString('hh-mm-ss') + ' to ' + t2.toString('hh-mm-ss') + ' ' + cat + '.avi'))
+            outFileName = os.path.join(str(outDir), str(match.item.id + ' from ' + t1.toString('hh-mm-ss') + ' to ' + t2.toString('hh-mm-ss') + ' ' + cat + '.avi'))
             if os.path.exists(inFileName):
                 logging.debug('Current working directory is ' + str(os.getcwd()))              
                 p = subprocess.Popen(['ffmpeg', '-ss', str(QTime().secsTo(t1)), '-t', str(t1.secsTo(t2)), '-i', str(inFileName), \
@@ -311,7 +311,7 @@ class SearchWidget:
 #                 ids.add(id) 
 #         writer = csv.writer(open(outFileName, 'wb'))         
 #         for id in ids:
-#             writer.writerow([id.toString()])
+#             writer.writerow([id])
 #         self.completeProgress.emit(self.GUI_NORMAL)
 #         return
         # END TEMP
@@ -323,11 +323,11 @@ class SearchWidget:
         for i, match in enumerate(self.matches):
             self.updateProgress.emit(int(100.0 * i / len(self.matches)))
             varList = match.item.getVariableValuesList(match.n)
-            row = [ str(match.item.id.toString()), str(match.n), \
+            row = [ str(match.item.id), str(match.n), \
                    str(match.item.polygon.at(match.n).x()), str(match.item.polygon.at(match.n).y()), \
-                   str(match.item.videoname.toString()), \
-              str(match.item.startTime[match.n].toTime().toString('hh-mm-ss')), \
-              str(match.item.stopTime[match.n].toTime().toString('hh-mm-ss')) ]
+                   str(match.item.videoname), \
+              str(match.item.startTime[match.n].toString('hh-mm-ss')), \
+              str(match.item.stopTime[match.n].toString('hh-mm-ss')) ]
             print('running 2')
             row.extend(varList)
             # TODO: write unicode to CSV, also in Path.py line 335
@@ -366,7 +366,7 @@ class SearchWidget:
             if not self.go: 
                 break                
             p = QPointF(match.item.polygon.at(match.n).x(), match.item.polygon.at(match.n).y())
-            t = match.item.startTime[match.n].toTime().msecsTo(match.item.stopTime[match.n].toTime())
+            t = match.item.startTime[match.n].msecsTo(match.item.stopTime[match.n])
             for row in range(self.aois.rowCount()):
                 aoi = self.aois.item(row, 0).g
                 if aoi.contains(p):
@@ -413,21 +413,21 @@ class SearchWidget:
             id = match.item.id
             self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)        
             if not id in ids:
-                minTime = maxTime = QTime().msecsTo(match.item.startTime[0].toTime())
+                minTime = maxTime = QTime().msecsTo(match.item.startTime[0])
                 for t in match.item.startTime:
-                    if QTime().msecsTo(t.toTime()) < minTime:
-                        minTime = QTime().msecsTo(t.toTime()) 
-                    if QTime().msecsTo(t.toTime()) > maxTime:
-                        maxTime = QTime().msecsTo(t.toTime())                         
+                    if QTime().msecsTo(t) < minTime:
+                        minTime = QTime().msecsTo(t) 
+                    if QTime().msecsTo(t) > maxTime:
+                        maxTime = QTime().msecsTo(t)                         
                 tripDuration += maxTime - minTime
-                self.loadVideo(match.item.videoname.toString())
+                self.loadVideo(match.item.videoname)
                 videoDuration += self.Media.get_duration()
  
             ids.add(id)  # add subject id to the set
             if not self.go: 
                 break                
             p = QPointF(match.item.polygon.at(match.n).x(), match.item.polygon.at(match.n).y())
-            t = match.item.startTime[match.n].toTime().msecsTo(match.item.stopTime[match.n].toTime())
+            t = match.item.startTime[match.n].msecsTo(match.item.stopTime[match.n])
             for row in range(self.aois.rowCount()):
                 aoi = self.aois.item(row, 0).g
                 if aoi.contains(p):
@@ -474,12 +474,12 @@ class SearchWidget:
         duration = {}  # dictionary of fixation durations
         
         for i, match in enumerate(self.matches):
-            id = match.item.id.toString()
+            id = match.item.id
             self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)
             if not id in ids:
                 duration[id] = 0        
             ids.add(id)  # add subject id to the set        
-            t = match.item.startTime[match.n].toTime().msecsTo(match.item.stopTime[match.n].toTime())
+            t = match.item.startTime[match.n].msecsTo(match.item.stopTime[match.n])
             duration[id] += t
             
         data = OrderedDict(sorted(duration.items(), key=lambda t: t[0]))
@@ -609,4 +609,4 @@ class Match:
         self.n = n
 
     def toString(self):
-        return self.item.startTime[self.n].toTime().toString('hh:mm:ss')
+        return self.item.startTime[self.n].toString('hh:mm:ss')

@@ -39,7 +39,7 @@ def keyEventToKeySequence(event):
     if (event.modifiers() & Qt.ControlModifier): modifier += "Ctrl+"
     if (event.modifiers() & Qt.AltModifier): modifier += "Alt+"
     if (event.modifiers() & Qt.MetaModifier): modifier += "Meta+"
-    key = QKeySequence(event.key()).toString()
+    key = QKeySequence(event.key())
     return QKeySequence(modifier + key)
 
 def distPointToSegment(p, p1, p2):

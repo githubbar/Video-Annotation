@@ -36,7 +36,7 @@ class CustomDelegate(QStyledItemDelegate):
             editor.setDuplicatesEnabled(False)
             choices = index.data(UserDataRole).toPyObject()
             editor.addItems(choices)
-            editor.setCurrentIndex(editor.findText(index.data(Qt.DisplayRole).toString()))
+            editor.setCurrentIndex(editor.findText(index.data(Qt.DisplayRole)))
             editor.installEventFilter(self)      
             completer = DropDownCompleter(editor)
             completer.setCompletionMode(QCompleter.PopupCompletion)
@@ -49,7 +49,7 @@ class CustomDelegate(QStyledItemDelegate):
             editor.setInsertPolicy(QComboBox.NoInsert)        
             editor.setDuplicatesEnabled(False)
             choices = index.data(UserDataRole).toPyObject()
-            editor.addItems(choices,  index.data(Qt.EditRole).toString().split(', '))
+            editor.addItems(choices,  index.data(Qt.EditRole).split(', '))
             editor.installEventFilter(self)      
             return editor            
         elif type == 'Double':
@@ -80,13 +80,13 @@ class CustomDelegate(QStyledItemDelegate):
                 index.model().setData(index,  QVariant(f))
             return None
         elif type == 'Time':            
-            editor = QTimeEdit(index.model().data(index, Qt.EditRole).toTime(), parent)
+            editor = QTimeEdit(index.model().data(index, Qt.EditRole), parent)
             editor.setDisplayFormat("hh:mm:ss.zzz")
             return editor
 
     def displayText(self, value, locale):       
         if value.type() == QVariant.Time or value.type() == QVariant.DateTime:
-            return value.toTime().toString('hh:mm:ss.zzz')
+            return value.toString('hh:mm:ss.zzz')
         elif value.type() == QVariant.Invalid:
             return 'None'
         else:
@@ -105,7 +105,7 @@ class CustomDelegate(QStyledItemDelegate):
 #                editor.setCheckState(Qt.Unchecked)
         elif type == 'DropDown':
             value = index.model().data(index, Qt.EditRole)
-            editor.setCurrentIndex(editor.findText(value.toString()))
+            editor.setCurrentIndex(editor.findText(value))
         else:
             QStyledItemDelegate.setEditorData(self, editor, index)
 
@@ -253,7 +253,7 @@ class UniqueLineEditValidator(QValidator):
         matches = 0
         model = self.index.model()
         for i in range(model.rowCount()):
-            if input == model.data(model.index(i, self.index.column()),  Qt.EditRole).toString() and i != self.index.row():
+            if input == model.data(model.index(i, self.index.column()),  Qt.EditRole) and i != self.index.row():
                 matches += 1
         if matches > 0:
             self.parent().setStyleSheet("QLineEdit{background: red;}");
@@ -277,7 +277,7 @@ class DropDownCompleter(QCompleter):
         class InnerProxyModel(QSortFilterProxyModel):
             def filterAcceptsRow(self, sourceRow, sourceParent):
                 index0 = self.sourceModel().index(sourceRow, 0, sourceParent)
-                return local_completion_prefix.toLower() in self.sourceModel().data(index0).toString().toLower()
+                return local_completion_prefix.toLower() in self.sourceModel().data(index0).toLower()
         proxy_model = InnerProxyModel()
         proxy_model.setSourceModel(self.source_model)
         QCompleter.setModel(self, proxy_model)

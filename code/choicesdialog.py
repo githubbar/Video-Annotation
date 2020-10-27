@@ -14,7 +14,7 @@ class ChoicesDialog(QDialog, Ui_ChoicesDialog):
         self.removeChoice.clicked.connect(self.onRemoveChoice)
         self.buttonLoad.clicked.connect(self.loadChoicesFromFile)
         for choice in choices:
-            item = QListWidgetItem(choice.toString())
+            item = QListWidgetItem(choice)
             item.setFlags(item.flags () | Qt.ItemIsEditable)        
             self.choices.addItem(item)
         

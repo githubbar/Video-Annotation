@@ -67,7 +67,7 @@ class Rectangle(QGraphicsRectItem):
             angle = 0
         else:
             angle = 90
-        self.drawRotatedText(painter, self.rect(), Qt.AlignHCenter | Qt.AlignVCenter, self.id.toString(), angle)
+        self.drawRotatedText(painter, self.rect(), Qt.AlignHCenter | Qt.AlignVCenter, self.id, angle)
          
     def drawRotatedText(self, painter, rect, flags, text, angle):
         painter.save()
@@ -97,10 +97,10 @@ class Rectangle(QGraphicsRectItem):
 
     def update(self,  rect=QRectF() ):
         QGraphicsRectItem.update(self, rect)
-        self.setToolTip(self.description.toString())
+        self.setToolTip(self.description)
 
     def mousePressEvent(self, event):
-#        print 'mouse press over rectangle ' + self.id.toString()
+#        print 'mouse press over rectangle ' + self.id
         self.scene().loadSignal.emit(self)
         if self.scene().mode == 'Rectangle' or self.scene().mode == 'Edit':
             QGraphicsRectItem.mousePressEvent(self, event)        

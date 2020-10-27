@@ -22,6 +22,7 @@ from ellipse import *
 from subprocess import *
 from snapshot import *
 from variabledialog import *
+from testpath import *
 
 class AnnotateScene(QGraphicsScene):
     
@@ -132,7 +133,7 @@ class AnnotateScene(QGraphicsScene):
         ids = next(reader)
         for line in reader:
             line = list(map(str.strip, line))
-            name = QString(line[0]) # variable name
+            name = line[0] # variable name
             print(name)
             if not name in self.variables: # skip non-existing variables
                 continue     
@@ -143,11 +144,11 @@ class AnnotateScene(QGraphicsScene):
             for item in list(self.items()):
                 if type(item) == Path: 
                     try:
-                        intID = str(int(item.id.toString())) # strip leading zeros
+                        intID = str(int(item.id)) # strip leading zeros
                         idx = ids.index(intID) # find ID in the list
                     except ValueError:
                         continue
-                    if vType.toString() == 'DropDown':
+                    if vType == 'DropDown':
                         try: 
                             choiceNumber = int(line[idx])
                             item.variables[name] = QVariant(vChoices.toList()[choiceNumber])
@@ -158,13 +159,13 @@ class AnnotateScene(QGraphicsScene):
                                 item.variables[name] = QVariant(choice)
                             else:  
                                 continue
-                    elif vType.toString() == 'MultiChoice':
+                    elif vType == 'MultiChoice':
                         strList = []
                         for choiceNumber, choice in enumerate(line[idx].split(',')):
                             try: checked = int(choice)
                             except ValueError: continue
                             if checked == 1:
-                                strList.append(str(vChoices.toList()[choiceNumber].toString()))
+                                strList.append(str(vChoices.toList()[choiceNumber]))
                         item.variables[name] = QVariant(', '.join(strList)) 
                         
                         pass
@@ -180,13 +181,13 @@ class AnnotateScene(QGraphicsScene):
         reader = csv.reader(open(filename, 'rb'))
         header = next(reader)
         for line in reader:
-            id = QString(line[0].strip()) 
-            item = next((x for x in list(self.items()) if (type(x) == Path and x.id.toString() == id)), None)
+            id = line[0].strip() 
+            item = next((x for x in list(self.items()) if (type(x) == Path and x.id == id)), None)
             eName, t1, t2 = line[1].strip(), QDateTime.fromString(line[2].strip(), 'dd-MMM-yy hh:mm:ss'), QDateTime.fromString(line[3].strip(), 'dd-MMM-yy hh:mm:ss')
  
-#            match = next((x for x in item.startTime if (x.toTime() > t1.time() and x.toTime() < t2.time())), None)
+#            match = next((x for x in item.startTime if (x > t1.time() and x < t2.time())), None)
             # Find node with the closest start time
-            idx = min(list(range(len(item.startTime))), key=lambda i:abs(item.startTime[i].toTime().msecsTo(t1.time())))
+            idx = min(list(range(len(item.startTime))), key=lambda i:abs(item.startTime[i].msecsTo(t1.time())))
            
             #TODO: assign check=true to varname and idx pos
             li = item.variables[QString(eName)].toList()
@@ -266,7 +267,7 @@ class AnnotateScene(QGraphicsScene):
         if (buildNumber < 41):
             for i, name in enumerate(permanentVariableNames):
                 cols = QVariant([param for param in permanentVariableParams[i]])
-                self.variables[QString(name)] = cols        
+                self.variables[name] = cols        
             self.categoriesPath = s.readString()       
 
         self.backgroundPath = s.readString()
@@ -298,7 +299,7 @@ class AnnotateScene(QGraphicsScene):
         nItems = s.readInt()
         for i in range(nItems):
             cItem = s.readQString()
-            item = eval(str(cItem)+'()') # create an item instance of appropriate type
+            item = eval(cItem+'()') # create an item instance of appropriate type
             if type(item) == QGraphicsPixmapItem:
                 continue                      
             item.read(s, buildNumber)
@@ -309,13 +310,14 @@ class AnnotateScene(QGraphicsScene):
 #                #BEGIN TEMP
 #                if type(item) == Path:
 #                    import re
-#                    a = item.videoname.toString()
+#                    a = item.videoname
 #                    matchIndex = a.indexOf(QRegExp("(\\d+)."))
 #                    newint = int(a[matchIndex:matchIndex+2])+212
 #                    a.replace(QRegExp("(\\d+)."), str(newint)+'.')
 #                    item.videoname = QVariant(a)
 #                # END TEMP                
-                self.addItem(item)    
+                pass
+#             self.addItem(item)    
         self.updateProjectProperties()
 
     def save(self, s):
@@ -478,13 +480,13 @@ class AnnotateView(QGraphicsView):
         if (event.type() == QEvent.KeyPress):
             for name in self.scene.variables:
                 vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene.variables[name].toList()
-                shortcut = vShortcut.toString()
+                shortcut = vShortcut
                 if shortcut.trimmed().isEmpty():
                     continue
-                if shortcut == keyEventToKeySequence(event).toString():
+                if shortcut == keyEventToKeySequence(event):
                     # toggle corresponding variable
                     item = self.scene.currentPath                    
-                    varType = vType.toString()
+                    varType = vType
                     if vEachNode.toBool(): # list                    
                         if item.indP == None: continue
                         li = item.variables[name].toList()

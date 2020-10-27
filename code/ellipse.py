@@ -63,7 +63,7 @@ class Ellipse(QGraphicsEllipseItem):
         QGraphicsEllipseItem.paint(self, painter, option, widget)
         painter.setPen(QColor("black"))
         painter.setFont(self.font.toPyObject())
-        painter.drawText(self.rect(), Qt.AlignHCenter | Qt.AlignVCenter,  self.id.toString())
+        painter.drawText(self.rect(), Qt.AlignHCenter | Qt.AlignVCenter,  self.id)
          
     def focusInEvent (self, event):
         QGraphicsEllipseItem.focusInEvent (self, event)
@@ -80,7 +80,7 @@ class Ellipse(QGraphicsEllipseItem):
 
     def update(self,  rect=QRectF() ):
         QGraphicsEllipseItem.update(self, rect)
-        self.setToolTip(self.description.toString())
+        self.setToolTip(self.description)
         
 
     def mousePressEvent(self, event):

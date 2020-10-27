@@ -2,12 +2,13 @@
 """ Creates a main menu """
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import os, datetime, threading, subprocess, time, sys, csv
 
 
 class AddCommand(QUndoCommand):
     def __init__(self, scene, item, parent = None):
-        QUndoCommand.__init__(self, 'Added '+ type(item).__name__ + ' '+item.id.toString(),  parent)
+        QUndoCommand.__init__(self, 'Added '+ type(item).__name__ + ' '+item.id,  parent)
         self.scene = scene
         self.item = item
 
@@ -21,7 +22,7 @@ class AddCommand(QUndoCommand):
         
 class RemoveCommand(AddCommand):
     def __init__(self, scene, item, parent = None):
-        QUndoCommand.__init__(self, 'Deleted '+ type(item).__name__ + ' '+item.id.toString(),  parent)
+        QUndoCommand.__init__(self, 'Deleted '+ type(item).__name__ + ' '+item.id,  parent)
         self.scene = scene
         self.item = item
 
@@ -33,7 +34,7 @@ class RemoveCommand(AddCommand):
 
 class AddPointCommand(QUndoCommand):
     def __init__(self, path, i, p, startTime=QTime(), parent = None):
-        QUndoCommand.__init__(self, 'Added point to Path ' + path.id.toString() ,  parent)
+        QUndoCommand.__init__(self, 'Added point to Path ' + path.id ,  parent)
         self.path = path
         self.i = i
         self.p = p
@@ -76,8 +77,8 @@ class AddPointCommand(QUndoCommand):
                 
     def redo(self):
         if self.startTime == QTime() and self.i < len(self.path.polygon):
-            delta = self.path.stopTime[self.i-1].toTime().msecsTo(self.path.startTime[self.i].toTime())
-            self.startTime = self.stopTime = self.path.stopTime[self.i-1].toTime().addMSecs(delta/2)
+            delta = self.path.stopTime[self.i-1].msecsTo(self.path.startTime[self.i])
+            self.startTime = self.stopTime = self.path.stopTime[self.i-1].addMSecs(delta/2)
            
         self.path.startTime.insert(self.i,  QVariant(self.startTime))        
         self.path.stopTime.insert(self.i,  QVariant(self.stopTime)) 
@@ -101,7 +102,7 @@ class AddPointCommand(QUndoCommand):
 class RemovePointCommand(AddPointCommand):
     def __init__(self, path, i, p):
         AddPointCommand.__init__(self, path, i, p)
-        self.setText('Removed point from Path ' + path.id.toString())
+        self.setText('Removed point from Path ' + path.id)
         self.startTime = path.startTime[i]
         self.stopTime = path.stopTime[i]
         
@@ -113,7 +114,7 @@ class RemovePointCommand(AddPointCommand):
 
 class UpdatePointCommand(QUndoCommand):
     def __init__(self, path, i, p, parent = None):
-        QUndoCommand.__init__(self, 'Updated point position from Path ' + path.id.toString() ,  parent)
+        QUndoCommand.__init__(self, 'Updated point position from Path ' + path.id ,  parent)
         self.path = path
         self.i = i
         self.p = p
@@ -132,7 +133,7 @@ class UpdatePointCommand(QUndoCommand):
         
 class UpdateOrientationCommand(QUndoCommand):
     def __init__(self, path, i, p, parent = None):
-        QUndoCommand.__init__(self, 'Updated point orientation from Path ' + path.id.toString() ,  parent)
+        QUndoCommand.__init__(self, 'Updated point orientation from Path ' + path.id ,  parent)
         self.path = path
         self.i = i
         self.p = p

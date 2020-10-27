@@ -66,7 +66,7 @@ class Polygon(QGraphicsPolygonItem):
         QGraphicsPolygonItem.paint(self, painter, option, widget)
         painter.setPen(QColor("black"))
         painter.setFont(self.font.toPyObject())
-        painter.drawText(self.boundingRect(), Qt.AlignHCenter | Qt.AlignVCenter,  self.id.toString())        
+        painter.drawText(self.boundingRect(), Qt.AlignHCenter | Qt.AlignVCenter,  self.id)        
         painter.setBrush(QBrush(Qt.transparent))
         painter.setPen(QColor("red"))
         for i in range(self.polygon().count()):
@@ -81,7 +81,7 @@ class Polygon(QGraphicsPolygonItem):
     
     def update(self, rect=QRectF() ):        
         QGraphicsPolygonItem.update(self, rect)
-        self.setToolTip(self.description.toString())
+        self.setToolTip(self.description)
 
     def deletePoint(self, i):
         poly = self.polygon()

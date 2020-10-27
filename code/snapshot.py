@@ -72,7 +72,7 @@ class Snapshot(QGraphicsRectItem):
         
     def mouseDoubleClickEvent (self, event):
         QGraphicsRectItem.mouseDoubleClickEvent (self, event)
-        imagename = os.path.join(os.path.dirname(str(self.scene().filename)), str(self.imagename.toString()))
+        imagename = os.path.join(os.path.dirname(str(self.scene().filename)), str(self.imagename))
         p = ImagePopupDialog(imagename)
         p.exec_()
 

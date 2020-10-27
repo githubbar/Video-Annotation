@@ -89,7 +89,7 @@ class AOI(QGraphicsPolygonItem):
             angle = 0
         else:
             angle = 90
-        self.drawRotatedText(painter, self.boundingRect(), Qt.AlignHCenter | Qt.AlignVCenter, self.id.toString(), angle)          
+        self.drawRotatedText(painter, self.boundingRect(), Qt.AlignHCenter | Qt.AlignVCenter, self.id, angle)          
             
     def drawRotatedText(self, painter, rect, flags, text, angle):
         painter.save()
@@ -160,7 +160,7 @@ class AOI(QGraphicsPolygonItem):
             self.scene().saveSignal.emit(self)
 
     def handleMousePress(self, event):
-        print('handle mouse over aoi ' + self.id.toString())
+        print('handle mouse over aoi ' + self.id)
         # get new point closest to mouse and load it        
         sp = event.scenePos()        
         self.indP = self.getNearestPoint(sp)
@@ -252,6 +252,6 @@ class AOI(QGraphicsPolygonItem):
         idx = sorted(list(range(len(track.startTime))), key=lambda k: track.startTime[k].toPyObject())
         for j, n in enumerate(idx):
             if self.contains(track.polygon.at(n)):
-                d += track.startTime[n].toTime().secsTo(track.stopTime[n].toTime())
+                d += track.startTime[n].secsTo(track.stopTime[n])
         return d
     

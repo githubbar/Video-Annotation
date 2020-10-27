@@ -19,7 +19,7 @@ class PathTableWidget(QTableWidget):
 
        
     def addItem(self, item):
-        entry = PathTableItem(item.id.toString(), item)
+        entry = PathTableItem(item.id, item)
 #         entry.setCheckState(Qt.Checked)
         entry.setCheckState(Qt.Unchecked)                     
         nRow = self.rowCount()
@@ -36,8 +36,8 @@ class PathTableWidget(QTableWidget):
     def updateItem(self, item):
         for n in range(self.rowCount()):
             if self.item(n, 0).g == item:
-                self.item(n, 0).setText(item.id.toString())
-#                self.setItem(n, 0, PathTableItem(item.id.toString(), item))
+                self.item(n, 0).setText(item.id)
+#                self.setItem(n, 0, PathTableItem(item.id, item))
 
 class PathTableItem(QTableWidgetItem):
     def __init__(self, text,  g):

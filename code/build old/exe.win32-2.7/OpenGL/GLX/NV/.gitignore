@@ -1,9 +1,0 @@
-/__init__.pyc
-/copy_image.pyc
-/delay_before_swap.pyc
-/float_buffer.pyc
-/multisample_coverage.pyc
-/present_video.pyc
-/swap_group.pyc
-/video_capture.pyc
-/video_output.pyc

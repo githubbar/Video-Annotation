@@ -95,7 +95,7 @@ class fileio(object):
                     for i in range(mainwindow.items.rowCount()):
                         item = mainwindow.items.item(i, 0).g
                         if item.id.toInt()[0] == id:
-                            videoname = item.videoname.toString()
+                            videoname = item.videoname
                             break
                     # load video if different id
                     mainwindow.loadVideo(videoname)

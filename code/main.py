@@ -177,8 +177,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
         
-#         filename  = 'E:\Box Sync\Video Annotation\Stop n Shop - Wyckoff/dataoos.vaproj'
-        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
+        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
+#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename  = 'E:\Box Sync\Video Annotation\Stop n Shop - Wyckoff\data.vaproj'
 #         filename  = '.\data.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\American Eagle\AE - Jan 19, 2006.vaproj'
@@ -292,7 +292,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
             item = self.items.item(i, 0).g
             # sort indexes by ascending start time 
             idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k].toPyObject())
-            name = QString('cartType')
+            name = 'cartType'
             vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
 #                   if vEachNode.toBool() and idx != None:
             v = item.variables[name].toPyObject()
@@ -302,7 +302,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
                     pr = cartType[0]
                 else:
                     pr = 'empty'    
-                print([str(item.id.toString()), type(cartType), str(pr)])
+                print([str(item.id), type(cartType), str(pr)])
             if len(cartType) > 1:
                 cartType = cartType[0]
             else:
@@ -338,7 +338,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
           
 #             stimes = sorted(item.startTime)
 
-            tAll = QTime().addSecs(item.startTime[0].toTime().secsTo(item.stopTime[-1].toTime()))
+            tAll = QTime().addSecs(item.startTime[0].secsTo(item.stopTime[-1]))
             
             # BEGIN reset AOI aggregates
             aoiName, aoiL, aoiD = {},{},{}
@@ -356,12 +356,12 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
             
             for j, n in enumerate(idx):
                 varList = item.getVariableValuesList(n)
-                row = [ str(item.id.toString())]
+                row = [ str(item.id)]
                 p = item.polygon.at(n)
-                tNode = QTime().addSecs(item.startTime[n].toTime().secsTo(item.stopTime[n].toTime()))
+                tNode = QTime().addSecs(item.startTime[n].secsTo(item.stopTime[n]))
 
                 for nn in range(n, len(idx)):
-                    cat = item.variables[QString('Category Shopped')].toList()[nn].toString() 
+                    cat = item.variables['Category Shopped'].toList()[nn] 
                     if (cat and cat == currentCat):
                         catShopCount += 1
                     else:
@@ -379,8 +379,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
                     
 
                 row.extend([str(j), str(p.x()), str(p.y()), \
-                  str(item.startTime[n].toTime().toString('hh:mm:ss')), \
-                  str(item.stopTime[n].toTime().toString('hh:mm:ss')) ])
+                  str(item.startTime[n].toString('hh:mm:ss')), \
+                  str(item.stopTime[n].toString('hh:mm:ss')) ])
                 row.extend(varList)
                 
                 catShopCount = 1
@@ -400,7 +400,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         relpath = os.path.relpath(str(dirname), path)
         for i in range(self.items.rowCount()):
             item = self.items.item(i, 0).g
-            path, fname = os.path.split(str(item.videoname.toString()))
+            path, fname = os.path.split(str(item.videoname))
             item.videoname = QVariant(os.path.join(relpath, fname))
 
     def fileOpen(self, filename=''):
@@ -449,8 +449,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
 #         self.graphicsView.scene.renameVariable('', '')
 #         i110 = self.items.item(22, 0).g
 #         i140 = self.items.item(52, 0).g
-#         print i110.id.toString()
-#         print i140.id.toString()
+#         print i110.id
+#         print i140.id
 #         i110.polygon = i140.polygon
 #         i110.startTime = i140.startTime
 #         i110.stopTime = i140.stopTime
@@ -532,10 +532,10 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         """Set the position based on the time on Path node"""
         if item.indP == None or item.startTime[item.indP] == None: 
             return
-        time = QTime().msecsTo(item.startTime[item.indP].toTime())
+        time = QTime().msecsTo(item.startTime[item.indP])
         self.mediaPlayer.set_time(time + 66)
 #        print 'scene time '+self.graphicsView.scene.time.toString('hh:mm:ss.zzz')
-#        print 'setting video time to '+item.startTime[item.indP].toTime().toString('hh:mm:ss.zzz')
+#        print 'setting video time to '+item.startTime[item.indP].toString('hh:mm:ss.zzz')
         self.updateUI()
         
     def updateUI(self):
@@ -587,7 +587,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
             current.g.setSelected(True)
             self.graphicsView.scene.currentPath = current.g
             self.graphicsView.scene.loadSignal.emit(self.graphicsView.scene.currentPath)            
-            if current.g.videoname.toString() != '': self.loadVideo(current.g.videoname.toString())               
+            if current.g.videoname != '': self.loadVideo(current.g.videoname)               
             self.timer.start()
         
     def toggleAllItems(self):

@@ -48,7 +48,7 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         onename = ''
         self.table.sortItems(0)
         for i in range(self.table.rowCount()):
-            name = self.table.item(i, 0).data(Qt.DisplayRole).toString()
+            name = self.table.item(i, 0).data(Qt.DisplayRole)
             if name == onename:
                 QMessageBox.warning(self, 'Warning!', 'The names of the variables must be unique and not blank! Please fix the names highlighted in red.')
                 return
@@ -61,7 +61,7 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         scene.variables.clear()
         
         for i in range(self.table.rowCount()):
-            name = self.table.item(i, 0).data(Qt.DisplayRole).toString()
+            name = self.table.item(i, 0).data(Qt.DisplayRole)
             cols = QVariant([self.table.item(i, j).data(Qt.DisplayRole) for j in range(1, self.table.columnCount())])
             scene.variables[name] = cols
         
@@ -109,6 +109,6 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         for i in range(self.table.rowCount()):
             row = []
             for j in range(self.table.columnCount()):
-                row.append(str(self.table.item(i, j).data(Qt.DisplayRole).toString()))
+                row.append(str(self.table.item(i, j).data(Qt.DisplayRole)))
             writer.writerow(row)
             

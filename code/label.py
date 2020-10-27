@@ -68,9 +68,9 @@ class Label(QGraphicsTextItem):
         self.setPos(QPointF(p))     
 
     def update(self,  rect=QRectF() ):
-        self.setPlainText(self.id.toString())
+        self.setPlainText(self.id)
         QGraphicsTextItem.update(self, rect)
-        self.setToolTip(self.description.toString())
+        self.setToolTip(self.description)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:

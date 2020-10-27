@@ -61,7 +61,7 @@ class PropertyWidget(QTreeWidget,  object):
                 listItem = [key]
                 listItem.extend(value.toList())
                 listItems.append(listItem)
-            listItems.sort(key=lambda x: (x[5].toBool(), x[6].toString(), x[0]))
+            listItems.sort(key=lambda x: (x[5].toBool(), x[6], x[0]))
             oldGroupName = None
             currentParent = None
             for name, vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices in listItems:
@@ -71,14 +71,14 @@ class PropertyWidget(QTreeWidget,  object):
                         if item.indP == None: continue
                         v = v.toList()[item.indP]
                     vUserData = vChoices
-                    if vGroup.toString() == '': 
+                    if vGroup == '': 
                          vGroup = QVariant('General')
-                    if oldGroupName != vGroup.toString():
+                    if oldGroupName != vGroup:
                         sectionItem = PropertyTreeItem(True, vGroup, item.scene())
                         self.addTopLevelItem(sectionItem)
                         sectionItem.setExpanded(sectionItem.data(0, Qt.EditRole) in self.expandedCategories)                                                
-                        oldGroupName = vGroup.toString()                    
-                    sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  vDescr.toString(), v, vType, vUserData))
+                        oldGroupName = vGroup                    
+                    sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  vDescr, v, vType, vUserData))
        #### End display dymanic project variables 
         self.setIndentation(10)
 #        self.expandAll()
@@ -119,14 +119,14 @@ class PropertyWidget(QTreeWidget,  object):
                             item.variables[name] = QVariant(li)
                         else:
 #                            if name == 'Employment':
-#                                print "PropertyWidget: saveItem", name, "item:", item,"data:", top.child(row).data(1, Qt.EditRole).toString()
+#                                print "PropertyWidget: saveItem", name, "item:", item,"data:", top.child(row).data(1, Qt.EditRole)
                             item.variables[name] = top.child(row).data(1, Qt.EditRole)
                         #### End Save dymanic project variables 
                     else:
                         value = top.child(row).data(1, Qt.EditRole)
                         # load video if selected for the first time
-            #            if name == 'videoname' and self.currentItem.videoname.toString()=='':
-            #                self.currentItem.scene().loadVideoSignal.emit(value.toString())
+            #            if name == 'videoname' and self.currentItem.videoname=='':
+            #                self.currentItem.scene().loadVideoSignal.emit(value)
 
                         # if list: write to list element
                         l = getattr(item, str(name))
