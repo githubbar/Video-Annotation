@@ -255,14 +255,14 @@ class SearchWidget:
 
     def exportImageClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwdu())
+        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
         if not outFileName:
             return
         QPixmap.grabWidget(self.graphicsView).save(outFileName)
         
     def exportVideoClicked(self):
         # choose export folder
-        outDir = QFileDialog.getExistingDirectory(self, "Choose Folder to Export To", os.getcwdu())
+        outDir = QFileDialog.getExistingDirectory(self, "Choose Folder to Export To", os.getcwd())
         if not outDir:
             return        
         self.OnGUIMode(self.GUI_EXPORT)                  
@@ -279,7 +279,7 @@ class SearchWidget:
             t1 = match.item.startTime[match.n]
             t2 = match.item.stopTime[match.n]
            
-            cat = match.item.variables[QString('category')].toList()[match.n]
+            cat = match.item.variables['category'].toList()[match.n]
             cat = cat.replace('/', '-')
             cat = cat.replace(':', '-')
             outFileName = os.path.join(str(outDir), str(match.item.id + ' from ' + t1.toString('hh-mm-ss') + ' to ' + t2.toString('hh-mm-ss') + ' ' + cat + '.avi'))
@@ -294,7 +294,7 @@ class SearchWidget:
        
     def exportDataClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwdu())
+        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
         if not outFileName:
             return
         self.OnGUIMode(self.GUI_EXPORT)
@@ -345,7 +345,7 @@ class SearchWidget:
 
     def exportAOIDataClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File for Individual AOI Data Export", os.getcwdu())
+        outFileName = QFileDialog.getSaveFileName(self, "Choose File for Individual AOI Data Export", os.getcwd())
         if not outFileName:
             return
         self.OnGUIMode(self.GUI_EXPORT)                  
@@ -510,7 +510,7 @@ class SearchWidget:
         
     def exportStatsClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File for AOI Statistics Export", os.getcwdu())
+        outFileName = QFileDialog.getSaveFileName(self, "Choose File for AOI Statistics Export", os.getcwd())
         if not outFileName:
             return
         self.OnGUIMode(self.GUI_EXPORT)                  
