@@ -48,7 +48,7 @@ class VariableWidget(QTableWidget):
         self.setSortingEnabled(True)
 
     def displayChoices(self, choices):
-        dlg = ChoicesDialog(choices.toList(), self.parent())      
+        dlg = ChoicesDialog(choices, self.parent())      
         if dlg.exec_() == QDialog.Accepted:
             choices = []
             for i in range(dlg.choices.count()):

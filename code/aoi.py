@@ -66,7 +66,6 @@ class AOI(QGraphicsPolygonItem):
             self.font = s.readQVariant()
         else:
             s >> self.font
-            
         if buildNumber >= 46:
             s >> self.fontColor
             s >> self.color

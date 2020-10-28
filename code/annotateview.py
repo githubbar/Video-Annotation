@@ -109,12 +109,15 @@ class AnnotateScene(QGraphicsScene):
             if pixmap.isNull():
                 QMessageBox.warning(None, "Warning!", "Background image is in wrong format!")
             self.background.setPixmap(pixmap)
-            self.background.scale((self.width()+1)/pixmap.width(),  (self.height()+1)/pixmap.height())
+#             FIXME: scale doesn't work
+            self.background.setTransform(QTransform.fromScale((self.width()+1)/pixmap.width(),  (self.height()+1)/pixmap.height()));
+#             self.background.scale()
+            
             self.background.setZValue(-2)        
 
         # update paths
         for item in list(self.items()):
-             if type(item) == Path:
+            if type(item) == Path:
                 path = QPainterPath()
                 item.addQuadFromPolygon(path, item.polygon)
                 item.setPath(path)
@@ -136,7 +139,7 @@ class AnnotateScene(QGraphicsScene):
             print(name)
             if not name in self.variables: # skip non-existing variables
                 continue     
-            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.variables[name].toList()                
+            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.variables[name]
             if vEachNode.toBool(): # skip node-level variables: we are importing only Path level variables
                 continue
             # set variable value for every track
@@ -150,11 +153,11 @@ class AnnotateScene(QGraphicsScene):
                     if vType == 'DropDown':
                         try: 
                             choiceNumber = int(line[idx])
-                            item.variables[name] = QVariant(vChoices.toList()[choiceNumber])
+                            item.variables[name] = QVariant(vChoices[choiceNumber])
                         except ValueError:
                             # if not a number, find an option
                             choice = line[idx].strip()
-                            if choice in vChoices.toList():
+                            if choice in vChoices:
                                 item.variables[name] = QVariant(choice)
                             else:  
                                 continue
@@ -164,7 +167,7 @@ class AnnotateScene(QGraphicsScene):
                             try: checked = int(choice)
                             except ValueError: continue
                             if checked == 1:
-                                strList.append(str(vChoices.toList()[choiceNumber]))
+                                strList.append(str(vChoices[choiceNumber]))
                         item.variables[name] = QVariant(', '.join(strList)) 
                         
                         pass
@@ -189,7 +192,7 @@ class AnnotateScene(QGraphicsScene):
             idx = min(list(range(len(item.startTime))), key=lambda i:abs(item.startTime[i].msecsTo(t1.time())))
            
             #TODO: assign check=true to varname and idx pos
-            li = item.variables[eName].toList()
+            li = item.variables[eName]
             li[idx] = QVariant(True)
             item.variables[eName] = QVariant(li)
              
@@ -262,10 +265,13 @@ class AnnotateScene(QGraphicsScene):
         w = s.readFloat()
         h = s.readFloat()
         self.setSceneRect(0,  0,  w, h)
-        self.backgroundPath = s.readString()
+        if buildNumber < 47:
+            self.backgroundPath = s.readString().decode("utf-8")
+        else:
+            self.backgroundPath = s.readQVariant()
+        
         if (buildNumber >= 44):
-            v = s.readQVariant()
-            self.nodeColor = QColor(v)
+            self.nodeColor = s.readQVariant()
         if (buildNumber >= 43):
             self.pathSmoothingFactor = s.readFloat()
             self.nodeSize = s.readFloat()
@@ -292,17 +298,7 @@ class AnnotateScene(QGraphicsScene):
                 if type(item) == Path:
                     self.addItem(item)            
             else:
-#                #BEGIN TEMP
-#                if type(item) == Path:
-#                    import re
-#                    a = item.videoname
-#                    matchIndex = a.indexOf(QRegExp("(\\d+)."))
-#                    newint = int(a[matchIndex:matchIndex+2])+212
-#                    a.replace(QRegExp("(\\d+)."), str(newint)+'.')
-#                    item.videoname = QVariant(a)
-#                # END TEMP                
-                pass
-#             self.addItem(item)    
+                self.addItem(item)    
         self.updateProjectProperties()
 
     def save(self, s):
@@ -310,8 +306,8 @@ class AnnotateScene(QGraphicsScene):
         s.writeFloat(self.width())
         s.writeFloat(self.height())
         # write categories Path and Backgound Image Path
-        s.writeString(self.backgroundPath)
-        s.writeQVariant(QVariant(self.nodeColor))
+        s.writeQVariant(self.backgroundPath)
+        s.writeQVariant(self.nodeColor)
         s.writeFloat(self.pathSmoothingFactor)
         s.writeFloat(self.nodeSize)
         s.writeBool(self.showSegments)
@@ -464,7 +460,7 @@ class AnnotateView(QGraphicsView):
     def eventFilter(self, object, event):
         if (event.type() == QEvent.KeyPress):
             for name in self.scene.variables:
-                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene.variables[name].toList()
+                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene.variables[name]
                 shortcut = vShortcut
                 if shortcut.trimmed().isEmpty():
                     continue
@@ -474,7 +470,7 @@ class AnnotateView(QGraphicsView):
                     varType = vType
                     if vEachNode.toBool(): # list                    
                         if item.indP == None: continue
-                        li = item.variables[name].toList()
+                        li = item.variables[name]
                         if varType == 'Yes/No':                        
                             li[item.indP] = QVariant(not li[item.indP].toBool())
                         elif varType == 'Integer':                        
@@ -496,6 +492,7 @@ class AnnotateView(QGraphicsView):
         self.scale(s, s);
         
     def wheelEvent(self, event):
+#         TODO: add shift+wheel to pan
         factor = 1.2
         if event.delta() < 0:
             factor = 1.0 / factor

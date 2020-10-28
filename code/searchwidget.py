@@ -51,8 +51,9 @@ class SearchWidget:
 #             sortedList.insert(0,  QString(special))
         # END TEMP            
         for name in sortedList:
-            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
-            if not vShow.toBool():
+            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
+            vShow = StrToBoolOrKeep(vShow)
+            if not vShow:
                 continue
             if trackLvl and vEachNode.toBool(): 
                 continue                
@@ -62,11 +63,11 @@ class SearchWidget:
                 w = QTableWidget(self)
                 w.setColumnCount(1)                
                 w.verticalHeader().setVisible(False)
-                w.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+                w.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                 w.setHorizontalHeaderLabels([name])
                 lParent.setMinimumHeight(lParent.minimumHeight()+TOOLBOX_ITEM_VERTICAL_STEP)
                 lParent.addItem(w, name)
-                for i, item in enumerate(vChoices.toList()):
+                for i, item in enumerate(vChoices):
                     w.insertRow(i)
                     tableItem = QTableWidgetItem(item)
                     tableItem.setFlags(tableItem.flags() & ~Qt.ItemIsEditable)
@@ -76,7 +77,7 @@ class SearchWidget:
 #                 w = QSpinBox(self)
 #                 w.setMinimumHeight(240)
 #                 lParent.addItem(w,  name)
-#                 for i,  item in enumerate(vChoices.toList()):
+#                 for i,  item in enumerate(vChoices):
 #                     w.insertRow(i)
 #                     i.setFlags(i.flags() & ~Qt.ItemIsEditable)
 #                     w.setItem(i, 0,  QTableWidgetItem(item))
@@ -95,9 +96,9 @@ class SearchWidget:
         for i in range(cbParent.count()): 
             if cbParent.itemAt(i).widget().isChecked():
                 name = self.checkboxArea.itemAt(i).widget().text()
-                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
                 if vEachNode.toBool():
-                    if idx != None and not item.variables[name].toList()[idx].toBool(): return False
+                    if idx != None and not item.variables[name][idx].toBool(): return False
                 else:
                     if not item.variables[name].toBool(): return False
         return True
@@ -110,9 +111,9 @@ class SearchWidget:
             for c in widget.selectedItems():  # over all selected options
                 singleMatch = False
                 value = c.text()
-                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
                 if vEachNode.toBool():
-                    if idx == None or item.variables[name].toList()[idx] == value:  
+                    if idx == None or item.variables[name][idx] == value:  
                         widgetMatch = True
                         break
                 else:
@@ -125,7 +126,7 @@ class SearchWidget:
 
     def matchByLineLength(self, item):
         name = 'lineLength'
-        vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+        vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
         if item.variables[name].toInt()[0] < 2: return True
         else: return False
     
@@ -279,7 +280,7 @@ class SearchWidget:
             t1 = match.item.startTime[match.n]
             t2 = match.item.stopTime[match.n]
            
-            cat = match.item.variables['category'].toList()[match.n]
+            cat = match.item.variables['category'][match.n]
             cat = cat.replace('/', '-')
             cat = cat.replace(':', '-')
             outFileName = os.path.join(str(outDir), str(match.item.id + ' from ' + t1.toString('hh-mm-ss') + ' to ' + t2.toString('hh-mm-ss') + ' ' + cat + '.avi'))

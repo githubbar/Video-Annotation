@@ -1,6 +1,6 @@
-/.metadata/
+/.metadata
 /.tmp.drivedownload
-/code/__pycache__/
+/code/__pycache__
 /code/*.pyc
-/code/build/
+/code/build
 

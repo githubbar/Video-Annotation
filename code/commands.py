@@ -33,6 +33,8 @@ class RemoveCommand(AddCommand):
         AddCommand.undo(self)
 
 class AddPointCommand(QUndoCommand):
+    variables = {}
+    
     def __init__(self, path, i, p, startTime=QTime(), parent = None):
         QUndoCommand.__init__(self, 'Added point to Path ' + path.id ,  parent)
         self.path = path
@@ -40,13 +42,12 @@ class AddPointCommand(QUndoCommand):
         self.p = p
         self.startTime = self.stopTime = startTime
         self.stopTime = startTime.addMSecs(int(1000/self.path.scene().FPS))
-        self.variables = dict()
         # make a copy of node-level variables
         for name in self.path.scene().variables:
-                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name].toList()
+                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
                 if vEachNode.toBool(): # list
                     if self.i < len(self.path.polygon):
-                        self.variables[name] = self.path.variables[name].toList()[self.i]  
+                        self.variables[name] = self.path.variables[name][self.i]  
                     else:
                         self.variables[name] = QVariant()
                         
@@ -61,9 +62,9 @@ class AddPointCommand(QUndoCommand):
             self.path.orientation.remove(self.i)            
             
             for name in self.path.scene().variables:
-                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name].toList()
+                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
                 if vEachNode.toBool(): # list
-                    li = self.path.variables[name].toList()
+                    li = self.path.variables[name]
                     del[li[self.i]]
                     self.path.variables[name] = QVariant(li)
             
@@ -85,9 +86,9 @@ class AddPointCommand(QUndoCommand):
         self.path.polygon.insert(self.i,  self.p)
         
         for name in self.path.scene().variables:
-            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name].toList()
+            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
             if vEachNode.toBool(): # list
-                li = self.path.variables[name].toList()
+                li = self.path.variables[name]
                 li.insert(self.i, self.variables[name])
                 self.path.variables[name] = QVariant(li)
        

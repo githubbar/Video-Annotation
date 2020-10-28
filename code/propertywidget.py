@@ -59,7 +59,7 @@ class PropertyWidget(QTreeWidget,  object):
             listItems = []
             for key, value in item.scene().variables.items():
                 listItem = [key]
-                listItem.extend(value.toList())
+                listItem.extend(value)
                 listItems.append(listItem)
             listItems.sort(key=lambda x: (x[5].toBool(), x[6], x[0]))
             oldGroupName = None
@@ -69,7 +69,7 @@ class PropertyWidget(QTreeWidget,  object):
                     v = item.variables[name]
                     if vEachNode.toBool(): # list
                         if item.indP == None: continue
-                        v = v.toList()[item.indP]
+                        v = v[item.indP]
                     vUserData = vChoices
                     if vGroup == '': 
                          vGroup = QVariant('General')
@@ -111,10 +111,10 @@ class PropertyWidget(QTreeWidget,  object):
                     name = top.child(row).data(0, Qt.EditRole).toPyObject()
                     if name in item.scene().variables:  # temp
                         #### Begin Save dymanic project variables             
-                        vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = item.scene().variables[name].toList()
+                        vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = item.scene().variables[name]
                         if vEachNode.toBool(): # list
                             if item.indP == None: continue
-                            li = item.variables[name].toList()
+                            li = item.variables[name]
                             li[item.indP] = top.child(row).data(1, Qt.EditRole)
                             item.variables[name] = QVariant(li)
                         else:

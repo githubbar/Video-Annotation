@@ -3,4 +3,5 @@ encoding/annotateview.py=utf-8
 encoding/aoi.py=utf-8
 encoding/commands.py=utf-8
 encoding/main.py=utf-8
+encoding/settings.py=utf-8
 encoding/track.py=utf-8

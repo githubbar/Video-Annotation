@@ -22,7 +22,7 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         self.addVariable.clicked.connect(self.table.addVariable)
         self.removeVariable.clicked.connect(self.table.removeVariable)
         self.table.setHorizontalHeaderLabels(('Name', 'Description', 'Type', 'Show?', 'Keyboard Shortcut', 'Apply to Each Node?', 'Group', 'Choices'))
-        self.table.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.loadVariables(self.parent().graphicsView.scene.variables)
         
     def loadVariables(self, variables):
@@ -34,7 +34,7 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
             item = QTableWidgetItem()
             item.setData(Qt.DisplayRole, QVariant(name))
             self.table.setItem(row, 0, item)                    
-            for i, col in enumerate(variables[name].toList()):
+            for i, col in enumerate(variables[name]):
                 item = QTableWidgetItem()
                 item.setData(Qt.DisplayRole, col)
                 self.table.setItem(row, i+1, item)        

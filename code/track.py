@@ -19,14 +19,13 @@ class Path(QGraphicsPathItem):
     R = 2.0  # node radius 
     K = 6.0  # orientation line length compared to R    poin
     penR = 0.3  # edge width
-    
+    variables, gyro, accel = {}, {}, {}
     def __init__(self, point=None, font=QFont('White Rabbit', 2), opacity=1.0):    
         QGraphicsPathItem.__init__(self)
         self.setCursor(Qt.ArrowCursor)
         self.stroker = QPainterPathStroker()        
         self.stroker.setWidth(1 * self.R)        
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemClipsToShape | QGraphicsItem.ItemSendsGeometryChanges)
-        self.videoname = ''
         self.setBrush(QColor(Qt.transparent))
         self.setPen(QPen(QBrush(Qt.blue), self.penR))
         self.setCursor(Qt.ArrowCursor)
@@ -34,12 +33,12 @@ class Path(QGraphicsPathItem):
         self.polygon = QPolygonF()     
         self.orientation = QPolygonF()     
         self.setOpacity(opacity)
-        self.font = QVariant(font)
+        self.font = font
         self.p0 = point
         self.choosingOrientation = False
-        self.variables = dict()
-        self.gyro = dict()
-        self.accel = dict()
+#         self.variables = dict()
+#         self.gyro = dict()
+#         self.accel = dict()
         
                               
     def shape(self):
@@ -58,77 +57,32 @@ class Path(QGraphicsPathItem):
         return sh
 
     def write(self, s):
-#        for i in range(len(self.description)):
-#            if self.tags[i] == '':
-#                self.tags[i] = self.description[i]
-#                self.description[i] = QVariant('')
-#            i += 1
-
-#        self.videoname = QVariant(os.path.join('videos',os.path.split(str(self.videoname))[1]))        
-
-
         s.writeQVariant(self.id)
         s.writeQVariant(self.videoname)        
         s.writeQVariantList(self.startTime)        
         s.writeQVariantList(self.stopTime)
-                
-
-#        s.writeQVariant(self.tripType)        
-#        s.writeQVariantList(self.description)
-#        s.writeQVariantList(self.tags)
-#        s.writeQVariantList(self.purchased)
-#        s.writeQVariantList(self.shopped)                
-#        s.writeQVariantList(self.category)
-#        s.writeQVariantList(self.phone)
-#        s.writeQVariantList(self.employee)        
-        
         s.writeQVariantMap(self.variables)        
         s << self.polygon        
         s << self.orientation
         s.writeFloat(self.opacity())
         s << self.font
 
+
     def read(self, s, buildNumber):
 
         self.id = s.readQVariant()
         self.videoname = s.readQVariant()
-        vars = list(range(8))
-        if (buildNumber < 41):            
-            vars[0] = s.readQVariant()
-            vars[1] = s.readQVariantList()
-            vars[2] = s.readQVariantList()
         self.startTime = s.readQVariantList()
-        self.stopTime = s.readQVariantList()
-        if (buildNumber < 41):                    
-            vars[3] = s.readQVariantList()        
-            vars[4] = s.readQVariantList()        
-            vars[5] = s.readQVariantList()         
-            vars[6] = s.readQVariantList()        
-            vars[7] = s.readQVariantList()        
-        if (buildNumber >= 41):            
-#       FIXME: below returns empty dict
-            self.variables = s.readQVariantMap()  
-        else:
-            for i, name in enumerate(['tripType', 'description', 'tags', 'purchased', 'shopped', 'category', 'phone', 'employee']):
-                self.variables[name] = QVariant(vars[i])
+        self.stopTime = s.readQVariantList()        
+        self.variables = s.readQVariantMap()  
         s >> self.polygon
         s >> self.orientation
         self.setOpacity(s.readFloat())
-#       FIXME: in aoi.py this works:     self.font = s.readQVariant(), but not here
-        s >> self.font
-        
-#         print "loading ... " + self.id.toPyObject()
-#         if self.id.toPyObject() == '138':
-#             self.orientation = QPolygonF()
-#             for i in range(52):
-#                 self.orientation.append(QPointF(0,0))   
-#             self.setOpacity(1.0)
-#             self.font = QVariant(QFont('White Rabbit', 2))
-#             self.polygon.remove(1, 51)
-#             self.polygon.append(QPointF(100,100))
-#             print len(self.polygon)
-#             return        
-        # temp
+        if buildNumber < 47:
+            self.font = s.readQVariant()
+        else:
+            s >> self.font
+      
         
     def addQuadFromPolygon(self, path, polygon):
         if polygon.count() == 0:
@@ -199,9 +153,9 @@ class Path(QGraphicsPathItem):
             if self.scene().currentPath == self and self.indP == i:
                 painter.setPen(QPen(self.scene().nodeColor, 1))
                 painter.setBrush(QBrush(Qt.red))
-            elif 'purchased' in self.variables and self.variables['purchased'].toList()[i].toBool():
+            elif 'purchased' in self.variables and self.variables['purchased'][i].toBool():
                 painter.setPen(QPen(Qt.green, 1))
-            elif 'shopped' in self.variables and self.variables['shopped'].toList()[i].toBool():
+            elif 'shopped' in self.variables and self.variables['shopped'][i].toBool():
                 painter.setPen(QPen(Qt.blue, 1))
             else:
                 painter.setPen(QPen(self.scene().nodeColor, 1))                
@@ -384,9 +338,9 @@ class Path(QGraphicsPathItem):
             idx = self.indP
         varList = []
         for name in self.scene().variables:
-            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name].toList()
+            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
             if vEachNode.toBool() and idx != None:
-                v = self.variables[name].toList()[idx].toPyObject()
+                v = self.variables[name][idx].toPyObject()
                 if (type(v) == QDateTime):
                     v = v.toString('hh-mm-ss')
                 else:
@@ -412,8 +366,7 @@ class Path(QGraphicsPathItem):
             vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
             if not name in self.variables:        
                 val = defaultVariableValues[variableTypes.index(vType)]
-                if isinstance(vEachNode, str):
-                    vEachNode = vEachNode.lower() == True
+                vEachNode = StrToBoolOrKeep(vEachNode)
                 if vEachNode:
                     self.variables[name] = QVariant([val] * len(self.polygon))
                 else:

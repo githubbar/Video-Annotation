@@ -29,6 +29,12 @@ settings = {
 "fixationDispersionThreshold":  40.0/1920 # in percentages 0 to 1
 }
 
+def StrToBoolOrKeep(s): 
+    if isinstance(s, str):
+        return s.lower() == True
+    else: 
+        return s
+    
 def getSeconds():
     import win32api
     return 0.001*win32api.GetTickCount()

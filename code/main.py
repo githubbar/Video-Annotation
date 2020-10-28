@@ -177,14 +177,17 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
         
-#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
-        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
+        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data new.vaproj'
+        self.fileOpen(filename)
+#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data new.vaproj'
+#         self.fileSave(filename)        
+#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename  = 'E:\Box Sync\Video Annotation\Stop n Shop - Wyckoff\data.vaproj'
 #         filename  = '.\data.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\American Eagle\AE - Jan 19, 2006.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
-        self.fileOpen(filename)
+
 #         self.graphicsView.scene.loadNodeLevelVars('E:\\Box Sync\\CIL Exchange\\Video Annotation\\American Eagle\\node level variables Jan 12.csv')        
         
 #         self.graphicsView.scene.loadBatchData('E:\Box Sync\CIL Exchange\Video Annotation\American Eagle\AE - Jan 19, 2006 hide invisible.csv')
@@ -293,7 +296,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
             # sort indexes by ascending start time 
             idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k].toPyObject())
             name = 'cartType'
-            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
+            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
 #                   if vEachNode.toBool() and idx != None:
             v = item.variables[name].toPyObject()
             cartType = [x for x in v if x]
@@ -361,7 +364,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
                 tNode = QTime().addSecs(item.startTime[n].secsTo(item.stopTime[n]))
 
                 for nn in range(n, len(idx)):
-                    cat = item.variables['Category Shopped'].toList()[nn] 
+                    cat = item.variables['Category Shopped'][nn] 
                     if (cat and cat == currentCat):
                         catShopCount += 1
                     else:
@@ -405,7 +408,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
 
     def fileOpen(self, filename=''):
         self.clear()
-        if filename == False:
+        if not filename:
             filename = QFileDialog.getOpenFileName(self, "Open File", '', "VA Projects (*.vaproj);;All Files (*.*)")
 
         if not filename:
@@ -430,43 +433,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         self.graphicsView.scene.update()
         self.initSearchWidget()
         self.useAOIsTrigger(False)
-#         return
-        
-        # TEMP
-#         self.graphicsView.scene.renameVariable('Total SKUs Touched', 'SKUs Touched old')
-#         self.graphicsView.scene.renameVariable('Total SKUs Purchased', 'SKUs Purchased')
-#         self.graphicsView.scene.renameVariable('category', 'Category Shopped')
-#         self.graphicsView.scene.renameVariable('OOS Items', 'OOS SKUs Total')
-#         self.graphicsView.scene.renameVariable('Fixation in OOS areas', 'OOS Fixations')
-#         self.graphicsView.scene.renameVariable('Under stocked items', 'Understocked SKUs Total')
-#         self.graphicsView.scene.renameVariable('Number of TPR tags', 'TPR SKUs Total')
-#         self.graphicsView.scene.renameVariable('Number of other tags', 'Other Tag SKUs Total')
-#         self.graphicsView.scene.renameVariable('customerInteraction', 'Customer Interaction')
-#         self.graphicsView.scene.renameVariable('employee', 'Employee Interaction')
-#         self.graphicsView.scene.renameVariable('phone', 'Phone Interaction')
-#         self.graphicsView.scene.renameVariable('shoppingList', 'Shopping List Interaction')
-#         self.graphicsView.scene.renameVariable('display', 'Secondary Display Shopped')
-#         self.graphicsView.scene.renameVariable('', '')
-#         self.graphicsView.scene.renameVariable('', '')
-#         self.graphicsView.scene.renameVariable('', '')
-#         self.graphicsView.scene.renameVariable('', '')
-#         self.graphicsView.scene.renameVariable('', '')
-#         self.graphicsView.scene.renameVariable('', '')
-#         i110 = self.items.item(22, 0).g
-#         i140 = self.items.item(52, 0).g
-#         print i110.id
-#         print i140.id
-#         i110.polygon = i140.polygon
-#         i110.startTime = i140.startTime
-#         i110.stopTime = i140.stopTime
-#         i110.orientation = i140.orientation
-#         for name in i140.variables:
-#             vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name].toList()
-#             if vEachNode.toBool():
-#                 i110.variables[name] = i140.variables[name] 
-        
-#         self.loadData('e:/Projects/Visual Attention/Project Time 2011 Mobile Tier Productivity/Data/Stop n Shop - Wyckoff/Annotation/Import into VA/Survey for import into VA.csv')
-        
+      
     def clear(self):
         self.graphicsView.scene.undoStack.clear()
         self.graphicsView.scene.clear()
@@ -496,25 +463,30 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         self.graphicsView.scene.load(s, buildNumber, True)            
         self.graphicsView.scene.update()
         
-    def fileSave(self):
+    def fileSave(self, filename=''):
         import shutil, datetime
+        if not filename:
+            filename = self.graphicsView.scene.filename
+        
         if not self.graphicsView.scene.filename:  # run "save as" if no file name
             filename = QFileDialog.getSaveFileName(self, "Save File As", '')
             if not filename:
                 return     
-            self.graphicsView.scene.filename = filename                
-        elif os.path.exists(self.graphicsView.scene.filename):  # create a backup
-            path, name = os.path.split(str(self.graphicsView.scene.filename))
-            # create 'backups' folder if not there yet
-            backupFolder = os.path.join(path, 'backups')
-            if not os.path.exists(backupFolder):
-                 os.makedirs(backupFolder)
-            shutil.move(str(self.graphicsView.scene.filename), os.path.join(path, 'backups', datetime.datetime.today().strftime("%Y%m%d%H%M%S") + ' backup.vaproj'))  
-        file = QFile(self.graphicsView.scene.filename)
+        else:
+            if os.path.exists(filename):  # create a backup
+                path, name = os.path.split(str(self.graphicsView.scene.filename))
+                # create 'backups' folder if not there yet
+                backupFolder = os.path.join(path, 'backups')
+                if not os.path.exists(backupFolder):
+                    os.makedirs(backupFolder)
+                shutil.move(str(self.graphicsView.scene.filename), os.path.join(path, 'backups', datetime.datetime.today().strftime("%Y%m%d%H%M%S") + ' backup.vaproj'))  
+        file = QFile(filename)
         file.open(QIODevice.WriteOnly)
         s = QDataStream(file)
         s.writeInt(self.BUILD_NUMBER)
         self.graphicsView.scene.save(s)
+        self.graphicsView.scene.filename = filename
+
             
     def fileSaveAs(self):
         filename = QFileDialog.getSaveFileName(self, "Save File As", os.getcwd())
