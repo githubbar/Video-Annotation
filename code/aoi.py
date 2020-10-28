@@ -21,7 +21,7 @@ class AOI(QGraphicsPolygonItem):
     penR = 1.0  # edge width
     indP = None  # current node index
     
-    def __init__(self, point=None, font=QFont('Verdana', 2), opacity=1.0):  
+    def __init__(self, point=None, font = QFont('Verdana', 2), opacity=1.0):  
         import random
         random.seed()  
         QGraphicsPolygonItem.__init__(self)
@@ -30,7 +30,8 @@ class AOI(QGraphicsPolygonItem):
         self.setPen(QPen(QBrush(Qt.green), self.penR))
         self.setCursor(Qt.ArrowCursor)
         self.setOpacity(opacity)
-        self.font = QVariant(font)
+#         self.font = QVariant(font)
+        self.font = font
         self.fontColor = QColor(Qt.black)
         self.color = QColor(random.randrange(0, 255,), random.randrange(0, 255,), random.randrange(0, 255,))
         if point: self.addPoint(point)                                         
@@ -61,10 +62,15 @@ class AOI(QGraphicsPolygonItem):
         self.tags = s.readQVariant()
         opacity = s.readFloat()
         self.setOpacity(opacity)
-        s >> self.font
+        if buildNumber < 47:
+            self.font = s.readQVariant()
+        else:
+            s >> self.font
+            
         if buildNumber >= 46:
             s >> self.fontColor
             s >> self.color
+
         self.update()        
        
     def boundingRect(self):

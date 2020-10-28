@@ -37,7 +37,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
     GUI_SEARCH = 1
     GUI_EXPORT = 2
     GUI_UPDATESTATS = 2
-    BUILD_NUMBER = 46
+    BUILD_NUMBER = 47
     READ_ONLY = False  # Global switch to prevent the user from editing 
     go = False  # search/export thread is not running
         
@@ -177,8 +177,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
         
-        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
-#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
+#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
+        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename  = 'E:\Box Sync\Video Annotation\Stop n Shop - Wyckoff\data.vaproj'
 #         filename  = '.\data.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\American Eagle\AE - Jan 19, 2006.vaproj'
@@ -416,7 +416,12 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         file = QFile(self.graphicsView.scene.filename)
         file.open(QIODevice.ReadOnly)
         s = QDataStream(file)
-        buildNumber = s.readInt()        
+        buildNumber = s.readInt()
+        if buildNumber < 47:
+            s.setVersion(QDataStream.Qt_4_9)
+        else:
+            s.setVersion(QDataStream.Qt_5_15)
+            
         if (self.BUILD_NUMBER != buildNumber):
             QMessageBox.warning(self, "Warning!", "The data file is in format for build " + str(buildNumber) + ' \nCurrent software build is ' + str(self.BUILD_NUMBER))
 #            return

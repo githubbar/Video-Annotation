@@ -4,11 +4,12 @@
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import os, datetime, threading, subprocess, time, sys, csv
-
 from settings import *
 from propertywidget import *
+from commands import *
 from delegates import *
 from subprocess import *
+
         
 class Path(QGraphicsPathItem):
     id, videoname = '', ''
@@ -90,8 +91,6 @@ class Path(QGraphicsPathItem):
     def read(self, s, buildNumber):
 
         self.id = s.readQVariant()
-                 
-            
         self.videoname = s.readQVariant()
         vars = list(range(8))
         if (buildNumber < 41):            
@@ -107,15 +106,15 @@ class Path(QGraphicsPathItem):
             vars[6] = s.readQVariantList()        
             vars[7] = s.readQVariantList()        
         if (buildNumber >= 41):            
-#             FIXME: below returns empty dict
+#       FIXME: below returns empty dict
             self.variables = s.readQVariantMap()  
         else:
             for i, name in enumerate(['tripType', 'description', 'tags', 'purchased', 'shopped', 'category', 'phone', 'employee']):
                 self.variables[name] = QVariant(vars[i])
-                
         s >> self.polygon
         s >> self.orientation
         self.setOpacity(s.readFloat())
+#       FIXME: in aoi.py this works:     self.font = s.readQVariant(), but not here
         s >> self.font
         
 #         print "loading ... " + self.id.toPyObject()
@@ -200,9 +199,9 @@ class Path(QGraphicsPathItem):
             if self.scene().currentPath == self and self.indP == i:
                 painter.setPen(QPen(self.scene().nodeColor, 1))
                 painter.setBrush(QBrush(Qt.red))
-            elif QString('purchased') in self.variables and self.variables[QString('purchased')].toList()[i].toBool():
+            elif 'purchased' in self.variables and self.variables['purchased'].toList()[i].toBool():
                 painter.setPen(QPen(Qt.green, 1))
-            elif QString('shopped') in self.variables and self.variables[QString('shopped')].toList()[i].toBool():
+            elif 'shopped' in self.variables and self.variables['shopped'].toList()[i].toBool():
                 painter.setPen(QPen(Qt.blue, 1))
             else:
                 painter.setPen(QPen(self.scene().nodeColor, 1))                

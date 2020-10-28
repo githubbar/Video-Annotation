@@ -22,7 +22,6 @@ from ellipse import *
 from subprocess import *
 from snapshot import *
 from variabledialog import *
-from testpath import *
 
 class AnnotateScene(QGraphicsScene):
     
@@ -190,9 +189,9 @@ class AnnotateScene(QGraphicsScene):
             idx = min(list(range(len(item.startTime))), key=lambda i:abs(item.startTime[i].msecsTo(t1.time())))
            
             #TODO: assign check=true to varname and idx pos
-            li = item.variables[QString(eName)].toList()
+            li = item.variables[eName].toList()
             li[idx] = QVariant(True)
-            item.variables[QString(eName)] = QVariant(li)
+            item.variables[eName] = QVariant(li)
              
 
         
@@ -215,7 +214,7 @@ class AnnotateScene(QGraphicsScene):
         reader = csv.reader(open(filename, 'rb'))
 #         ids = reader.next()
         for line in reader:
-            id = QString(line[0]) # variable name
+            id = line[0] # variable name
             item = Path()
             item.id = QVariant(id)
             item.videoname = QVariant('videos\LBS_011906_1600PM-XVID.avi')
@@ -263,13 +262,6 @@ class AnnotateScene(QGraphicsScene):
         w = s.readFloat()
         h = s.readFloat()
         self.setSceneRect(0,  0,  w, h)
-        # read categories Path and Backgound Image Path
-        if (buildNumber < 41):
-            for i, name in enumerate(permanentVariableNames):
-                cols = QVariant([param for param in permanentVariableParams[i]])
-                self.variables[name] = cols        
-            self.categoriesPath = s.readString()       
-
         self.backgroundPath = s.readString()
         if (buildNumber >= 44):
             v = s.readQVariant()
@@ -287,14 +279,7 @@ class AnnotateScene(QGraphicsScene):
                 s.readQVariantMap() 
             else:
                 self.variables = s.readQVariantMap()
-          
-       
-        if (buildNumber >= 41 and buildNumber < 42):
-            for name in self.variables:
-                l = self.variables[name].toList()
-                l.insert(0, QVariant(''))
-                self.variables[name] = QVariant(l)
-                
+               
         # read items
         nItems = s.readInt()
         for i in range(nItems):
