@@ -14,6 +14,7 @@ class ProjectDialog(QDialog, Ui_projectDialog):
         self.backgroundFileButton.clicked.connect(self.backgroundFileButtonClicked)
         self.colorButton.clicked.connect(self.colorButtonClicked)
         self.variablesButton.clicked.connect(self.variablesClicked)
+
         
     def backgroundFileButtonClicked(self):
         filename = QFileDialog.getOpenFileName(self, "Choose Background Image File", os.path.dirname(str(self.parent().graphicsView.scene.filename)))

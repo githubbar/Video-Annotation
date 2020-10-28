@@ -23,3 +23,9 @@ Developed with:
     Eclipse: 
         Plugins: to compile .ui files with pyuic4.bat, http://marketplace.eclipse.org/content/path-tools
             follow description at https://stackoverflow.com/questions/5541024/eclipse-external-tool-for-qt-ui-to-py-with-pyuic
+            
+To remove directory from github:
+
+git rm -r --cached FolderName
+git commit -m "Removed folder from repository"
+git push origin master            

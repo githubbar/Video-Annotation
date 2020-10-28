@@ -109,7 +109,6 @@ class AnnotateScene(QGraphicsScene):
             if pixmap.isNull():
                 QMessageBox.warning(None, "Warning!", "Background image is in wrong format!")
             self.background.setPixmap(pixmap)
-#             FIXME: scale doesn't work
             self.background.setTransform(QTransform.fromScale((self.width()+1)/pixmap.width(),  (self.height()+1)/pixmap.height()));
 #             self.background.scale()
             
@@ -126,8 +125,6 @@ class AnnotateScene(QGraphicsScene):
         for item in list(self.items()):
             if type(item) == AOI:
                 item.setVisible(visible)
-
-
  
     def loadData(self, filename):
         import csv
@@ -305,7 +302,6 @@ class AnnotateScene(QGraphicsScene):
         # write scene properties
         s.writeFloat(self.width())
         s.writeFloat(self.height())
-        # write categories Path and Backgound Image Path
         s.writeQVariant(self.backgroundPath)
         s.writeQVariant(self.nodeColor)
         s.writeFloat(self.pathSmoothingFactor)

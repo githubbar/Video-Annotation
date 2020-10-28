@@ -656,7 +656,10 @@ def main():
 #     stylesheet_path = os.path.join(application_path, "mydark.stylesheet")    
 #     with open(stylesheet_path,"r") as fh:
 #         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt()+fh.read())
+
+
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    
     window = Main()
     window.appPath = application_path
     window.show()
