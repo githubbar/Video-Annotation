@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 """ Help browser panel """
-
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-import PyQt5.QtNetwork
+from PyQt5.QtCore import QFileInfo, QUrl
 
 
 class HelpBrowser(QWebEngineView):

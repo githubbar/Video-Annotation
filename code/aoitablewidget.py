@@ -18,7 +18,7 @@ class AOITableWidget(QTableWidget):
 
     def onItemChanged(self, item):
         if item.column()==0:
-            item.g.id = QVariant(item.text())
+            item.g.id = item.text()
 
        
     def addItem(self, item):

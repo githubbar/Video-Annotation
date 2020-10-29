@@ -42,7 +42,7 @@ class PropertyWidget(QTreeWidget,  object):
         """Load selected item properties"""
         sectionItem = PropertyTreeItem(True, 'Default', item.scene())
         self.addTopLevelItem(sectionItem)   
-        self.setItemExpanded(sectionItem, True)        
+        sectionItem.setExpanded(True)        
         self.setItemDelegate(CustomDelegate())               
         
         for name in item.shownFields:
@@ -72,7 +72,7 @@ class PropertyWidget(QTreeWidget,  object):
                         v = v[item.indP]
                     vUserData = vChoices
                     if vGroup == '': 
-                         vGroup = QVariant('General')
+                         vGroup = 'General'
                     if oldGroupName != vGroup:
                         sectionItem = PropertyTreeItem(True, vGroup, item.scene())
                         self.addTopLevelItem(sectionItem)
@@ -116,7 +116,7 @@ class PropertyWidget(QTreeWidget,  object):
                             if item.indP == None: continue
                             li = item.variables[name]
                             li[item.indP] = top.child(row).data(1, Qt.EditRole)
-                            item.variables[name] = QVariant(li)
+                            item.variables[name] = li
                         else:
 #                            if name == 'Employment':
 #                                print "PropertyWidget: saveItem", name, "item:", item,"data:", top.child(row).data(1, Qt.EditRole)
@@ -168,8 +168,8 @@ class PropertyTreeItem(QTreeWidgetItem):
                 self.setData(1, EditorTypeRole, 'Time')    
             elif name in ['videoname','imagename']:
                 self.setData(1, EditorTypeRole, 'File')    
-                self.setData(1, UserDataRole, QVariant('*.mp4;;*.avi;;*.*'))    
-                self.setData(1, UserDataRole+1, QVariant(os.path.dirname(str(scene.filename))))   
+                self.setData(1, UserDataRole, '*.mp4;;*.avi;;*.*')    
+                self.setData(1, UserDataRole+1, os.path.dirname(str(scene.filename)))   
             elif name == 'font':
                 self.setData(1, EditorTypeRole, 'Font')    
             elif vType:

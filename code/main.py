@@ -9,27 +9,20 @@ http://indiana.edu/~cil
 ====================================================================================
 
 """
+import logging, os, sys, threading, time, \
+    qdarkstyle, vlc, menu, searchwidget, buttonevents, helpbrowser
+import PyQt5
+from PyQt5 import uic
+from PyQt5.QtWidgets import QAbstractItemView, QAction, QToolBar, QInputDialog, \
+    QFileDialog, QMessageBox, QDialog, QSplitter, QVBoxLayout, QApplication
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QVariant, QTime, QFile, QIODevice, QDataStream
+from PyQt5.QtGui import QIcon, QKeySequence
+from commands import RemoveCommand
+from fileio import QDataExportDialog, fileio
 
-# Import modules
-import logging
 logging.basicConfig(filename='debug.log', level=logging.DEBUG) 
 logging.basicConfig(filename='warning.log', level=logging.WARNING) 
 logging.basicConfig(filename='error.log', level=logging.ERROR) 
-
-import os, sys, traceback
-import PyQt5 
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5 import QtWidgets, uic
-from annotateview import *
-from fileio import *
-from pathtablewidget import *
-from subprocess import *
-import vlc
-import menu, buttonevents, searchwidget
-import qdarkstyle
-
 
 
 # Create a class for our main window
@@ -311,7 +304,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
                 cartType = cartType[0]
             else:
                 cartType = ''
-            item.variables[name] = QVariant(cartType)
+            item.variables[name] = cartType
                                     
 #                 print cartType
 #END TEMP                
@@ -405,7 +398,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         for i in range(self.items.rowCount()):
             item = self.items.item(i, 0).g
             path, fname = os.path.split(str(item.videoname))
-            item.videoname = QVariant(os.path.join(relpath, fname))
+            item.videoname = os.path.join(relpath, fname)
 
     def fileOpen(self, filename=''):
         self.clear()
@@ -628,7 +621,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             
     def initHelp(self):
         from PyQt5 import QtHelp
-        import helpbrowser
         self.help = QtHelp.QHelpEngine('help/help.qhc', self)
         ok = self.help.setupData()
 

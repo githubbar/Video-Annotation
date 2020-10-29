@@ -29,7 +29,7 @@ class Path(QGraphicsPathItem):
         self.setBrush(QColor(Qt.transparent))
         self.setPen(QPen(QBrush(Qt.blue), self.penR))
         self.setCursor(Qt.ArrowCursor)
-        self.startTime, self.stopTime = [], []
+        self.startTime, self.stopTime = QTime(), QTime()
         self.polygon = QPolygonF()     
         self.orientation = QPolygonF()     
         self.setOpacity(opacity)
@@ -73,7 +73,11 @@ class Path(QGraphicsPathItem):
         self.id = s.readQVariant()
         self.videoname = s.readQVariant()
         self.startTime = s.readQVariantList()
-        self.stopTime = s.readQVariantList()        
+        self.stopTime = s.readQVariantList()   
+        # Fix QDateTime to QTime
+        self.startTime = list(map(lambda x: x.time() if type(x) == QDateTime else x, self.startTime))
+        self.stopTime = list(map(lambda x: x.time() if type(x) == QDateTime else x, self.stopTime))
+        
         self.variables = s.readQVariantMap()  
         s >> self.polygon
         s >> self.orientation
@@ -165,9 +169,10 @@ class Path(QGraphicsPathItem):
             # Paint video position indicator and auto-load properties during playback
             if self.scene().currentPath == self and len(self.stopTime) > 0 :
                 painter.setBrush(QBrush(Qt.transparent))                                
-                painter.setPen(QPen(QBrush(Qt.red), 2))                 
+                painter.setPen(QPen(QBrush(Qt.red), 2))
+#                 print(f'i is {i} scene time is {self.scene().time} \nstarttime is {self.startTime[i]} stoptime is {self.stopTime[i]}')                
                 if i > 0 and self.scene().time > self.stopTime[i - 1] and self.scene().time < self.startTime[i]:
-                    painter.drawEllipse(self.getSegmentPosInTime(i - 1, self.scene().time), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize) 
+                    painter.drawEllipse(self.getSegmentPosInTime(i - 1, self.scene().time), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize)
                 elif self.scene().time > self.startTime[i] and self.scene().time < self.stopTime[i]:
                     painter.drawEllipse(self.polygon.at(i), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize) 
                     self.indP = i
@@ -368,9 +373,9 @@ class Path(QGraphicsPathItem):
                 val = defaultVariableValues[variableTypes.index(vType)]
                 vEachNode = StrToBoolOrKeep(vEachNode)
                 if vEachNode:
-                    self.variables[name] = QVariant([val] * len(self.polygon))
+                    self.variables[name] = [val] * len(self.polygon)
                 else:
-                    self.variables[name] = QVariant(val)                
+                    self.variables[name] = val                
         # remove extra vars
         namestoremove = []
         for name in self.variables:

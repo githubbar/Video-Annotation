@@ -149,12 +149,12 @@ class AnnotateScene(QGraphicsScene):
                     if vType == 'DropDown':
                         try: 
                             choiceNumber = int(line[idx])
-                            item.variables[name] = QVariant(vChoices[choiceNumber])
+                            item.variables[name] = vChoices[choiceNumber]
                         except ValueError:
                             # if not a number, find an option
                             choice = line[idx].strip()
                             if choice in vChoices:
-                                item.variables[name] = QVariant(choice)
+                                item.variables[name] = choice
                             else:  
                                 continue
                     elif vType == 'MultiChoice':
@@ -164,11 +164,11 @@ class AnnotateScene(QGraphicsScene):
                             except ValueError: continue
                             if checked == 1:
                                 strList.append(str(vChoices[choiceNumber]))
-                        item.variables[name] = QVariant(', '.join(strList)) 
+                        item.variables[name] = ', '.join(strList) 
                         
                         pass
                     else:
-                        item.variables[name] = QVariant(line[idx]) 
+                        item.variables[name] = line[idx] 
                     
         # update current Path
         if self.currentPath:
@@ -189,8 +189,8 @@ class AnnotateScene(QGraphicsScene):
            
             #TODO: assign check=true to varname and idx pos
             li = item.variables[eName]
-            li[idx] = QVariant(True)
-            item.variables[eName] = QVariant(li)
+            li[idx] = True
+            item.variables[eName] = li
              
 
         
@@ -215,8 +215,8 @@ class AnnotateScene(QGraphicsScene):
         for line in reader:
             id = line[0] # variable name
             item = Path()
-            item.id = QVariant(id)
-            item.videoname = QVariant('videos\LBS_011906_1600PM-XVID.avi')
+            item.id = id
+            item.videoname = 'videos\LBS_011906_1600PM-XVID.avi'
             self.addItem(item)      
             ts= line[3::3]
             xs= line[4::3]
@@ -234,12 +234,12 @@ class AnnotateScene(QGraphicsScene):
                 X = w*(1-float(y))
                 Y = h*(1-float(x))
                 item.addPoint(QPointF(X,Y), tm)
-#                 item.startTime[item.indP] = QVariant(tm)
-#                 item.stopTime[item.indP] = QVariant(tm)
+#                 item.startTime[item.indP] = tm
+#                 item.stopTime[item.indP] = tm
 #                 item.polygon.append(QPointF(X,Y))
-#                 item.startTime.append(QVariant(tm))
+#                 item.startTime.append(tm))
 #                 tm.addMSecs(30)
-#                 item.stopTime.append(QVariant(tm))
+#                 item.stopTime.append(tm)
 #                 print x,y
 
             print(id) 
@@ -422,14 +422,15 @@ class AnnotateView(QGraphicsView):
         stopTimeKey.setShortcut(Qt.Key_F2)        
         stopTimeKey.triggered.connect(self.stopTimeKeyPressed)           
         self.addAction(stopTimeKey)
-        qApp.installEventFilter(self)              
+        qApp.installEventFilter(self) 
+        self.setDragMode(QGraphicsView.ScrollHandDrag)             
 
 
     def zoomInFontPressed(self):
         for i in self.scene.selectedItems():
             f = i.font 
             f.setPointSizeF(f.pointSizeF()*self.FONT_ZOOM_FACTOR)
-            i.font = QVariant(f)
+            i.font = f
             self.scene.loadSignal.emit(i)
         self.scene.update()    
 
@@ -437,18 +438,18 @@ class AnnotateView(QGraphicsView):
         for i in self.scene.selectedItems():
             f = i.font 
             f.setPointSizeF(f.pointSizeF()/self.FONT_ZOOM_FACTOR)
-            i.font = QVariant(f)
+            i.font = f
             self.scene.loadSignal.emit(i)
         self.scene.update()    
 
     def startTimeKeyPressed(self):
         if self.scene.currentPath and self.scene.currentPath.indP != None:
-            self.scene.currentPath.startTime[self.scene.currentPath.indP] = QVariant(self.scene.time)
+            self.scene.currentPath.startTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
             
     def stopTimeKeyPressed(self):
         if self.scene.currentPath and self.scene.currentPath.indP  != None:
-            self.scene.currentPath.stopTime[self.scene.currentPath.indP] = QVariant(self.scene.time)
+            self.scene.currentPath.stopTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
 
     
@@ -457,7 +458,7 @@ class AnnotateView(QGraphicsView):
             for name in self.scene.variables:
                 vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene.variables[name]
                 shortcut = vShortcut
-                if shortcut.trimmed().isEmpty():
+                if not shortcut.strip():
                     continue
                 if shortcut == keyEventToKeySequence(event):
                     # toggle corresponding variable
@@ -467,29 +468,35 @@ class AnnotateView(QGraphicsView):
                         if item.indP == None: continue
                         li = item.variables[name]
                         if varType == 'Yes/No':                        
-                            li[item.indP] = QVariant(not StrToBoolOrKeep(li[item.indP]))
+                            li[item.indP] = not StrToBoolOrKeep(li[item.indP])
                         elif varType == 'Integer':                        
-                            li[item.indP] = QVariant(li[item.indP].toInt()[0]+1)
-                        item.variables[name] = QVariant(li)
+                            li[item.indP] = li[item.indP].toInt()[0]+1
+                        item.variables[name] = li
                     else:
                         if varType == 'Yes/No':                        
                             item.variables[name] = not item.variables[name]
                         elif varType == 'Integer':                                
-                            li[item.indP] = QVariant(li[item.indP].toInt()[0]+1)
+                            li[item.indP] = li[item.indP].toInt()[0]+1
                     self.scene.loadSignal.emit(item)
                     return True            
         return QGraphicsView.eventFilter(self,  object, event)
             
 #Size scene to fit the view
+    
     def fitSceneInView(self):
         self.setTransform(QTransform())
         s = min(self.width()/self.scene.width(), self.height()/self.scene.height())
         self.scale(s, s);
         
     def wheelEvent(self, event):
-#         TODO: add shift+wheel to pan
+#         # add shift+wheel to pan
+#         if event.modifiers & Qt.ShiftModifier:
+#             event.angleDelta().y():
+#                                   
+#         # wheel to zoom
+#         else:
         factor = 1.2
-        if event.delta() < 0:
+        if event.angleDelta().y() < 0:
             factor = 1.0 / factor
         self.scale(factor, factor)
 

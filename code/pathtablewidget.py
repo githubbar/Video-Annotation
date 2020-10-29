@@ -15,7 +15,7 @@ class PathTableWidget(QTableWidget):
             self.deleteKeyPressed.emit()   
 
     def onItemChanged(self, item):
-        item.g.id = QVariant(item.text())
+        item.g.id = item.text()
 
        
     def addItem(self, item):

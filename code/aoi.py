@@ -30,7 +30,7 @@ class AOI(QGraphicsPolygonItem):
         self.setPen(QPen(QBrush(Qt.green), self.penR))
         self.setCursor(Qt.ArrowCursor)
         self.setOpacity(opacity)
-#         self.font = QVariant(font)
+#         self.font = font
         self.font = font
         self.fontColor = QColor(Qt.black)
         self.color = QColor(random.randrange(0, 255,), random.randrange(0, 255,), random.randrange(0, 255,))

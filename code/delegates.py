@@ -1,14 +1,28 @@
 # -*- coding: utf-8 -*-
 """ Delegates """
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+# from PyQt5.QtGui import *
+# from PyQt5.QtCore import *
+# from PyQt5.QtWidgets import *
+# 
+# import sys
+# 
+# from settings import *
+# from choicesdialog import *
+# from types import *
+# from variablewidget import *
+import os, sys
 
-import sys
+from PyQt5.QtCore import Qt, QVariant, QPoint, QRect, QEvent, QSize, QSortFilterProxyModel 
+from PyQt5.QtGui import QDoubleValidator, QIntValidator, QValidator, QPen, QIcon, QStandardItem, QColor, \
+    QBrush     
+from PyQt5.QtWidgets import QStyledItemDelegate, QLineEdit, QComboBox, QCompleter, \
+    QFontDialog, QTimeEdit, QStyle, QStyleOptionButton, QApplication, QToolButton, \
+    QFileDialog, QAbstractItemView, QColorDialog, QCheckBox
+from matplotlib.backends.backend_qt5 import qApp
 
-from settings import *
-from choicesdialog import *
-from types import *
+from settings import EditorTypeRole, UserDataRole, StrToBoolOrKeep, EditorReadOnlyRole
+from PyQt5.Qt import QPushButton
+
 
 class CustomDelegate(QStyledItemDelegate):
     def __init__(self, parent = None):
@@ -63,21 +77,21 @@ class CustomDelegate(QStyledItemDelegate):
             if not StrToBoolOrKeep(index.data(EditorReadOnlyRole)):
                 qApp.installEventFilter(self)              
                 editor = QLineEdit(parent)
-                editor.setValidator(QIntValidator(-sys.maxint, sys.maxint, parent))         
+                editor.setValidator(QIntValidator(-sys.maxsize, sys.maxsize, parent))         
                 return editor
             return None
         elif elementType == 'Button':
             return None
         elif elementType == 'File':
-            filter = index.data(UserDataRole)
+            myFilter = index.data(UserDataRole)
             projectpath = index.data(UserDataRole+1)
-            editor = FileOpen(projectpath,  filter, parent)
+            editor = FileOpen(projectpath,  myFilter, parent)
             editor.installEventFilter(self)            
             return editor
         elif elementType == 'Font':
             (f,  ok) = QFontDialog.getFont(index.data(Qt.EditRole),  None)
             if ok:
-                index.model().setData(index,  QVariant(f))
+                index.model().setData(index,  f)
             return None
         elif elementType == 'Time':            
             editor = QTimeEdit(index.model().data(index, Qt.EditRole), parent)
@@ -158,9 +172,12 @@ class CustomDelegate(QStyledItemDelegate):
             button  = QStyleOptionButton()
             button.text = text
             button.state = QStyle.State_Active | QStyle.State_Enabled
-            button_point = QPoint (option.rect.x() + option.rect.width() / 2 - button.rect.width() / 2, option.rect.y() +option.rect.height() / 2 - button.rect.height() / 2)            
-            button.rect = QRect(button_point, button.rect.size())
-            QApplication.style().drawControl(QStyle.CE_PushButton, button, painter)
+            button_point = QPoint (option.rect.x() + option.rect.width() / 2 - button.rect.width() / 2, option.rect.y() +option.rect.height() / 2 - button.rect.height() / 2)
+            button.rect = QRect(button_point, QSize(40,20))
+            prototype = QPushButton()
+#             TODO: changing style here doesn't work'
+#             prototype.setStyleSheet("background-color: #3cbaa2; border: 1px solid black; border-radius: 5px;")
+            QApplication.style().drawControl(QStyle.CE_PushButton, button, painter, prototype)
         elif elementType == 'Font':
             painter.save()
             if (option.state & QStyle.State_MouseOver):
@@ -217,9 +234,9 @@ class CustomDelegate(QStyledItemDelegate):
         return QRect(check_box_point, check_box_rect.size())
         
 class FileOpen(QLineEdit):
-    def __init__(self, relativeToDir = None,  filter = 'All Files (*.*)',  parent = None):
+    def __init__(self, relativeToDir = None,  myFilter = 'All Files (*.*)',  parent = None):
         QLineEdit.__init__(self, parent)
-        self.filter = filter
+        self.myFilter = myFilter
         self.relativeToDir = relativeToDir
         self.button = QToolButton(self)
         self.button.setIcon(QIcon('icons/folder-open.png'))            
@@ -373,7 +390,9 @@ class ColorPickDelegate(QStyledItemDelegate):
         if self.parent():
             self.parent().save()
         else:
-            session.commit()
+            pass
+#         FIXME: no session field exists
+#             session.commit()
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
@@ -392,10 +411,10 @@ class ColorPick(QLineEdit):
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
         frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
         sz = self.button.sizeHint()        
-        self.setStyleSheet(QString("QLineEdit { padding-right: %1px; }").arg(sz.width() + frameWidth + 1))
+        self.setStyleSheet("QLineEdit { padding-right: %1px; }".arg(sz.width() + frameWidth + 1))
         msz = self.minimumSizeHint()
         self.setMinimumSize(max(msz.width(), sz.height() + frameWidth * 2 + 2), max(msz.height(), sz.height() + frameWidth * 2 + 2))
-        self.connect(self.button, SIGNAL("clicked()"), self.openColor)
+        self.button.clicked.connect(self.openColor)
 
     def resizeEvent(self, event):
         sz = self.button.sizeHint()
@@ -464,5 +483,5 @@ class URLDelegate(QStyledItemDelegate):
 #    def openFont(self):
 #        (f,  ok) = QFontDialog.getFont(self._font,  self)
 #        if ok:
-#            self._font = QVariant(f)
+#            self._font = f
 #            self.editingFinished.emit()

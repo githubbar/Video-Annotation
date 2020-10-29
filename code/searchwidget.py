@@ -1,12 +1,15 @@
-from Ui_window import Ui_MainWindow
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from heatmap import HeatMap        
-from track import Path
-from annotateview import AnnotateScene
-from delegates import *
-import os, threading, logging, time
-import matplotlib
+import logging, os, threading, time
+
+from PyQt5.QtCore import Qt, QPointF, QTime, QVariant
+from PyQt5.QtGui import QPixmap, QImage, QIcon
+from PyQt5.QtWidgets import QCheckBox, QTableWidget, QHeaderView, \
+    QTableWidgetItem, QFileDialog, QDialog, QWidget, QVBoxLayout
+
+from delegates import URLDelegate
+from heatmap import HeatMap
+from settings import StrToBoolOrKeep
+
+
 TOOLBOX_ITEM_VERTICAL_STEP = 60
 class SearchWidget:
     matches = []
@@ -180,7 +183,7 @@ class SearchWidget:
             cID = QTableWidgetItem(match.item.id)
             cTime = QTableWidgetItem(match)
             cID.setData(Qt.UserRole, match.item.id)
-            cTime.setData(Qt.UserRole , QVariant(match))
+            cTime.setData(Qt.UserRole , match)
 #             cID.setForeground(QBrush(QColor("blue")))
 #             cTime.setForeground(QBrush(QColor("blue")))
             self.results.setItem(i, 0, cID)    

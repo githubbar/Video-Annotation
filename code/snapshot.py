@@ -27,7 +27,7 @@ class Snapshot(QGraphicsRectItem):
         self.setPos(scenepos)
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable)
         self.setOpacity(opacity)
-        self.font = QVariant(font)
+        self.font = font
         self.setCursor(Qt.ArrowCursor)
 
     def clone(self):    

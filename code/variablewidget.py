@@ -1,7 +1,15 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from delegates import *
-from settings import *
+# from PyQt5.QtGui import *
+# from PyQt5.QtCore import *
+# from delegates import *
+# from settings import *
+from PyQt5.QtCore import QVariant, Qt, pyqtSignal
+from PyQt5.QtGui import QBrush, QColor
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QDialog
+
+from choicesdialog import ChoicesDialog
+from delegates import CustomDelegate
+from settings import EditorTypeRole, UserDataRole, variableTypes
+
 
 class VariableWidget(QTableWidget):
     deleteKeyPressed = pyqtSignal()      
@@ -53,7 +61,7 @@ class VariableWidget(QTableWidget):
             choices = []
             for i in range(dlg.choices.count()):
                 choices.append(dlg.choices.item(i).text())
-            return QVariant(choices)
+            return choices
         else:
             return choices
             
@@ -69,9 +77,9 @@ class VariableWidget(QTableWidget):
             self.item(i, 5).setData(EditorTypeRole,  'Yes/No')
             self.item(i, 6).setData(EditorTypeRole,  'String')
             self.item(i, 7).setData(EditorTypeRole,  'Button')
-            self.item(i, 2).setData(UserDataRole, QVariant(variableTypes))            
+            self.item(i, 2).setData(UserDataRole, '')            
             if self.item(i, 2).data(Qt.DisplayRole) in ['DropDown', 'MultiChoice']:
-                self.item(i, 7).setData(UserDataRole, QVariant(['...', self.displayChoices]))
+                self.item(i, 7).setData(UserDataRole, ['...', self.displayChoices])
 #            if isReadOnly:
 #                for j in range(self.columnCount()):
 #                    f = self.item(i, j).font()

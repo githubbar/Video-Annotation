@@ -66,7 +66,7 @@ class AddPointCommand(QUndoCommand):
                 if StrToBoolOrKeep(vEachNode): # list
                     li = self.path.variables[name]
                     del[li[self.i]]
-                    self.path.variables[name] = QVariant(li)
+                    self.path.variables[name] = li
             
             # move to the previous item
             if self.path.indP > 0:
@@ -81,8 +81,8 @@ class AddPointCommand(QUndoCommand):
             delta = self.path.stopTime[self.i-1].msecsTo(self.path.startTime[self.i])
             self.startTime = self.stopTime = self.path.stopTime[self.i-1].addMSecs(delta/2)
            
-        self.path.startTime.insert(self.i,  QVariant(self.startTime))        
-        self.path.stopTime.insert(self.i,  QVariant(self.stopTime)) 
+        self.path.startTime.insert(self.i,  self.startTime)        
+        self.path.stopTime.insert(self.i,  self.stopTime) 
         self.path.polygon.insert(self.i,  self.p)
         
         for name in self.path.scene().variables:
@@ -90,7 +90,7 @@ class AddPointCommand(QUndoCommand):
             if StrToBoolOrKeep(vEachNode): # list
                 li = self.path.variables[name]
                 li.insert(self.i, self.variables[name])
-                self.path.variables[name] = QVariant(li)
+                self.path.variables[name] = li
        
         self.path.indP = self.i
         path = QPainterPath()

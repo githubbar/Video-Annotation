@@ -4,8 +4,7 @@ Created on Jul 11, 2017
 @author: oleykin
 '''
 
-import logging
-import os, sys,time
+import logging, os, sys,time, vlc
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *

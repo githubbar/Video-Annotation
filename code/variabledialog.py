@@ -34,7 +34,7 @@ class VariableDialog(QDialog):
             row = self.table.rowCount()
             self.table.insertRow(row)
             item = QTableWidgetItem()
-            item.setData(Qt.DisplayRole, QVariant(name))
+            item.setData(Qt.DisplayRole, name)
             self.table.setItem(row, 0, item)                    
             for i, col in enumerate(variables[name]):
                 item = QTableWidgetItem()
@@ -64,7 +64,7 @@ class VariableDialog(QDialog):
         
         for i in range(self.table.rowCount()):
             name = self.table.item(i, 0).data(Qt.DisplayRole)
-            cols = QVariant([self.table.item(i, j).data(Qt.DisplayRole) for j in range(1, self.table.columnCount())])
+            cols = [self.table.item(i, j).data(Qt.DisplayRole) for j in range(1, self.table.columnCount())]
             scene.variables[name] = cols
         
         # make sure all current paths are updated

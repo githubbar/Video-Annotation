@@ -18,7 +18,7 @@ class Label(QGraphicsTextItem):
     def __init__(self, scenepos=QPointF(), font=QFont('White Rabbit',  2),  opacity=1.0):    
         QGraphicsTextItem.__init__(self)
         self.setPos(QPointF(scenepos))
-        self.font = QVariant(font)
+        self.font = font
         self.setFont(font)
         self.setOpacity(opacity)
         self.setTextInteractionFlags(Qt.TextEditorInteraction)
@@ -59,7 +59,7 @@ class Label(QGraphicsTextItem):
     
     def focusOutEvent (self, event):
         QGraphicsTextItem.focusOutEvent (self, event)
-        self.id = QVariant(self.toPlainText())
+        self.id = self.toPlainText()
         qApp.removeEventFilter(self)        
         self.scene().loadSignal.emit(self)
         self.scene().saveSignal.emit(self)

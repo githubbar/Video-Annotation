@@ -27,7 +27,7 @@ class Rectangle(QGraphicsRectItem):
         self.setBrush(QColor(Qt.green))
         self.setPen(QPen(QBrush(Qt.green), self.penR))
         self.setOpacity(opacity)
-        self.font = QVariant(font)
+        self.font = font
         self.setCursor(Qt.ArrowCursor)
 
     def clone(self):    

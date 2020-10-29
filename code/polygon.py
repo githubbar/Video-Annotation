@@ -28,7 +28,7 @@ class Polygon(QGraphicsPolygonItem):
         self.setPen(QPen(QBrush(Qt.green), self.penR))
         self.setCursor(Qt.ArrowCursor)
         self.setOpacity(opacity)
-        self.font = QVariant(font)
+        self.font = font
         if point: self.addPoint(point)                                         
 
     def clone(self):    
