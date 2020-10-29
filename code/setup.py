@@ -8,11 +8,10 @@ egg includes (e.g. elixir library) must by unzipped for cx_freeze to find them
 """
 
 from cx_Freeze import setup, Executable
-import sys
-import os
-import glob
-import PyQt5.Qt as qt
+import os, glob
+import PyQt5
 from main import Main
+
 
 Target_1 = Executable(
     # what to build
@@ -30,7 +29,7 @@ Target_1 = Executable(
     
 include_files = ["icons", "palettes","mydark.stylesheet"]
 
-app = qt.QApplication([])
+app = PyQt5.QtWidgets.QApplication([])
 
 # Generate help and add help files and sqlite dll
 import subprocess
@@ -42,8 +41,8 @@ else:
     include_files.append(('help', 'help'))
 
 # Copy necessary dll's from the PyQt plugins directory
-include_files.append((os.path.join(str(qt.QLibraryInfo.location(qt.QLibraryInfo.PluginsPath)), 'sqldrivers', 'qsqlite4.dll'), 'plugins/sqldrivers/qsqlite4.dll'))  # help stores in sql lite format
-include_files.append((os.path.join(str(qt.QLibraryInfo.location(qt.QLibraryInfo.PluginsPath)), 'imageformats'), 'plugins/imageformats'))
+include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'sqldrivers', 'qsqlite4.dll'), 'plugins/sqldrivers/qsqlite4.dll'))  # help stores in sql lite format
+include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'imageformats'), 'plugins/imageformats'))
  
 
 # Copy OpenGL files

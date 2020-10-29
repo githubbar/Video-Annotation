@@ -16,12 +16,12 @@ logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 logging.basicConfig(filename='warning.log', level=logging.WARNING) 
 logging.basicConfig(filename='error.log', level=logging.ERROR) 
 
-import os, sys
-from Ui_window import Ui_MainWindow
-import PyQt5
+import os, sys, traceback
+import PyQt5 
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5 import QtWidgets, uic
 from annotateview import *
 from fileio import *
 from pathtablewidget import *
@@ -31,8 +31,9 @@ import menu, buttonevents, searchwidget
 import qdarkstyle
 
 
+
 # Create a class for our main window
-class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents, searchwidget.SearchWidget):
+class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.SearchWidget):
     GUI_NORMAL = 0
     GUI_SEARCH = 1
     GUI_EXPORT = 2
@@ -46,9 +47,9 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
     completeProgress = pyqtSignal(int)
     
     def __init__(self):
-        QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
-        self.setupUi(self)
+        super(Main, self).__init__()
+        uic.loadUi('window.ui', self)
+        self.show()
         self.appPath = ""        
         self.help = None
 #         bool(glutInit) 
@@ -294,11 +295,11 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
         for i in range(self.items.rowCount()):
             item = self.items.item(i, 0).g
             # sort indexes by ascending start time 
-            idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k].toPyObject())
+            idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k])
             name = 'cartType'
             vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
-#                   if vEachNode.toBool() and idx != None:
-            v = item.variables[name].toPyObject()
+#                   if StrToBoolOrKeep(vEachNode) and idx != None:
+            v = item.variables[name]
             cartType = [x for x in v if x]
             if type(cartType) == list:
                 if len(cartType) > 0:
@@ -336,7 +337,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, Ui_MainWindow, buttonevents.ButtonEvents
 #             # END TEMP: Crop extra startTime entries in the list
 #             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # sort indexes by ascending start time 
-            idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k].toPyObject())
+            idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k])
             self.updateProgressEdit.emit(int(100.0 * i / self.items.rowCount()))
           
 #             stimes = sorted(item.startTime)
@@ -663,7 +664,7 @@ def main():
     window = Main()
     window.appPath = application_path
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
   
 if __name__ == "__main__":
     main()

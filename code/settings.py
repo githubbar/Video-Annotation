@@ -2,9 +2,8 @@
 """ Store application wide settings """
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-import logging
-import os
-import math
+import PyQt5
+import logging, sys, os, math, traceback
         
 # Log everything, and send it to stderr.
 logging.basicConfig(level=logging.DEBUG)
@@ -28,6 +27,12 @@ settings = {
 "fixationDurationThreshold": 0.1, # in seconds
 "fixationDispersionThreshold":  40.0/1920 # in percentages 0 to 1
 }
+
+if PyQt5.QtCore.QT_VERSION >= 0x50501:
+    def excepthook(type_, value, traceback_):
+        traceback.print_exception(type_, value, traceback_)
+        PyQt5.QtCore.qFatal('')
+sys.excepthook = excepthook
 
 def StrToBoolOrKeep(s): 
     if isinstance(s, str):

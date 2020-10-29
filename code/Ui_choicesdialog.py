@@ -49,9 +49,6 @@ class Ui_ChoicesDialog(object):
         QtCore.QMetaObject.connectSlotsByName(ChoicesDialog)
 
     def retranslateUi(self, ChoicesDialog):
-        ChoicesDialog.setWindowTitle(QtWidgets.QApplication.translate("ChoicesDialog", "Dialog", None, QtWidgets.QApplication.UnicodeUTF8))
-        self.choices.setSortingEnabled(False)
-        self.buttonLoad.setText(QtWidgets.QApplication.translate("ChoicesDialog", "Add From File", None, QtWidgets.QApplication.UnicodeUTF8))
 
 
 if __name__ == "__main__":

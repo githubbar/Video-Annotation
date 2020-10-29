@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import QDialog, QFileDialog, QListWidgetItem
-from Ui_choicesdialog import Ui_ChoicesDialog
-# from track import *
+from PyQt5.QtGui import QIcon
+from PyQt5 import uic
+from PyQt5.QtCore import Qt
+import os
 
-class ChoicesDialog(QDialog, Ui_ChoicesDialog):
+class ChoicesDialog(QDialog):
     def __init__(self, choices=None, parent=None):
-        
-        QDialog.__init__(self, parent)
-        Ui_ChoicesDialog.__init__(self)
-        self.setupUi(self)
+        self.parent = parent         
+        super(ChoicesDialog, self).__init__()
+        uic.loadUi('choicesdialog.ui', self)
         self.addChoice.setIcon(QIcon('icons/plus.png'))
         self.removeChoice.setIcon(QIcon('icons/minus.png'))
         self.addChoice.clicked.connect(self.onAddChoice)
@@ -17,6 +18,8 @@ class ChoicesDialog(QDialog, Ui_ChoicesDialog):
             item = QListWidgetItem(choice)
             item.setFlags(item.flags () | Qt.ItemIsEditable)        
             self.choices.addItem(item)
+        self.show()
+            
         
     def onAddChoice(self):
         item = QListWidgetItem('')
@@ -29,7 +32,7 @@ class ChoicesDialog(QDialog, Ui_ChoicesDialog):
 
         
     def loadChoicesFromFile(self):
-        filename = QFileDialog.getOpenFileName(self, "Choose Comma Separated Choices File", os.getcwdu())
+        filename = QFileDialog.getOpenFileName(self, "Choose Comma Separated Choices File", os.getcwd())
         if not filename:
             return        
         

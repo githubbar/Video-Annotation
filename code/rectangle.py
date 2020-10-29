@@ -62,7 +62,7 @@ class Rectangle(QGraphicsRectItem):
     def paint(self, painter, option, widget):
         QGraphicsRectItem.paint(self, painter, option, widget)
         painter.setPen(QColor("black"))
-        painter.setFont(self.font.toPyObject())
+        painter.setFont(self.font)
         if self.rect().width() > self.rect().height():
             angle = 0
         else:

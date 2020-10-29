@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Define button/checkbox/tab event handlers for the main window"""
-import logging
+import logging, traceback
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import os, datetime, threading, subprocess, time, sys
@@ -148,9 +148,12 @@ class ButtonEvents():
                     item.setVisible(False)                    
             progress.setValue(self.items.rowCount())
         self.completeProgress.emit(self.GUI_NORMAL)
-            
         
     def variablesClicked(self):
-        dlg = VariableDialog(self)      
-        dlg.exec_() 
+        try:        
+            dlg = VariableDialog(self)
+            dlg.exec_() 
+        except Exception as e: 
+            print(e)
+            traceback.print_exc()      
             

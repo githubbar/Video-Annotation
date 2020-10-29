@@ -65,7 +65,7 @@ class Polygon(QGraphicsPolygonItem):
     def paint(self, painter, option, widget):
         QGraphicsPolygonItem.paint(self, painter, option, widget)
         painter.setPen(QColor("black"))
-        painter.setFont(self.font.toPyObject())
+        painter.setFont(self.font)
         painter.drawText(self.boundingRect(), Qt.AlignHCenter | Qt.AlignVCenter,  self.id)        
         painter.setBrush(QBrush(Qt.transparent))
         painter.setPen(QColor("red"))

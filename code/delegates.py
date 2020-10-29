@@ -15,26 +15,26 @@ class CustomDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
     def createEditor(self, parent, option, index):
-        type = index.data(EditorTypeRole)
-        if type == 'NotEditable':
+        elementType = index.data(EditorTypeRole)
+        if elementType == 'NotEditable':
             return None
-        elif type == 'String':
+        elif elementType == 'String':
             return QLineEdit(parent)
-        elif type == 'UniqueString':            
+        elif elementType == 'UniqueString':            
             qApp.installEventFilter(self)              
             editor = QLineEdit(parent)
             editor.setValidator(UniqueLineEditValidator(index, parent))         
             return editor
-        elif type == 'Yes/No':
+        elif elementType == 'Yes/No':
             return None
-        elif type == 'DropDown':
+        elif elementType == 'DropDown':
             qApp.installEventFilter(self)              
             editor = DropDownEditor(parent)
             editor.setEditable(True)
             editor.setInsertPolicy(QComboBox.NoInsert)        
             editor.setAutoCompletion(True)
             editor.setDuplicatesEnabled(False)
-            choices = index.data(UserDataRole).toPyObject()
+            choices = index.data(UserDataRole)
             editor.addItems(choices)
             editor.setCurrentIndex(editor.findText(index.data(Qt.DisplayRole)))
             editor.installEventFilter(self)      
@@ -43,81 +43,81 @@ class CustomDelegate(QStyledItemDelegate):
             completer.setModel(editor.model())
             editor.setCompleter(completer) 
             return editor
-        elif type == 'MultiChoice':
+        elif elementType == 'MultiChoice':
             qApp.installEventFilter(self)              
             editor = MultiChoiceEditor(parent)
             editor.setInsertPolicy(QComboBox.NoInsert)        
             editor.setDuplicatesEnabled(False)
-            choices = index.data(UserDataRole).toPyObject()
+            choices = index.data(UserDataRole)
             editor.addItems(choices,  index.data(Qt.EditRole).split(', '))
             editor.installEventFilter(self)      
             return editor            
-        elif type == 'Double':
-            if not index.data(EditorReadOnlyRole).toBool():
+        elif elementType == 'Double':
+            if not StrToBoolOrKeep(index.data(EditorReadOnlyRole)):
                 qApp.installEventFilter(self)              
                 editor = QLineEdit(parent)
                 editor.setValidator(QDoubleValidator(-1e10, 1e10, 2, parent))         
                 return editor
             return None
-        elif type == 'Integer':
-            if not index.data(EditorReadOnlyRole).toBool():
+        elif elementType == 'Integer':
+            if not StrToBoolOrKeep(index.data(EditorReadOnlyRole)):
                 qApp.installEventFilter(self)              
                 editor = QLineEdit(parent)
                 editor.setValidator(QIntValidator(-sys.maxint, sys.maxint, parent))         
                 return editor
             return None
-        elif type == 'Button':
+        elif elementType == 'Button':
             return None
-        elif type == 'File':
-            filter = index.data(UserDataRole).toPyObject()
-            projectpath = index.data(UserDataRole+1).toPyObject()
+        elif elementType == 'File':
+            filter = index.data(UserDataRole)
+            projectpath = index.data(UserDataRole+1)
             editor = FileOpen(projectpath,  filter, parent)
             editor.installEventFilter(self)            
             return editor
-        elif type == 'Font':
-            (f,  ok) = QFontDialog.getFont(index.data(Qt.EditRole).toPyObject(),  None)
+        elif elementType == 'Font':
+            (f,  ok) = QFontDialog.getFont(index.data(Qt.EditRole),  None)
             if ok:
                 index.model().setData(index,  QVariant(f))
             return None
-        elif type == 'Time':            
+        elif elementType == 'Time':            
             editor = QTimeEdit(index.model().data(index, Qt.EditRole), parent)
             editor.setDisplayFormat("hh:mm:ss.zzz")
             return editor
 
     def displayText(self, value, locale):       
-        if value.type() == QVariant.Time or value.type() == QVariant.DateTime:
+        if type(value) == QVariant.Time or type(value) == QVariant.DateTime:
             return value.toString('hh:mm:ss.zzz')
-        elif value.type() == QVariant.Invalid:
+        elif type(value) == QVariant.Invalid:
             return 'None'
         else:
             return QStyledItemDelegate.displayText(self, value, locale)
             
     def setEditorData(self, editor, index):
-        type = index.data(EditorTypeRole)
-        if type == 'NotEditable':
+        elementType = index.data(EditorTypeRole)
+        if elementType == 'NotEditable':
             pass
-        elif type == 'Yes/No':
+        elif elementType == 'Yes/No':
             pass
-#            value = index.model().data(index, Qt.DisplayRole).toBool()
+#            value = StrToBoolOrKeep(index.model().data(index, Qt.DisplayRole))
 #            if value:
 #                editor.setCheckState(Qt.Checked)
 #            else:
 #                editor.setCheckState(Qt.Unchecked)
-        elif type == 'DropDown':
+        elif elementType == 'DropDown':
             value = index.model().data(index, Qt.EditRole)
             editor.setCurrentIndex(editor.findText(value))
         else:
             QStyledItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
-        type = index.data(EditorTypeRole)
-        if type == 'NotEditable':
+        elementType = index.data(EditorTypeRole)
+        if elementType == 'NotEditable':
             pass
-        elif type == 'Yes/No':
+        elif elementType == 'Yes/No':
             pass
-        elif type == 'DropDown':            
+        elif elementType == 'DropDown':            
             model.setData( index, editor.currentText() )            
-        elif type == 'MultiChoice':            
+        elif elementType == 'MultiChoice':            
             model.setData( index, editor.currentText())    
         else:
             QStyledItemDelegate.setModelData(self, editor, model, index)
@@ -126,21 +126,21 @@ class CustomDelegate(QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
     def paint(self, painter, option, index):
-        type = index.data(EditorTypeRole)
+        elementType = index.data(EditorTypeRole)
         if option.state & QStyle.State_Selected:
             if option.state & QStyle.State_Active:
                 painter.fillRect(option.rect, option.palette.highlight())               
             else:
                 painter.fillRect(option.rect, option.palette.window())               
 
-        if type == 'NotEditable':
+        if elementType == 'NotEditable':
             QStyledItemDelegate.paint(self, painter, option, index)
-        if type == 'File':        
+        if elementType == 'File':        
             if (option.state & QStyle.State_MouseOver):
                 painter.fillRect(option.rect, Qt.green);
             QStyledItemDelegate.paint(self, painter, option, index)
-        elif type == 'Yes/No':
-            checked = index.model().data(index, Qt.DisplayRole).toBool()    
+        elif elementType == 'Yes/No':
+            checked = StrToBoolOrKeep(index.model().data(index, Qt.DisplayRole))    
             check_box_style_option  = QStyleOptionButton()
             check_box_style_option.state |= QStyle.State_Enabled
             if (checked):
@@ -150,9 +150,10 @@ class CustomDelegate(QStyledItemDelegate):
             check_box_style_option.rect = self.getCheckBoxRect(option)
             check_box_style_option.showDecorationSelected = True
             QApplication.style().drawControl(QStyle.CE_CheckBox, check_box_style_option, painter)            
-        elif type=='Button':
-            userData = index.data(UserDataRole).toPyObject()
+        elif elementType=='Button':
+            userData = index.data(UserDataRole)
             if not userData: return
+#             FIXME: userData doesn't unpack but does for [1,2] list'
             text, methodToRun = userData
             button  = QStyleOptionButton()
             button.text = text
@@ -160,26 +161,26 @@ class CustomDelegate(QStyledItemDelegate):
             button_point = QPoint (option.rect.x() + option.rect.width() / 2 - button.rect.width() / 2, option.rect.y() +option.rect.height() / 2 - button.rect.height() / 2)            
             button.rect = QRect(button_point, button.rect.size())
             QApplication.style().drawControl(QStyle.CE_PushButton, button, painter)
-        elif type == 'Font':
+        elif elementType == 'Font':
             painter.save()
             if (option.state & QStyle.State_MouseOver):
                 painter.fillRect(option.rect, Qt.green);
             painter.setPen(QPen(Qt.black))
             v= index.data(Qt.EditRole)
             if v.isValid():
-                text = v.toPyObject().family() + ' : ' + str(v.toPyObject().pointSize())
+                text = v.family() + ' : ' + str(v.pointSize())
                 painter.drawText(option.rect, Qt.AlignLeft, text)
             painter.restore()
         else:
             QStyledItemDelegate.paint(self, painter, option, index)
         
     def editorEvent(self, event, model, option, index):
-        type = index.data(EditorTypeRole)
-        if type == 'Yes/No':
-            if not index.data(EditorReadOnlyRole).toBool():
+        elementType = index.data(EditorTypeRole)
+        if elementType == 'Yes/No':
+            if not StrToBoolOrKeep(index.data(EditorReadOnlyRole)):
                 # Do not change the checkbox-state
                 if event.type() == QEvent.MouseButtonPress or event.type() == QEvent.MouseMove:
-                  return False
+                    return False
                 if event.type() == QEvent.MouseButtonRelease or event.type() == QEvent.MouseButtonDblClick:
                     if event.button() != Qt.LeftButton or not self.getCheckBoxRect(option).contains(event.pos()):
                         return False
@@ -191,10 +192,10 @@ class CustomDelegate(QStyledItemDelegate):
                     else:
                         return False
                 # Change the checkbox-state
-                checked = index.data().toBool()
+                checked = StrToBoolOrKeep(index.data())
                 return model.setData(index, not checked, Qt.EditRole)
-        elif type=='Button':    
-            userData = index.data(UserDataRole).toPyObject()
+        elif elementType=='Button':    
+            userData = index.data(UserDataRole)
             if userData: 
                 text, methodToRun = userData
                 if event.type() == QEvent.MouseButtonRelease or event.type() == QEvent.MouseButtonDblClick:
@@ -226,7 +227,7 @@ class FileOpen(QLineEdit):
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
         frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
         sz = self.button.sizeHint()        
-        self.setStyleSheet(QString("QLineEdit { padding-right: %1px; }").arg(sz.width() + frameWidth + 1))
+        self.setStyleSheet("QLineEdit { padding-right: %1px; }".arg(sz.width() + frameWidth + 1))
         msz = self.minimumSizeHint()
         self.setMinimumSize(max(msz.width(), sz.height() + frameWidth * 2 + 2), max(msz.height(), sz.height() + frameWidth * 2 + 2))
         self.button.clicked.connect(self.openFileName)
@@ -240,7 +241,7 @@ class FileOpen(QLineEdit):
         fName = QFileDialog.getOpenFileName(self.parent(), 'Open File',  self.relativeToDir, self.filter)
         if self.relativeToDir and fName:
             fName = os.path.relpath(str(fName), str(self.relativeToDir))
-        if fName: self.setText(unicode(fName))
+        if fName: self.setText(fName.encode("utf-8"))
 
 class UniqueLineEditValidator(QValidator):
     def __init__(self, index,  parent=None):
@@ -441,7 +442,7 @@ class URLDelegate(QStyledItemDelegate):
 #        self.setAutoFillBackground(True)
 #        self.button = QToolButton(self)
 #        self.button.setIcon(QIcon('icons/font.png'))            
-#        self.setText(f.toPyObject().family() + ' : ' + str(f.toPyObject().pointSize()))            
+#        self.setText(f.family() + ' : ' + str(f.pointSize()))            
 #        self.button.setIconSize(QSize(16, 16))
 #        self.button.setStyleSheet("QToolButton { border: none; padding: 0px;}")
 #        frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
@@ -461,7 +462,7 @@ class URLDelegate(QStyledItemDelegate):
 #        self.button.move(self.rect().right() - frameWidth - sz.width(), (self.rect().bottom() + 1 - sz.height())/2)
 #        
 #    def openFont(self):
-#        (f,  ok) = QFontDialog.getFont(self._font.toPyObject(),  self)
+#        (f,  ok) = QFontDialog.getFont(self._font,  self)
 #        if ok:
 #            self._font = QVariant(f)
 #            self.editingFinished.emit()

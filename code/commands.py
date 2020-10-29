@@ -4,7 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import os, datetime, threading, subprocess, time, sys, csv
-
+from settings import *
 
 class AddCommand(QUndoCommand):
     def __init__(self, scene, item, parent = None):
@@ -45,7 +45,7 @@ class AddPointCommand(QUndoCommand):
         # make a copy of node-level variables
         for name in self.path.scene().variables:
                 vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
-                if vEachNode.toBool(): # list
+                if StrToBoolOrKeep(vEachNode): # list
                     if self.i < len(self.path.polygon):
                         self.variables[name] = self.path.variables[name][self.i]  
                     else:
@@ -63,7 +63,7 @@ class AddPointCommand(QUndoCommand):
             
             for name in self.path.scene().variables:
                 vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
-                if vEachNode.toBool(): # list
+                if StrToBoolOrKeep(vEachNode): # list
                     li = self.path.variables[name]
                     del[li[self.i]]
                     self.path.variables[name] = QVariant(li)
@@ -87,7 +87,7 @@ class AddPointCommand(QUndoCommand):
         
         for name in self.path.scene().variables:
             vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
-            if vEachNode.toBool(): # list
+            if StrToBoolOrKeep(vEachNode): # list
                 li = self.path.variables[name]
                 li.insert(self.i, self.variables[name])
                 self.path.variables[name] = QVariant(li)

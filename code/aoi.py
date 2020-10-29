@@ -88,7 +88,7 @@ class AOI(QGraphicsPolygonItem):
         for i in range(self.polygon().count()):
             painter.drawEllipse(self.polygon().at(i), self.R, self.R)
          
-#         painter.setFont(self.font.toPyObject())
+#         painter.setFont(self.font)
         painter.setFont(QFont('Verdana', 3))
         if self.boundingRect().width() > self.boundingRect().height():
             angle = 0
@@ -246,7 +246,7 @@ class AOI(QGraphicsPolygonItem):
     
     def getTrackLength(self, track):
         l = 0
-        idx = sorted(list(range(len(track.startTime))), key=lambda k: track.startTime[k].toPyObject())
+        idx = sorted(list(range(len(track.startTime))), key=lambda k: track.startTime[k])
         for j, n in enumerate(idx):
             if self.contains(track.polygon.at(n)):
                 l += track.getSegmentLength(n)
@@ -254,7 +254,7 @@ class AOI(QGraphicsPolygonItem):
     
     def getTrackDuration(self, track):
         d = 0
-        idx = sorted(list(range(len(track.startTime))), key=lambda k: track.startTime[k].toPyObject())
+        idx = sorted(list(range(len(track.startTime))), key=lambda k: track.startTime[k])
         for j, n in enumerate(idx):
             if self.contains(track.polygon.at(n)):
                 d += track.startTime[n].secsTo(track.stopTime[n])

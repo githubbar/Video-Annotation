@@ -10,7 +10,6 @@ Software bindings:
 # Import modules
 import os,sys
 from random import randint, shuffle
-from Ui_window import Ui_MainWindow
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from label import *
@@ -137,7 +136,7 @@ class AnnotateScene(QGraphicsScene):
             if not name in self.variables: # skip non-existing variables
                 continue     
             vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.variables[name]
-            if vEachNode.toBool(): # skip node-level variables: we are importing only Path level variables
+            if StrToBoolOrKeep(vEachNode): # skip node-level variables: we are importing only Path level variables
                 continue
             # set variable value for every track
             for item in list(self.items()):
@@ -428,7 +427,7 @@ class AnnotateView(QGraphicsView):
 
     def zoomInFontPressed(self):
         for i in self.scene.selectedItems():
-            f = i.font.toPyObject() 
+            f = i.font 
             f.setPointSizeF(f.pointSizeF()*self.FONT_ZOOM_FACTOR)
             i.font = QVariant(f)
             self.scene.loadSignal.emit(i)
@@ -436,7 +435,7 @@ class AnnotateView(QGraphicsView):
 
     def zoomOutFontPressed(self):
         for i in self.scene.selectedItems():
-            f = i.font.toPyObject() 
+            f = i.font 
             f.setPointSizeF(f.pointSizeF()/self.FONT_ZOOM_FACTOR)
             i.font = QVariant(f)
             self.scene.loadSignal.emit(i)
@@ -464,11 +463,11 @@ class AnnotateView(QGraphicsView):
                     # toggle corresponding variable
                     item = self.scene.currentPath                    
                     varType = vType
-                    if vEachNode.toBool(): # list                    
+                    if StrToBoolOrKeep(vEachNode): # list                    
                         if item.indP == None: continue
                         li = item.variables[name]
                         if varType == 'Yes/No':                        
-                            li[item.indP] = QVariant(not li[item.indP].toBool())
+                            li[item.indP] = QVariant(not StrToBoolOrKeep(li[item.indP]))
                         elif varType == 'Integer':                        
                             li[item.indP] = QVariant(li[item.indP].toInt()[0]+1)
                         item.variables[name] = QVariant(li)

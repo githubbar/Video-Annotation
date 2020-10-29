@@ -1,17 +1,18 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from Ui_variabledialog import Ui_VariablesDialog
-from variablewidget import *
-from track import *
-from settings import *
+import os
+from PyQt5 import uic
+from PyQt5.QtWidgets import QDialog, QHeaderView, QTableWidgetItem, QMessageBox, QFileDialog
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QVariant, Qt
 
-from UnicodeCSV import *
+from UnicodeCSV import UnicodeWriter
+from track import Path
 
-class VariableDialog(QDialog, Ui_VariablesDialog):
+class VariableDialog(QDialog):
+
     def __init__(self, parent):
-        QDialog.__init__(self, parent)
-        Ui_VariablesDialog.__init__(self)
-        self.setupUi(self)
+        self.parent = parent         
+        super(VariableDialog, self).__init__()
+        uic.loadUi('variabledialog.ui', self)
         self.buttonOk.clicked.connect(self.onOkClicked)
         self.buttonCancel.clicked.connect(self.onCancelClicked)
         self.importButton.clicked.connect(self.importFromFile)
@@ -23,7 +24,8 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         self.removeVariable.clicked.connect(self.table.removeVariable)
         self.table.setHorizontalHeaderLabels(('Name', 'Description', 'Type', 'Show?', 'Keyboard Shortcut', 'Apply to Each Node?', 'Group', 'Choices'))
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.loadVariables(self.parent().graphicsView.scene.variables)
+        self.loadVariables(self.parent.graphicsView.scene.variables)
+        self.show()
         
     def loadVariables(self, variables):
         self.table.clearContents()
@@ -37,7 +39,7 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
             for i, col in enumerate(variables[name]):
                 item = QTableWidgetItem()
                 item.setData(Qt.DisplayRole, col)
-                self.table.setItem(row, i+1, item)        
+                self.table.setItem(row, i + 1, item)        
         self.table.setSortingEnabled(True)
         self.table.updateDelegates()
                     
@@ -57,7 +59,7 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         if QMessageBox.question(self, 'Warning!', 'Saving these changes to your project will affect all the existing data! Are you sure you want to proceed?', \
             QMessageBox.Yes | QMessageBox.No) == QMessageBox.No: 
                 return
-        scene = self.parent().graphicsView.scene        
+        scene = self.parent.graphicsView.scene        
         scene.variables.clear()
         
         for i in range(self.table.rowCount()):
@@ -83,9 +85,9 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
         self.table.setSortingEnabled(False)
         for line in reader:
             line = list(map(str.strip, line))
-            if QString(line[0]) in self.parent().graphicsView.scene.variables:  # edit already existing variables
-                del self.parent().graphicsView.scene.variables[QString(line[0])]
-                items = self.table.findItems(QString(line[0]), Qt.MatchExactly)
+            if line[0] in self.parent.graphicsView.scene.variables:  # edit already existing variables
+                del self.parent.graphicsView.scene.variables[line[0]]
+                items = self.table.findItems(line[0], Qt.MatchExactly)
                 for item in items:
                     self.table.removeRow(item.row())
             row = self.table.rowCount()
@@ -97,7 +99,6 @@ class VariableDialog(QDialog, Ui_VariablesDialog):
             self.table.setItem(row, 7, QTableWidgetItem())
         self.table.setSortingEnabled(True)                
         self.table.updateDelegates()
-
                 
     def exportToFile(self):
         filename = QFileDialog.getSaveFileName(self, "Choose Comma Separated Variables File", os.getcwd(), 'CSV Files (*.csv)')

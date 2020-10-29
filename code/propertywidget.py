@@ -61,13 +61,13 @@ class PropertyWidget(QTreeWidget,  object):
                 listItem = [key]
                 listItem.extend(value)
                 listItems.append(listItem)
-            listItems.sort(key=lambda x: (x[5].toBool(), x[6], x[0]))
+            listItems.sort(key=lambda x: (StrToBoolOrKeep(x[5]), x[6], x[0]))
             oldGroupName = None
             currentParent = None
             for name, vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices in listItems:
-                if vShow.toBool():
+                if StrToBoolOrKeep(vShow):
                     v = item.variables[name]
-                    if vEachNode.toBool(): # list
+                    if StrToBoolOrKeep(vEachNode): # list
                         if item.indP == None: continue
                         v = v[item.indP]
                     vUserData = vChoices
@@ -108,11 +108,11 @@ class PropertyWidget(QTreeWidget,  object):
 #                 if top.isExpanded():
 #                     self.expandedCategories.append(top.data(0, Qt.EditRole))
                 for row in range(top.childCount()):
-                    name = top.child(row).data(0, Qt.EditRole).toPyObject()
+                    name = top.child(row).data(0, Qt.EditRole)
                     if name in item.scene().variables:  # temp
                         #### Begin Save dymanic project variables             
                         vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = item.scene().variables[name]
-                        if vEachNode.toBool(): # list
+                        if StrToBoolOrKeep(vEachNode): # list
                             if item.indP == None: continue
                             li = item.variables[name]
                             li[item.indP] = top.child(row).data(1, Qt.EditRole)

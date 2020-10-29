@@ -44,7 +44,7 @@ class Label(QGraphicsTextItem):
         self.update()
         
     def paint(self, painter, option, widget):
-        self.setFont(self.font.toPyObject())
+        self.setFont(self.font)
         QGraphicsTextItem.paint(self, painter, option, widget)
         painter.setPen(QColor("blue"))
         painter.drawRoundedRect(self.boundingRect(), self.D, self.D)

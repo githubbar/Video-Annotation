@@ -138,7 +138,7 @@ class Path(QGraphicsPathItem):
         painter.setRenderHint(QPainter.Antialiasing)
         if self.scene().showSegments:
             QGraphicsPathItem.paint(self, painter, option, widget)
-        painter.setFont(self.font.toPyObject())
+        painter.setFont(self.font)
         painter.setPen(Qt.red)     
         
         # Draw Orientations >> only for active path
@@ -153,9 +153,9 @@ class Path(QGraphicsPathItem):
             if self.scene().currentPath == self and self.indP == i:
                 painter.setPen(QPen(self.scene().nodeColor, 1))
                 painter.setBrush(QBrush(Qt.red))
-            elif 'purchased' in self.variables and self.variables['purchased'][i].toBool():
+            elif 'purchased' in self.variables and StrToBoolOrKeep(self.variables['purchased'][i]):
                 painter.setPen(QPen(Qt.green, 1))
-            elif 'shopped' in self.variables and self.variables['shopped'][i].toBool():
+            elif 'shopped' in self.variables and StrToBoolOrKeep(self.variables['shopped'][i]):
                 painter.setPen(QPen(Qt.blue, 1))
             else:
                 painter.setPen(QPen(self.scene().nodeColor, 1))                
@@ -339,15 +339,15 @@ class Path(QGraphicsPathItem):
         varList = []
         for name in self.scene().variables:
             vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
-            if vEachNode.toBool() and idx != None:
-                v = self.variables[name][idx].toPyObject()
+            if StrToBoolOrKeep(vEachNode) and idx != None:
+                v = self.variables[name][idx]
                 if (type(v) == QDateTime):
                     v = v.toString('hh-mm-ss')
                 else:
                     v = str(v)                    
                 varList.append(str(v))
             else: 
-                v = self.variables[name].toPyObject()
+                v = self.variables[name]
                 if (type(v) == QDateTime):
                     v = v.toString('hh-mm-ss')
                 else:

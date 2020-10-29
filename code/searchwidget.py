@@ -55,7 +55,7 @@ class SearchWidget:
             vShow = StrToBoolOrKeep(vShow)
             if not vShow:
                 continue
-            if trackLvl and vEachNode.toBool(): 
+            if trackLvl and StrToBoolOrKeep(vEachNode): 
                 continue                
             if vType == 'Yes/No' and cbParent != None:
                 cbParent.addWidget(QCheckBox(name))
@@ -97,10 +97,10 @@ class SearchWidget:
             if cbParent.itemAt(i).widget().isChecked():
                 name = self.checkboxArea.itemAt(i).widget().text()
                 vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
-                if vEachNode.toBool():
-                    if idx != None and not item.variables[name][idx].toBool(): return False
+                if StrToBoolOrKeep(vEachNode):
+                    if idx != None and not StrToBoolOrKeep(item.variables[name][idx]): return False
                 else:
-                    if not item.variables[name].toBool(): return False
+                    if not StrToBoolOrKeep(item.variables[name]): return False
         return True
                     
     def matchByList(self, item, lParent, idx=None):
@@ -112,7 +112,7 @@ class SearchWidget:
                 singleMatch = False
                 value = c.text()
                 vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
-                if vEachNode.toBool():
+                if StrToBoolOrKeep(vEachNode):
                     if idx == None or item.variables[name][idx] == value:  
                         widgetMatch = True
                         break
@@ -190,7 +190,7 @@ class SearchWidget:
         # FIXME: double-click event handler is called twice
         self.tabWidget.setCurrentIndex(0)
         self.checkAllItems(False)       
-        result = self.results.item(row, 1).data(Qt.UserRole).toPyObject()        
+        result = self.results.item(row, 1).data(Qt.UserRole)        
         self.graphicsView.scene.currentPath = result.item
         self.graphicsView.scene.currentPath.indP = result.n
         self.changeCurrentItem()      
@@ -229,8 +229,8 @@ class SearchWidget:
                 break                
             n = match.n
             addThis = True
-#            if self.visPurchased.isChecked(): addThis &= match.item.purchased[n].toBool()
-#            if self.visShopped.isChecked(): addThis &= match.item.shopped[n].toBool()
+#            if self.visPurchased.isChecked(): addThis &= StrToBoolOrKeep(match.item.purchased[n])
+#            if self.visShopped.isChecked(): addThis &= StrToBoolOrKeep(match.item.shopped[n])
             if not addThis: continue
             # create as many points as there are seconds
             if self.visUseTime.isChecked():
