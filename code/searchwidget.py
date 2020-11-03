@@ -76,16 +76,6 @@ class SearchWidget:
                     tableItem.setFlags(tableItem.flags() & ~Qt.ItemIsEditable)
                     w.setItem(i, 0, tableItem)
                    
-#             elif vType in ['Integer'] and lParent != None:
-#                 w = QSpinBox(self)
-#                 w.setMinimumHeight(240)
-#                 lParent.addItem(w,  name)
-#                 for i,  item in enumerate(vChoices):
-#                     w.insertRow(i)
-#                     i.setFlags(i.flags() & ~Qt.ItemIsEditable)
-#                     w.setItem(i, 0,  QTableWidgetItem(item))
-      
-
     def searchClicked(self):
         # clear results
         self.matches = []            
@@ -132,7 +122,6 @@ class SearchWidget:
         vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
         if item.variables[name].toInt()[0] < 2: return True
         else: return False
-    
                             
     def matchByTime(self, item, idx):
         t1 = item.startTime[idx]
@@ -161,7 +150,7 @@ class SearchWidget:
         if self.removeClusters.isChecked():  # remove clustered data
             clusterCenter = QPointF()  # fixation cluster center
             clusterCount = 0  # fixation cluster count
-            clusterTime = QTime()  # fixation cluster time        
+            clusterTime = QTime(0,0)  # fixation cluster time        
             for i, match in enumerate(self.matches):
                 p = QPointF(match.item.polygon.at(match.n).x(), match.item.polygon.at(match.n).y())
                 if clusterCount > 0 and (\
@@ -176,12 +165,11 @@ class SearchWidget:
                     self.matches.pop(i)
         self.completeProgress.emit(self.GUI_NORMAL)
         
-       
     def refreshResults(self):
         for i, match in enumerate(self.matches):
             self.results.insertRow(i)
             cID = QTableWidgetItem(match.item.id)
-            cTime = QTableWidgetItem(match)
+            cTime = QTableWidgetItem(match.toString())
             cID.setData(Qt.UserRole, match.item.id)
             cTime.setData(Qt.UserRole , match)
 #             cID.setForeground(QBrush(QColor("blue")))
@@ -207,7 +195,6 @@ class SearchWidget:
             if self.mediaPlayer.is_playing(): break
         self.updateVideo(self.graphicsView.scene.currentPath)        
         
-
     def visClicked(self):
         self.OnGUIMode(self.GUI_EXPORT)
         ids = set()  # set of subject ids found in matches
@@ -259,7 +246,7 @@ class SearchWidget:
 
     def exportImageClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
+        outFileName, _filter = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
         if not outFileName:
             return
         QPixmap.grabWidget(self.graphicsView).save(outFileName)
@@ -283,22 +270,25 @@ class SearchWidget:
             t1 = match.item.startTime[match.n]
             t2 = match.item.stopTime[match.n]
            
-            cat = match.item.variables['category'][match.n]
-            cat = cat.replace('/', '-')
-            cat = cat.replace(':', '-')
+            cat = match.item.variables['Category Shopped'][match.n]
+            if cat:
+                cat = cat.replace('/', '-')
+                cat = cat.replace(':', '-')
+            else:
+                cat = ''
             outFileName = os.path.join(str(outDir), str(match.item.id + ' from ' + t1.toString('hh-mm-ss') + ' to ' + t2.toString('hh-mm-ss') + ' ' + cat + '.avi'))
             if os.path.exists(inFileName):
                 logging.debug('Current working directory is ' + str(os.getcwd()))              
-                p = subprocess.Popen(['ffmpeg', '-ss', str(QTime().secsTo(t1)), '-t', str(t1.secsTo(t2)), '-i', str(inFileName), \
-                '-async', '1', '-y', str(outFileName)], shell=True)
+                p = subprocess.Popen(['ffmpeg', '-ss', str(QTime(0,0).secsTo(t1)), '-t', str(t1.secsTo(t2)), '-i', inFileName, \
+                '-async', '1', '-y', outFileName], shell=True)
                 p.wait()
-                logging.debug('ffmpeg' + ' -ss ' + str(QTime().secsTo(t1)) + ' -t ' + str(t1.secsTo(t2)) + ' -i ' + str(inFileName) + ' -y ' + str(outFileName))
+                logging.debug('ffmpeg' + ' -ss ' + str(QTime(0,0).secsTo(t1)) + ' -t ' + str(t1.secsTo(t2)) + ' -i ' + str(inFileName) + ' -y ' + str(outFileName))
             if not self.go: break
         self.completeProgress.emit(self.GUI_NORMAL)
        
     def exportDataClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
+        outFileName, _filter = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
         if not outFileName:
             return
         self.OnGUIMode(self.GUI_EXPORT)
@@ -349,7 +339,7 @@ class SearchWidget:
 
     def exportAOIDataClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File for Individual AOI Data Export", os.getcwd())
+        outFileName, _filter = QFileDialog.getSaveFileName(self, "Choose File for Individual AOI Data Export", os.getcwd())
         if not outFileName:
             return
         self.OnGUIMode(self.GUI_EXPORT)                  
@@ -417,12 +407,12 @@ class SearchWidget:
             id = match.item.id
             self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)        
             if not id in ids:
-                minTime = maxTime = QTime().msecsTo(match.item.startTime[0])
+                minTime = maxTime = QTime(0,0).msecsTo(match.item.startTime[0])
                 for t in match.item.startTime:
-                    if QTime().msecsTo(t) < minTime:
-                        minTime = QTime().msecsTo(t) 
-                    if QTime().msecsTo(t) > maxTime:
-                        maxTime = QTime().msecsTo(t)                         
+                    if QTime(0,0).msecsTo(t) < minTime:
+                        minTime = QTime(0,0).msecsTo(t) 
+                    if QTime(0,0).msecsTo(t) > maxTime:
+                        maxTime = QTime(0,0).msecsTo(t)                         
                 tripDuration += maxTime - minTime
                 self.loadVideo(match.item.videoname)
                 videoDuration += self.Media.get_duration()
@@ -510,11 +500,10 @@ class SearchWidget:
         fig.savefig('gazepoint histogram.png', dpi=300)
         dlg.exec_() 
         self.completeProgress.emit(self.GUI_NORMAL)
-
         
     def exportStatsClicked(self):
         # choose export file
-        outFileName = QFileDialog.getSaveFileName(self, "Choose File for AOI Statistics Export", os.getcwd())
+        outFileName, _filter = QFileDialog.getSaveFileName(self, "Choose File for AOI Statistics Export", os.getcwd())
         if not outFileName:
             return
         self.OnGUIMode(self.GUI_EXPORT)                  

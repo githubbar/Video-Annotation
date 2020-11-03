@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 """ Path Item"""
+import csv
+import os
+import sys
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import os, datetime, threading, subprocess, time, sys, csv
-from settings import *
-from propertywidget import *
-from commands import *
-from delegates import *
-from subprocess import *
+from PyQt5.QtCore import Qt, QDateTime, QLineF, QTime, QPointF
+from PyQt5.QtGui import QFont, QPainterPathStroker, QColor, QPen, QBrush, \
+    QPolygonF, QPainterPath, QPainter
+from PyQt5.QtWidgets import QGraphicsPathItem, QGraphicsItem
+from numpy import math
 
-        
+from settings import StrToBoolOrKeep, defaultVariableValues, variableTypes, \
+    BIG_INT
+from vacommands import UpdatePointCommand, UpdateOrientationCommand, RemoveCommand, \
+    RemovePointCommand, AddPointCommand
+
+
 class Path(QGraphicsPathItem):
     id, videoname = '', ''
     shownFields = ['id', 'videoname', 'startTime', 'stopTime']
@@ -29,7 +34,7 @@ class Path(QGraphicsPathItem):
         self.setBrush(QColor(Qt.transparent))
         self.setPen(QPen(QBrush(Qt.blue), self.penR))
         self.setCursor(Qt.ArrowCursor)
-        self.startTime, self.stopTime = QTime(), QTime()
+        self.startTime, self.stopTime = [], []
         self.polygon = QPolygonF()     
         self.orientation = QPolygonF()     
         self.setOpacity(opacity)
@@ -67,7 +72,6 @@ class Path(QGraphicsPathItem):
         s.writeFloat(self.opacity())
         s << self.font
 
-
     def read(self, s, buildNumber):
 
         self.id = s.readQVariant()
@@ -87,7 +91,6 @@ class Path(QGraphicsPathItem):
         else:
             s >> self.font
       
-        
     def addQuadFromPolygon(self, path, polygon):
         if polygon.count() == 0:
             return
@@ -153,13 +156,13 @@ class Path(QGraphicsPathItem):
                 painter.drawLine(line)             
         # Draw nodes and lines
         for i in range(self.polygon.count()):
-            painter.setBrush(QBrush(Qt.white))            
+            painter.setBrush(QBrush(Qt.white))
             if self.scene().currentPath == self and self.indP == i:
                 painter.setPen(QPen(self.scene().nodeColor, 1))
                 painter.setBrush(QBrush(Qt.red))
-            elif 'purchased' in self.variables and StrToBoolOrKeep(self.variables['purchased'][i]):
+            elif 'purchased' in self.variables and i < len(self.variables['purchased']) and StrToBoolOrKeep(self.variables['purchased'][i]):
                 painter.setPen(QPen(Qt.green, 1))
-            elif 'shopped' in self.variables and StrToBoolOrKeep(self.variables['shopped'][i]):
+            elif 'shopped' in self.variables and i < len(self.variables['purchased'])  and StrToBoolOrKeep(self.variables['shopped'][i]):
                 painter.setPen(QPen(Qt.blue, 1))
             else:
                 painter.setPen(QPen(self.scene().nodeColor, 1))                
@@ -179,9 +182,9 @@ class Path(QGraphicsPathItem):
                     self.scene().loadSignal.emit(self)     
 
     def getSegmentPosInTime(self, i, t, linear=False):
-        t0 = QTime().msecsTo(t)
-        t1 = QTime().msecsTo(self.stopTime[i])
-        t2 = QTime().msecsTo(self.startTime[i + 1])
+        t0 = QTime(0,0).msecsTo(t)
+        t1 = QTime(0,0).msecsTo(self.stopTime[i])
+        t2 = QTime(0,0).msecsTo(self.startTime[i + 1])
         p1 = self.polygon.at(i)
         p2 = self.polygon.at(i + 1)       
         if linear:
@@ -243,7 +246,7 @@ class Path(QGraphicsPathItem):
 
     def getNearestPoint(self, p):
         mini = 0
-        mind = sys.maxsize
+        mind = BIG_INT
         for i in range(self.polygon.count()):
             dist = (self.polygon.at(i) - p).manhattanLength()
             if  dist < mind:
@@ -255,7 +258,7 @@ class Path(QGraphicsPathItem):
         if self.polygon.count() < 2:
             return 0
         i1 = 0
-        d1 = sys.maxsize
+        d1 = BIG_INT
         for i in range(self.polygon.count() - 1):
             l = QLineF(self.polygon.at(i), self.polygon.at(i + 1))
             n = l.normalVector()
@@ -308,7 +311,7 @@ class Path(QGraphicsPathItem):
 
     def handleMousePress(self, event):
         print('handle mouse over path ' + self.id)
-        # get new point closest to mouse and load it        
+        # get new point closest to mouse and load it
         sp = event.scenePos()        
 #         QGraphicsPathItem.mousePressEvent(self, event)
         point_append_time = self.scene().time
@@ -316,7 +319,7 @@ class Path(QGraphicsPathItem):
         if (event.buttons() & Qt.LeftButton): 
             if not self.choosingOrientation:
                 # save old point
-                if (event.modifiers() & Qt.ControlModifier):
+                if (event.modifiers() & Qt.AltModifier):
                     # add new point between two closest points
                     i = self.getNearestLineSegment(sp)
                     self.insertPoint(i, sp)
@@ -409,7 +412,6 @@ class Path(QGraphicsPathItem):
                 self.setPen(QPen(QBrush(Qt.blue), self.penR))      
         return QGraphicsItem.itemChange(self, change, value)
         
-        
     def mouseReleaseEvent(self, event):                
             # TODO: choosing orientation undo !!!
 #            self.updateOrientationCommand(self.indP, sp)
@@ -428,7 +430,6 @@ class Path(QGraphicsPathItem):
         print('Path key press')
         if event.key() == Qt.Key_Delete:
             self.deletePoint()
-            
 
     def toString(self):
         return self.id
@@ -452,7 +453,7 @@ class Path(QGraphicsPathItem):
         print('Trying to predict path based on accelerometer data')
         # convert current node's time to msec
         i = self.indP
-        msec = QTime().msecsTo(self.stopTime[i])
+        msec = QTime(0,0).msecsTo(self.stopTime[i])
         # get current point and orientation point
         p = self.polygon.at(i)
         o = self.orientation.at(i)

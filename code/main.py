@@ -15,10 +15,13 @@ import PyQt5
 from PyQt5 import uic
 from PyQt5.QtWidgets import QAbstractItemView, QAction, QToolBar, QInputDialog, \
     QFileDialog, QMessageBox, QDialog, QSplitter, QVBoxLayout, QApplication
-from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QVariant, QTime, QFile, QIODevice, QDataStream
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QTime, QFile, QIODevice, QDataStream
 from PyQt5.QtGui import QIcon, QKeySequence
-from commands import RemoveCommand
-from fileio import QDataExportDialog, fileio
+from vacommands import RemoveCommand
+from annotateview import AnnotateScene, AnnotateView
+from pathtablewidget import PathTableWidget
+from aoitablewidget import AOITableWidget
+from fileio import findFataFile, QDataExportDialog, fileio
 
 logging.basicConfig(filename='debug.log', level=logging.DEBUG) 
 logging.basicConfig(filename='warning.log', level=logging.WARNING) 
@@ -41,7 +44,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     
     def __init__(self):
         super(Main, self).__init__()
-        uic.loadUi('window.ui', self)
+        uic.loadUi(findFataFile('window.ui'), self)
         self.show()
         self.appPath = ""        
         self.help = None
@@ -59,11 +62,14 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             action.triggered.connect(self.handleToolbarButton)
         else:
             self.toolbar = QToolBar(self)
+            n = 1
             for i, text in enumerate(self.graphicsView.scene.modes):
                 action = QAction(QIcon(os.path.join(self.appPath, 'icons/') + text + '.png'), text, self)
                 if text != 'Separator':
-#                    action.setShortcut('Ctrl+'+str(i+1))
+                    action.setShortcut(QKeySequence('Ctrl+'+str(n)))
+                    n = n + 1
                     action.setCheckable(True)
+                    
                     self.actions.append(action)
                     action.triggered.connect(self.handleToolbarButton)
                 else:
@@ -118,6 +124,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.addAction(ff5)           
         
         # Edit tab
+#         self.splitterEditTop.setSizes([5,3])
         self.graphicsView.scene.loadSignal.connect(self.propertyWidget.loadItem)  
         self.graphicsView.scene.saveSignal.connect(self.propertyWidget.saveItem)          
         self.graphicsView.scene.loadVideoSignal.connect(self.loadVideo)          
@@ -138,7 +145,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.seekSlider.sliderMoved.connect(self.setPosition)
         self.playButton.clicked.connect(self.playClicked)
         self.useAOIs.clicked.connect(self.useAOIsTrigger)
-
         self.timer.timeout.connect(self.updateUI)
         self.tabWidget.currentChanged.connect(self.tabChanged)
         self.progressBarEdit.hide()
@@ -171,25 +177,26 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
         
-        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data new.vaproj'
-        self.fileOpen(filename)
-#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data new.vaproj'
+        self.preloadFiles()
+
+    def preloadFiles(self):
+#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
+#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data new.vaproj'
+        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
+        self.fileOpen(filename)        
 #         self.fileSave(filename)        
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename  = 'E:\Box Sync\Video Annotation\Stop n Shop - Wyckoff\data.vaproj'
 #         filename  = '.\data.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\American Eagle\AE - Jan 19, 2006.vaproj'
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
-#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
 
 #         self.graphicsView.scene.loadNodeLevelVars('E:\\Box Sync\\CIL Exchange\\Video Annotation\\American Eagle\\node level variables Jan 12.csv')        
-        
 #         self.graphicsView.scene.loadBatchData('E:\Box Sync\CIL Exchange\Video Annotation\American Eagle\AE - Jan 19, 2006 hide invisible.csv')
 #         self.visClicked()
 #         self.graphicsView.scene.generateFixationSnapshots('E:\Box Sync\Video Annotation\Giant Eagle - Washington\id 129 fixations ANSI.tsv')
 #         self.generateFixationSnapshots('E:/Box Sync/Video Annotation/Giant Eagle - Washington/fixations/fixationdata ANSI.tsv')
 
-        
     def setPlaybackRate(self):
         rate, ok = QInputDialog.getDouble(self, 'Input Dialog', 'Enter playback rate:', 1.0, 0.1, 100)        
         if ok: 
@@ -229,7 +236,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     def loadVideo(self, filename):
         """Open a media file in a mediaPlayer"""
         if filename == '':
-            filename = QFileDialog.getOpenFileName(self, "Open File", os.getcwd())
+            filename, _filter = QFileDialog.getOpenFileName(self, "Open File", os.getcwd())
         filename = os.path.join(os.path.dirname(str(self.graphicsView.scene.filename)), str(filename))
         filename = 'file:///' + filename   
         self.Media = self.Instance.media_new(str(filename))
@@ -246,21 +253,20 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     def loadData(self, filename):
         """Load additional track data"""
         if filename == False:
-            filename = QFileDialog.getOpenFileName(self, "Open File", os.getcwd(), 'CSV Files (*.csv)')
+            filename, _filter = QFileDialog.getOpenFileName(self, "Open File", os.getcwd(), 'CSV Files (*.csv)')
         if filename:
             self.graphicsView.scene.loadData(str(filename))
 
     def loadFixations(self, filename):
         """Load additional track data"""
         if filename == False:
-            filename = QFileDialog.getOpenFileName(self, "Open File", os.getcwd(), 'TSV Files (*.tsv)')
+            filename, _filter = QFileDialog.getOpenFileName(self, "Open File", os.getcwd(), 'TSV Files (*.tsv)')
         if filename:
             self.generateFixationSnapshots(str(filename))
             
     def generateFixationSnapshots(self, filename):
         fileio.generateFixationSnapshots(self, filename)
          
-                         
     def exportTrackData(self, filename=''):
         # choose export file
         dlg = QDataExportDialog()
@@ -280,7 +286,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         exportAOIDistDuration = True if dlg.checkExportAOIDistDuration.checkState() == Qt.Checked else False
         threading.Thread(target=self.doExportData, name="exportDataThread", args=(outFileName, exportDistDuration, exportAOIDistDuration, )).start()
 
-#TEMP
     def fixData(self):
         varNames = ['id', 'seq. number', 'x', 'y', 'video name', 'startTime', 'stopTime']
         varNames.extend([str(key) for key in list(self.graphicsView.scene.variables.keys())])   
@@ -305,9 +310,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             else:
                 cartType = ''
             item.variables[name] = cartType
-                                    
-#                 print cartType
-#END TEMP                
                 
     def doExportData(self, outFileName, exportDistDuration, exportAOIDistDuration):
         import subprocess, csv
@@ -335,7 +337,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
           
 #             stimes = sorted(item.startTime)
 
-            tAll = QTime().addSecs(item.startTime[0].secsTo(item.stopTime[-1]))
+            tAll = QTime(0,0).addSecs(item.startTime[0].secsTo(item.stopTime[-1]))
             
             # BEGIN reset AOI aggregates
             aoiName, aoiL, aoiD = {},{},{}
@@ -355,7 +357,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
                 varList = item.getVariableValuesList(n)
                 row = [ str(item.id)]
                 p = item.polygon.at(n)
-                tNode = QTime().addSecs(item.startTime[n].secsTo(item.stopTime[n]))
+                tNode = QTime(0,0).addSecs(item.startTime[n].secsTo(item.stopTime[n]))
 
                 for nn in range(n, len(idx)):
                     cat = item.variables['Category Shopped'][nn] 
@@ -401,12 +403,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             item.videoname = os.path.join(relpath, fname)
 
     def fileOpen(self, filename=''):
-        self.clear()
         if not filename:
-            filename = QFileDialog.getOpenFileName(self, "Open File", '', "VA Projects (*.vaproj);;All Files (*.*)")
+            home = os.path.expanduser("~")            
+            filename, _filter = QFileDialog.getOpenFileName(self, "Open File", home, "VA Projects (*.vaproj);;All Files (*.*)")
 
         if not filename:
             return
+        self.clear()        
         self.fileNew()
         self.graphicsView.scene.filename = filename
         self.setWindowTitle(self.graphicsView.scene.filename + ' - Video Annotation Tool') 
@@ -440,14 +443,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     def fileNew(self):
         self.clear()
         self.graphicsView.scene.update()
-        
 
     def fileMerge(self):
-        filename = QFileDialog.getOpenFileName(self, "Open File to Merge", '')
+        filename, _filter = QFileDialog.getOpenFileName(self, "Open File to Merge", '')
         if not filename:
             return
         if not self.graphicsView.scene.filename:
-           self.graphicsView.scene.filename = filename
+            self.graphicsView.scene.filename = filename
         file = QFile(filename)
         file.open(QIODevice.ReadOnly)
         s = QDataStream(file)
@@ -463,7 +465,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             filename = self.graphicsView.scene.filename
         
         if not self.graphicsView.scene.filename:  # run "save as" if no file name
-            filename = QFileDialog.getSaveFileName(self, "Save File As", '')
+            filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", '')
             if not filename:
                 return     
         else:
@@ -480,15 +482,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         s.writeInt(self.BUILD_NUMBER)
         self.graphicsView.scene.save(s)
         self.graphicsView.scene.filename = filename
-
             
     def fileSaveAs(self):
-        filename = QFileDialog.getSaveFileName(self, "Save File As", os.getcwd())
+        filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", os.getcwd())
         if not filename:
             return     
         self.graphicsView.scene.filename = filename                
         self.fileSave()
-            
 
     def stop(self):
         """Stop player"""
@@ -503,7 +503,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         """Set the position based on the time on Path node"""
         if item.indP == None or item.startTime[item.indP] == None: 
             return
-        time = QTime().msecsTo(item.startTime[item.indP])
+        time = QTime(0,0).msecsTo(item.startTime[item.indP])
         self.mediaPlayer.set_time(time + 66)
 #        print 'scene time '+self.graphicsView.scene.time.toString('hh:mm:ss.zzz')
 #        print 'setting video time to '+item.startTime[item.indP].toString('hh:mm:ss.zzz')
@@ -519,13 +519,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         
         time = self.mediaPlayer.get_time()
         if time != -1:
-            self.graphicsView.scene.time = QTime().addMSecs(time)
+            self.graphicsView.scene.time = QTime(0,0).addMSecs(time)
             if self.graphicsView.scene.currentPath and self.synctaction.isChecked():
 #                self.graphicsView.scene.currentPath.time = self.graphicsView.scene.time
                 self.graphicsView.scene.currentPath.update()
             self.status.setText(self.graphicsView.scene.time.toString('hh:mm:ss.zzz'))
         else:
-            self.status.setText(QTime().toString('hh:mm:ss.zzz'))
+            self.status.setText(QTime(0,0).toString('hh:mm:ss.zzz'))
             
     def deleteItem(self):
         if self.items.currentItem():
@@ -534,8 +534,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     def deleteAOI(self):
         if self.aois.currentItem():
             self.graphicsView.scene.undoStack.push(RemoveCommand(self.graphicsView.scene, self.aois.currentItem().g))                                        
-
-
                 
     def checkItem(self, item):
         if item.checkState() == Qt.Checked:
@@ -597,7 +595,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
 
         msg = QMessageBox(self);
         msg.setWindowTitle('About')
-        msg.setInformativeText('<p>Copyright \xa9 2013-2019 <a href="https://kelley.iu.edu/faculty-research/departments/marketing/research/labs/customer-interface-lab.cshtml">Customer Interface Lab</a>, <a href="http://iub.edu">Indiana University.</a> All Rights Reserved.' + \
+        msg.setInformativeText('<p>Copyright \xa9 2013-2020 <a href="https://kelley.iu.edu/faculty-research/departments/marketing/research/labs/customer-interface-lab.cshtml">Customer Interface Lab</a>, <a href="http://iub.edu">Indiana University.</a> All Rights Reserved.' + \
             '<p>Redistribution and use of this software for commercial purposes is strictly prohibited.' + \
             '<p>THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED WARRANTIES,\
         INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND\
@@ -633,7 +631,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         helpPanel.setStretchFactor(1, 4)
         self.helpWindow.setLayout(QVBoxLayout())
         self.helpWindow.layout().addWidget(helpPanel)
-        self.helpWindow.setMinimumSize(800, 800)
+        self.helpWindow.setMinimumSize(1200, 1400)
         self.help.contentWidget().linkActivated.connect(helpBrowser.load)
     
             
@@ -646,11 +644,6 @@ def main():
     elif __file__:
         application_path = os.path.dirname(__file__)
     
-#     stylesheet_path = os.path.join(application_path, "mydark.stylesheet")    
-#     with open(stylesheet_path,"r") as fh:
-#         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt()+fh.read())
-
-
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     
     window = Main()

@@ -35,7 +35,7 @@ class RemoveCommand(AddCommand):
 class AddPointCommand(QUndoCommand):
     variables = {}
     
-    def __init__(self, path, i, p, startTime=QTime(), parent = None):
+    def __init__(self, path, i, p, startTime=QTime(0,0), parent = None):
         QUndoCommand.__init__(self, 'Added point to Path ' + path.id ,  parent)
         self.path = path
         self.i = i
@@ -44,7 +44,8 @@ class AddPointCommand(QUndoCommand):
         self.stopTime = startTime.addMSecs(int(1000/self.path.scene().FPS))
         # make a copy of node-level variables
         for name in self.path.scene().variables:
-                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
+                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.path.scene().variables[name]
+#                 print(f'len = {len(self.variables["purchased"])} i = {i}')
                 if StrToBoolOrKeep(vEachNode): # list
                     if self.i < len(self.path.polygon):
                         self.variables[name] = self.path.variables[name][self.i]  
@@ -77,11 +78,11 @@ class AddPointCommand(QUndoCommand):
             self.path.scene().loadSignal.emit(self.path)
                 
     def redo(self):
-        if self.startTime == QTime() and self.i < len(self.path.polygon):
+        if self.startTime == QTime(0,0) and self.i < len(self.path.polygon):
             delta = self.path.stopTime[self.i-1].msecsTo(self.path.startTime[self.i])
             self.startTime = self.stopTime = self.path.stopTime[self.i-1].addMSecs(delta/2)
            
-        self.path.startTime.insert(self.i,  self.startTime)        
+        self.path.startTime.insert(self.i,  self.startTime)
         self.path.stopTime.insert(self.i,  self.stopTime) 
         self.path.polygon.insert(self.i,  self.p)
         

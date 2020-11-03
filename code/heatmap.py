@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Displays a heatmap
-Modified from:
+Adapted from:
 PyHeat http://github.com/amccollum/pyheat
 Andrew McCollum <amccollum@gmail.com>
 """
@@ -23,6 +23,7 @@ from OpenGL.GLUT import *
 from OpenGL.GL.shaders import *
 from OpenGL.GL.EXT.framebuffer_object import *
 from OpenGL.GL.ARB.multitexture import *
+
 logging.basicConfig( level = logging.DEBUG )
 OpenGL.FULL_LOGGING = True
 

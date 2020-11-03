@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 """ Path Item"""
+from PyQt5.QtCore import Qt, QPointF, QRectF, QLineF
+from PyQt5.QtGui import QFont, QColor, QPen, QBrush, QPolygonF
+from PyQt5.QtWidgets import QGraphicsPolygonItem, QGraphicsItem
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import os, datetime, threading, subprocess, time, sys, csv
-
-from settings import *
-from propertywidget import *
-from delegates import *
+from settings import BIG_INT
 
 
 class AOI(QGraphicsPolygonItem):
@@ -200,7 +197,7 @@ class AOI(QGraphicsPolygonItem):
 
     def getNearestPoint(self, p):
         mini = 0
-        mind = sys.maxsize
+        mind = BIG_INT
         for i in range(self.polygon().count()):
             dist = (self.polygon().at(i) - p).manhattanLength()
             if  dist < mind:
@@ -212,7 +209,7 @@ class AOI(QGraphicsPolygonItem):
         if self.polygon().count() < 2:
             return 0
         i1 = 0
-        d1 = sys.maxsize
+        d1 = BIG_INT
         for i in range(self.polygon().count() - 1):
             l = QLineF(self.polygon().at(i), self.polygon().at(i + 1))
             n = l.normalVector()

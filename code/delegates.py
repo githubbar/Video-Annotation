@@ -1,27 +1,19 @@
 # -*- coding: utf-8 -*-
 """ Delegates """
-# from PyQt5.QtGui import *
-# from PyQt5.QtCore import *
-# from PyQt5.QtWidgets import *
-# 
-# import sys
-# 
-# from settings import *
-# from choicesdialog import *
-# from types import *
-# from variablewidget import *
 import os, sys
 
-from PyQt5.QtCore import Qt, QVariant, QPoint, QRect, QEvent, QSize, QSortFilterProxyModel 
+from PyQt5.QtCore import Qt, QVariant, QPoint, QRect, QEvent, QSize, QSortFilterProxyModel, \
+    QTime, pyqtSignal, QModelIndex 
 from PyQt5.QtGui import QDoubleValidator, QIntValidator, QValidator, QPen, QIcon, QStandardItem, QColor, \
     QBrush     
 from PyQt5.QtWidgets import QStyledItemDelegate, QLineEdit, QComboBox, QCompleter, \
     QFontDialog, QTimeEdit, QStyle, QStyleOptionButton, QApplication, QToolButton, \
-    QFileDialog, QAbstractItemView, QColorDialog, QCheckBox
-from matplotlib.backends.backend_qt5 import qApp
+    QFileDialog, QAbstractItemView, QColorDialog, QCheckBox, QPushButton, qApp
 
-from settings import EditorTypeRole, UserDataRole, StrToBoolOrKeep, EditorReadOnlyRole
-from PyQt5.Qt import QPushButton
+from settings import EditorTypeRole, UserDataRole, StrToBoolOrKeep, EditorReadOnlyRole, \
+    BIG_INT, CurrentDirDataRole
+
+
 
 
 class CustomDelegate(QStyledItemDelegate):
@@ -77,15 +69,13 @@ class CustomDelegate(QStyledItemDelegate):
             if not StrToBoolOrKeep(index.data(EditorReadOnlyRole)):
                 qApp.installEventFilter(self)              
                 editor = QLineEdit(parent)
-                editor.setValidator(QIntValidator(-sys.maxsize, sys.maxsize, parent))         
+                editor.setValidator(QIntValidator(-BIG_INT, BIG_INT, parent))         
                 return editor
             return None
         elif elementType == 'Button':
             return None
         elif elementType == 'File':
-            myFilter = index.data(UserDataRole)
-            projectpath = index.data(UserDataRole+1)
-            editor = FileOpen(projectpath,  myFilter, parent)
+            editor = FileOpenEdit(index, self, parent)
             editor.installEventFilter(self)            
             return editor
         elif elementType == 'Font':
@@ -99,7 +89,7 @@ class CustomDelegate(QStyledItemDelegate):
             return editor
 
     def displayText(self, value, locale):       
-        if type(value) == QVariant.Time or type(value) == QVariant.DateTime:
+        if type(value) == QTime or type(value) == QVariant.Time or type(value) == QVariant.DateTime:
             return value.toString('hh:mm:ss.zzz')
         elif type(value) == QVariant.Invalid:
             return 'None'
@@ -167,7 +157,6 @@ class CustomDelegate(QStyledItemDelegate):
         elif elementType=='Button':
             userData = index.data(UserDataRole)
             if not userData: return
-#             FIXME: userData doesn't unpack but does for [1,2] list'
             text, methodToRun = userData
             button  = QStyleOptionButton()
             button.text = text
@@ -232,36 +221,28 @@ class CustomDelegate(QStyledItemDelegate):
                             option.rect.height() / 2 -
                             check_box_rect.height() / 2)
         return QRect(check_box_point, check_box_rect.size())
-        
-class FileOpen(QLineEdit):
-    def __init__(self, relativeToDir = None,  myFilter = 'All Files (*.*)',  parent = None):
-        QLineEdit.__init__(self, parent)
-        self.myFilter = myFilter
-        self.relativeToDir = relativeToDir
-        self.button = QToolButton(self)
-        self.button.setIcon(QIcon('icons/folder-open.png'))            
-        self.button.setIconSize(QSize(16, 16))
-        self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
-        frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
-        sz = self.button.sizeHint()        
-        self.setStyleSheet("QLineEdit { padding-right: %1px; }".arg(sz.width() + frameWidth + 1))
-        msz = self.minimumSizeHint()
-        self.setMinimumSize(max(msz.width(), sz.height() + frameWidth * 2 + 2), max(msz.height(), sz.height() + frameWidth * 2 + 2))
-        self.button.clicked.connect(self.openFileName)
 
-    def resizeEvent(self, event):
-        sz = self.button.sizeHint()
-        frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
-        self.button.move(self.rect().right() - frameWidth - sz.width(), (self.rect().bottom() + 1 - sz.height())/2)
-        
+class FileOpenEdit(QLineEdit):
+    def __init__(self, index, delegate = None, parent = None):
+        QLineEdit.__init__(self, parent)
+        self.delegate = delegate
+        self.index = index        
+        self.myFilter = index.data(UserDataRole)
+        self.projectpath = index.data(CurrentDirDataRole)        
+        self.action = self.addAction(QIcon('icons/folder-open.png'), QLineEdit.TrailingPosition)
+        self.action.triggered.connect(self.openFileName)
+
     def openFileName(self):
-        fName = QFileDialog.getOpenFileName(self.parent(), 'Open File',  self.relativeToDir, self.filter)
-        if self.relativeToDir and fName:
-            fName = os.path.relpath(str(fName), str(self.relativeToDir))
-        if fName: self.setText(fName.encode("utf-8"))
+        self.delegate.blockSignals(True)
+        fName, _filter = QFileDialog.getOpenFileName(self.parent(), 'Open File',  self.projectpath, self.myFilter)
+        self.delegate.blockSignals(False)        
+        if self.projectpath and fName:
+            fName = os.path.relpath(str(fName), str(self.projectpath))
+        if fName:
+            self.setText(fName)  
 
 class UniqueLineEditValidator(QValidator):
-    def __init__(self, index,  parent=None):
+    def __init__(self, index,  parnt=None):
         QCompleter.__init__(self, parent)
         self.index = index
          

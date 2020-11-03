@@ -28,6 +28,8 @@ settings = {
 "fixationDispersionThreshold":  40.0/1920 # in percentages 0 to 1
 }
 
+BIG_INT = 2147483647
+
 if PyQt5.QtCore.QT_VERSION >= 0x50501:
     def excepthook(type_, value, traceback_):
         traceback.print_exception(type_, value, traceback_)
@@ -36,7 +38,7 @@ if PyQt5.QtCore.QT_VERSION >= 0x50501:
 
 def StrToBoolOrKeep(s): 
     if isinstance(s, str):
-        return s.lower() == True
+        return s.lower() == 'true'
     else: 
         return s
     
@@ -45,13 +47,13 @@ def getSeconds():
     return 0.001*win32api.GetTickCount()
 
 def keyEventToKeySequence(event):
-    modifier = ''
-    if (event.modifiers() & Qt.ShiftModifier): modifier += "Shift+"
-    if (event.modifiers() & Qt.ControlModifier): modifier += "Ctrl+"
-    if (event.modifiers() & Qt.AltModifier): modifier += "Alt+"
-    if (event.modifiers() & Qt.MetaModifier): modifier += "Meta+"
-    key = QKeySequence(event.key())
-    return QKeySequence(modifier + key)
+    keys = [event.key()]
+    if (event.modifiers() & Qt.ShiftModifier): keys.insert(0, Qt.Key_Shift)
+    if (event.modifiers() & Qt.ControlModifier): keys.insert(0, Qt.Key_Control)
+    if (event.modifiers() & Qt.AltModifier): keys.insert(0, Qt.Key_Alt)
+    if (event.modifiers() & Qt.MetaModifier): keys.insert(0, Qt.Key_Meta)
+    
+    return QKeySequence(*keys)
 
 def distPointToSegment(p, p1, p2):
     a = (p-p1)
@@ -87,9 +89,10 @@ def pointInPolygon(x, y, poly):
 EditorReadOnlyRole = Qt.UserRole + 2
 EditorTypeRole = Qt.UserRole + 3
 UserDataRole = Qt.UserRole + 4
-
+CurrentDirDataRole = Qt.UserRole + 5
+ 
 variableTypes = ('String', 'Integer', 'DropDown', 'MultiChoice', 'Double', 'Yes/No',  'Time',  'File', 'Font')
-defaultVariableValues = ('', 0, '',  '', 0.0,  False,  QTime(),  '', QFont())
+defaultVariableValues = ('', 0, '',  '', 0.0,  False,  QTime(0,0),  '', QFont())
 
 permanentVariableNames = ['tripType','description', 'tags', 'category', 'purchased', 'shopped',  'phone', 'employee']
 permanentVariableParams = [        

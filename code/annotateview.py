@@ -6,21 +6,24 @@ Email: cil@indiana.edu
 http://indiana.edu/~cil
 Software bindings: 
 """
+import os
 
-# Import modules
-import os,sys
-from random import randint, shuffle
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from label import *
-from track import *
-from aoi import *
-from polygon import *
-from rectangle import *
-from ellipse import *
-from subprocess import *
-from snapshot import *
-from variabledialog import *
+from PyQt5.QtCore import pyqtSignal, QTime, Qt, QDateTime, QPointF, QEvent
+from PyQt5.QtGui import QFont, QPixmap, QTransform, QPainterPath, QKeySequence, \
+    QColor
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QUndoStack, \
+    QGraphicsPixmapItem, QMessageBox, QGraphicsView, QAction, qApp
+
+from aoi import AOI
+from vacommands import AddCommand
+from ellipse import Ellipse
+from label import Label
+from polygon import Polygon
+from rectangle import Rectangle
+from settings import StrToBoolOrKeep, keyEventToKeySequence
+from snapshot import Snapshot
+from track import Path
+
 
 class AnnotateScene(QGraphicsScene):
     
@@ -53,7 +56,7 @@ class AnnotateScene(QGraphicsScene):
     font = QFont('Verdana', 2.2)    
     #    add dialog to change K to project properties
     
-    time = QTime()
+    time = QTime(0,0)
     
     def __init__(self):
         QGraphicsScene.__init__(self)
@@ -191,8 +194,6 @@ class AnnotateScene(QGraphicsScene):
             li = item.variables[eName]
             li[idx] = True
             item.variables[eName] = li
-             
-
         
     def loadBatchData(self, filename):
         import csv
@@ -226,7 +227,7 @@ class AnnotateScene(QGraphicsScene):
 #                     continue
                 if not t.strip():
                     continue;
-                tm = QTime().addMSecs(1000.0*int(t)/self.FPS)
+                tm = QTime(0,0).addMSecs(1000.0*int(t)/self.FPS)
 #                 X = -float(x)*scalex+dx
 #                 Y = float(y)*scaley+dy
 #                 X = w*(float(x)-MAX_X)/(MIN_X-MAX_X)
@@ -243,10 +244,8 @@ class AnnotateScene(QGraphicsScene):
 #                 print x,y
 
             print(id) 
-           
 
     def renameVariable(self, oldname, newname):
-        # TEMP
         idx = list(self.variables.keys()).index(oldname)
         key = list(self.variables.keys())[idx]
         self.variables[newname] = self.variables.pop(key)
@@ -254,7 +253,6 @@ class AnnotateScene(QGraphicsScene):
         for item in list(self.items()):
             if type(item) == Path: 
                 item.renameVariable(oldname, newname)     
-        # END TEMP 
         
     def load(self, s, buildNumber, merge = False):
         # read scene properties
@@ -321,61 +319,70 @@ class AnnotateScene(QGraphicsScene):
             
     def mousePressEvent(self, event):
         # cycle through stacking order if more than 1 item under mouse
-        items = self.items(event.scenePos())        
-        if event.modifiers() == Qt.NoModifier and len(items) > 1: 
-            if not self.s: self.s = items[0]       
-            else:
-                try:
-                    N = items.index(self.s)
-                except ValueError:
-                    N = 0
-                self.s = items[(N+1) % len(items)]
-                self.s.stackBefore(items[N])
-          
-        if (event.buttons() & Qt.LeftButton):
-            sp = event.scenePos()
-            # copy item with alt+Drag
-            if self.mode == 'Edit' and (event.modifiers() & Qt.AltModifier):
-                for i in self.selectedItems():
-                    item = eval('i.clone()')
-                    self.undoStack.push(AddCommand(self.scene, item))                                             
-            elif self.mode == 'Path':                
-                # Add new track
-                if (not self.currentPath or event.modifiers() & Qt.ShiftModifier):
+        sp = event.scenePos()
+        items = self.items(sp)        
+#         if (event.modifiers() & Qt.ControlModifier) and len(items) > 1:            
+#             if not self.s: self.s = items[0]       
+#             else:
+#                 try:
+#                     N = items.index(self.s)
+#                 except ValueError:
+#                     N = 0
+#                 self.s = items[(N+1) % len(items)]
+#                 self.s.stackBefore(items[N])
+        
+        if event.buttons() & Qt.LeftButton:
+            if  event.modifiers() & Qt.ShiftModifier:
+                if self.mode == 'Path':
+                    # Add new track
                     print("Creating new track")
                     self.currentPath = Path(sp,  self.font, 1.0)
-                    self.undoStack.push(AddCommand(self, self.currentPath))                                             
-                else:
+                    self.undoStack.push(AddCommand(self, self.currentPath))
+            elif event.modifiers() & Qt.AltModifier:
+                if self.mode == 'Path':
+                    # Add point between
                     self.currentPath.handleMousePress(event)
-            elif self.mode == 'Polygon':           
-                for i in items:
-                    if type(i) ==  Polygon:
-                        self.currentPolygon = i
-                if (not self.currentPolygon or event.modifiers() & Qt.ShiftModifier):   
-                    self.undoStack.push(AddCommand(self, Polygon(sp,  self.font, 0.4)))                                                             
-                else:
-                    self.currentPolygon.addPoint(sp)  
-            elif self.mode == 'AOI':
-                for i in items:
-                    if type(i) ==  AOI:
-                        self.currentAOI= i
-                if (not self.currentAOI or event.modifiers() & Qt.ShiftModifier):   
-                    self.undoStack.push(AddCommand(self, AOI(sp,  self.font, 0.7)))                                                             
-                else:
-                    self.currentAOI.handleMousePress(event)
-            elif self.mode == 'Rectangle':             
-                self.undoStack.push(AddCommand(self, Rectangle(sp,  self.font, 0.4)))                                             
-            elif self.mode == 'Ellipse':                
-                self.undoStack.push(AddCommand(self, Ellipse(sp,  self.font, 0.4))) 
-            elif self.mode == 'Label':                
-                self.undoStack.push(AddCommand(self, Label(sp,  self.font, 0.4)))                 
-            elif self.mode == 'Snapshot':                
-                self.undoStack.push(AddCommand(self, Snapshot(sp,  self.font, 0.4)))
+            elif event.modifiers() & Qt.ControlModifier:
+                if self.mode == 'Edit' :
+                    for i in self.selectedItems():
+                        item = eval('i.clone()')
+                        self.undoStack.push(AddCommand(self, item))                                             
+                elif self.mode == 'Path':                
+                    if (not self.currentPath):
+                        print("Creating new track")
+                        self.currentPath = Path(sp,  self.font, 1.0)
+                        self.undoStack.push(AddCommand(self, self.currentPath))                                             
+                    else:
+                        self.currentPath.handleMousePress(event)
+                elif self.mode == 'Polygon':           
+                    for i in items:
+                        if type(i) ==  Polygon:
+                            self.currentPolygon = i
+                    if (not self.currentPolygon):   
+                        self.undoStack.push(AddCommand(self, Polygon(sp,  self.font, 0.4)))                                                             
+                    else:
+                        self.currentPolygon.addPoint(sp)  
+                elif self.mode == 'AOI':
+                    for i in items:
+                        if type(i) ==  AOI:
+                            self.currentAOI= i
+                    if (not self.currentAOI):   
+                        self.undoStack.push(AddCommand(self, AOI(sp,  self.font, 0.7)))                                                             
+                    else:
+                        self.currentAOI.handleMousePress(event)
+                elif self.mode == 'Rectangle':             
+                    self.undoStack.push(AddCommand(self, Rectangle(sp,  self.font, 0.4)))                                             
+                elif self.mode == 'Ellipse':                
+                    self.undoStack.push(AddCommand(self, Ellipse(sp,  self.font, 0.4))) 
+                elif self.mode == 'Label':                
+                    self.undoStack.push(AddCommand(self, Label(sp,  self.font, 0.4)))                 
+                elif self.mode == 'Snapshot':                
+                    self.undoStack.push(AddCommand(self, Snapshot(sp,  self.font, 0.4)))
         elif (event.buttons() & Qt.RightButton):
             if self.mode == 'Path' and self.currentPath:                
                 self.currentPath.handleMousePress(event)
-        QGraphicsScene.mousePressEvent(self,  event)     
-        
+        QGraphicsScene.mousePressEvent(self,  event)          
+
 class AnnotateView(QGraphicsView):
     
     def __init__(self, parent):
@@ -390,19 +397,19 @@ class AnnotateView(QGraphicsView):
         self.setDragMode(QGraphicsView.ScrollHandDrag)
         self.scene.filename = ''
         quad1 = QAction(self)
-        quad1.setShortcut(QKeySequence('Ctrl+1'))
+        quad1.setShortcut(QKeySequence('Alt+1'))
         quad1.triggered.connect(lambda: self.fitInView(0, 0, 140, 80, Qt.KeepAspectRatio))                 
         self.addAction(quad1)
         quad2 = QAction(self)
-        quad2.setShortcut(QKeySequence('Ctrl+2'))
+        quad2.setShortcut(QKeySequence('Alt+2'))
         quad2.triggered.connect(lambda: self.fitInView(190, 0, 130, 70, Qt.KeepAspectRatio))                 
         self.addAction(quad2)
         quad3 = QAction(self)
-        quad3.setShortcut(QKeySequence('Ctrl+3'))
+        quad3.setShortcut(QKeySequence('Alt+3'))
         quad3.triggered.connect(lambda: self.fitInView(0, 100, 140, 100, Qt.KeepAspectRatio))                 
         self.addAction(quad3)
         quad4 = QAction(self)
-        quad4.setShortcut(QKeySequence('Ctrl+4'))
+        quad4.setShortcut(QKeySequence('Alt+4'))
         quad4.triggered.connect(lambda: self.fitInView(220, 100, 100, 100, Qt.KeepAspectRatio))                 
         self.addAction(quad4)        
         
@@ -425,6 +432,11 @@ class AnnotateView(QGraphicsView):
         qApp.installEventFilter(self) 
         self.setDragMode(QGraphicsView.ScrollHandDrag)             
 
+#     def keyPressEvent(self, event):
+# #         self.setCursor(Qt.DragMoveCursor)
+#         if event.modifiers() == Qt.CTRL:
+#             self.setCursor(Qt.CrossCursor) 
+#         QGraphicsView.keyPressEvent(self,  event)          
 
     def zoomInFontPressed(self):
         for i in self.scene.selectedItems():
@@ -452,9 +464,12 @@ class AnnotateView(QGraphicsView):
             self.scene.currentPath.stopTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
 
-    
-    def eventFilter(self, object, event):
+
+    def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress):
+#             TODO: set cursore to cross while ctrl clicking
+#             if event.modifiers() & Qt.ControlModifier:
+#                 self.setCursor(Qt.CrossCursor)            
             for name in self.scene.variables:
                 vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene.variables[name]
                 shortcut = vShortcut
@@ -479,7 +494,7 @@ class AnnotateView(QGraphicsView):
                             li[item.indP] = li[item.indP].toInt()[0]+1
                     self.scene.loadSignal.emit(item)
                     return True            
-        return QGraphicsView.eventFilter(self,  object, event)
+        return QGraphicsView.eventFilter(self, obj, event)
             
 #Size scene to fit the view
     
@@ -487,14 +502,8 @@ class AnnotateView(QGraphicsView):
         self.setTransform(QTransform())
         s = min(self.width()/self.scene.width(), self.height()/self.scene.height())
         self.scale(s, s);
-        
+
     def wheelEvent(self, event):
-#         # add shift+wheel to pan
-#         if event.modifiers & Qt.ShiftModifier:
-#             event.angleDelta().y():
-#                                   
-#         # wheel to zoom
-#         else:
         factor = 1.2
         if event.angleDelta().y() < 0:
             factor = 1.0 / factor

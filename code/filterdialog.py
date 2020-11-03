@@ -1,19 +1,15 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from Ui_filterdialog import Ui_FilterDialog
-from variablewidget import *
-from track import *
-from settings import *
+from PyQt5 import uic
+from PyQt5.QtWidgets import QDialog
+from fileio import findFataFile
 
-
-
-class FilterDialog(QDialog, Ui_FilterDialog):
+class FilterDialog(QDialog):
     def __init__(self, parent):
-        QDialog.__init__(self, parent)
-        Ui_FilterDialog.__init__(self)
+        super(FilterDialog, self).__init__()
+        uic.loadUi(findFataFile('filterdialog.ui'), self)
         self.setupUi(self)
         self.buttonOk.clicked.connect(self.onOkClicked)
         self.buttonCancel.clicked.connect(self.onCancelClicked)
+        self.show()
         
     def onCancelClicked(self):
         self.reject()

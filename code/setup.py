@@ -17,7 +17,7 @@ Target_1 = Executable(
     # what to build
     script = "main.py",
     initScript = None,
-    base = 'Win32GUI',
+    base = 'Win32GUI', # comment this out to see consol to debug
     targetName = "VideoAnnotationTool.exe",
 #     compress = True,
 #     copyDependentFiles = True,
@@ -26,8 +26,8 @@ Target_1 = Executable(
     icon = "icons\icon.ico"
     )
     
-    
-include_files = ["icons", "palettes","mydark.stylesheet"]
+include_files = ["icons", "palettes","mydark.stylesheet", \
+                 'window.ui', 'choicesdialog.ui', 'filterdialog.ui', 'imagepopup.ui', 'project.ui', 'variabledialog.ui']
 
 app = PyQt5.QtWidgets.QApplication([])
 
@@ -41,15 +41,14 @@ else:
     include_files.append(('help', 'help'))
 
 # Copy necessary dll's from the PyQt plugins directory
-include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'sqldrivers', 'qsqlite4.dll'), 'plugins/sqldrivers/qsqlite4.dll'))  # help stores in sql lite format
+include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'sqldrivers', 'qsqlite.dll'), 'plugins/sqldrivers/qsqlite.dll'))  # help stores in sql lite format
 include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'imageformats'), 'plugins/imageformats'))
  
-
 # Copy OpenGL files
-# include_files.append(("c:/Python27/Lib/site-packages/PyOpenGL-3.1.0b2-py2.7-win32.egg/OpenGL", "OpenGL"))
+# include_files.append(r'C:\Users\oleykin\AppData\Local\Programs\Python\Python36\Lib\site-packages\OpenGL\DLLS\glut64.vc14.dll')
   
 # Copy VLC dll's 
-vlcDir = str("c:/Program Files (x86)/VideoLAN/VLC")
+vlcDir = str("c:/Program Files/VideoLAN/VLC")
 for f in glob.glob(os.path.join(vlcDir,'*.dll')):
     include_files.append((f, os.path.basename(f)))
 include_files.append((os.path.join(vlcDir, 'plugins'), 'plugins'))
@@ -58,25 +57,24 @@ include_files.append((os.path.join(vlcDir, 'plugins'), 'plugins'))
 include_files.append('qt.conf')
   
 # Copy FFMPEG dll's
-ffmpegDir = str("c:/Program Files (x86)/ffmpeg")
+ffmpegDir = str("c:/Program Files/ffmpeg")
 include_files.append((os.path.join(ffmpegDir, 'bin'), '.'))
 
-#"ctypes", "OpenGL", "OpenGL.platform", "OpenGL.GLU", "OpenGL.GL", "OpenGL.GLUT", "OpenGL.GL.shaders", "OpenGL.GL.EXT", "OpenGL.GL.ARB"
-# OpenGL.arrays.ctypesparameters
-# , "OpenGL", "OpenGL.platform", "OpenGL.GLU", "OpenGL.GL", "OpenGL.GLUT", "OpenGL.GL.shaders", "OpenGL.GL.EXT", "OpenGL.GL.ARB", "OpenGL.platform.win32","OpenGL.platform.win32", "OpenGL.arrays.ctypesarrays", "OpenGL.arrays.numpymodule","OpenGL.arrays.lists","OpenGL.arrays.numbers","OpenGL.arrays.strings" 
+
 setup(
         name = "VideoAnnotationTool",
         version = "1.0."+str(Main.BUILD_NUMBER),
         description = "Video Annotation Tool",
         author = "author",
         options = {"build_exe": {
-            "excludes":  ["tcl","tk","Tkinter", "collections.abc"],  
+            "excludes":  ["tcl","tk","Tkinter"],  
             "includes":  ['qdarkstyle', 'unittest', 'numpy.core._methods', 'numpy.lib.format', 'OpenGL.GLU.glustruct'],
             "include_files": include_files,
-            "packages": ["OpenGL.arrays", "OpenGL.GL.ARB"]
+            "packages": ["OpenGL"]           
             } 
        },
-       
+      
        executables = [Target_1]
     )
 
+print('Successfully finished!')

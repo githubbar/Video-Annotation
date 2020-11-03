@@ -1,19 +1,19 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5 import uic
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QDialog
+from fileio import findFataFile
 
-import os, sys
-from Ui_imagepopup import Ui_Dialog
-class ImagePopupDialog(QDialog, Ui_Dialog):
+class ImagePopupDialog(QDialog):
     """
     The ImagePopup class shows an image in QLabel 
     """
     def __init__(self, imagename, parent=None):
-        QDialog.__init__(self, parent)
-        Ui_Dialog.__init__(self)
-        self.setupUi(self)
+        super(ImagePopupDialog, self).__init__()
+        uic.loadUi(findFataFile('imagedialog.ui'), self)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 #        imagename  = 'd:/Projects/Visual Attention/Video Annotation/data/IMG_0194.JPG'
 #        print imagename
         thumb = QPixmap(imagename)
         self.label.setPixmap(thumb.scaled(800, 600,  Qt.KeepAspectRatio))
+        self.show()

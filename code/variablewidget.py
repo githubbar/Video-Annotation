@@ -1,7 +1,3 @@
-# from PyQt5.QtGui import *
-# from PyQt5.QtCore import *
-# from delegates import *
-# from settings import *
 from PyQt5.QtCore import QVariant, Qt, pyqtSignal
 from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QDialog

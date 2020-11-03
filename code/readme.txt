@@ -10,12 +10,11 @@ Developed with:
         PyQt5: http://www.riverbankcomputing.co.uk/software/pyqt/download    
         PyWin32: http://sourceforge.net/projects/pywin32/ (windows extensions, need it for system uptime)
         PyOpenGL: https://pypi.python.org/pypi/PyOpenGL (pip install from http://www.lfd.uci.edu/~gohlke/pythonlibs/)
-        OpenGLContext: pip install PyDispatcher PyVRML97 OpenGLContext
         Pillow: https://www.lfd.uci.edu/~gohlke/pythonlibs/
         NumPy: http://www.lfd.uci.edu/~gohlke/pythonlibs/
         MatPlotLib: http://matplotlib.org/ (pip install from http://www.lfd.uci.edu/~gohlke/pythonlibs/)
         QDarkStyle: pip install qdarkstyle
-    FFMPeg 32-bit shared build: https://ffmpeg.zeranoe.com/builds/        
+    FFMPeg https://ffmpeg.zeranoe.com/builds/        
     PyDev: http://pydev.org/
     Cx-freeze: http://cx-freeze.sourceforge.net/ (to make executables)
     

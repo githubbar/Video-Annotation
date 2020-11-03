@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1383</width>
-    <height>887</height>
+    <width>1934</width>
+    <height>1231</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -41,46 +41,6 @@
         <string>Edit</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="0">
-         <layout class="QHBoxLayout" name="statusPanel">
-          <item>
-           <widget class="QPushButton" name="playButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-              <horstretch>20</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Play</string>
-            </property>
-            <property name="shortcut">
-             <string>Space</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="seekSlider">
-            <property name="maximum">
-             <number>1000</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="status">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="0" column="0">
          <widget class="QSplitter" name="splitterVertical">
           <property name="sizePolicy">
@@ -115,6 +75,9 @@
                <enum>Qt::Horizontal</enum>
               </property>
               <widget class="AnnotateView" name="graphicsView">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                  <horstretch>20</horstretch>
@@ -125,6 +88,12 @@
                 <size>
                  <width>320</width>
                  <height>180</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>8000</width>
+                 <height>8000</height>
                 </size>
                </property>
                <property name="baseSize">
@@ -175,8 +144,14 @@
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>300</width>
+                    <width>450</width>
                     <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>2000</width>
+                    <height>2000</height>
                    </size>
                   </property>
                   <property name="alternatingRowColors">
@@ -195,7 +170,10 @@
                    <bool>false</bool>
                   </attribute>
                   <attribute name="headerDefaultSectionSize">
-                   <number>80</number>
+                   <number>200</number>
+                  </attribute>
+                  <attribute name="headerMinimumSectionSize">
+                   <number>52</number>
                   </attribute>
                   <attribute name="headerStretchLastSection">
                    <bool>true</bool>
@@ -219,6 +197,12 @@
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>2000</width>
+                    <height>2000</height>
+                   </size>
                   </property>
                   <property name="text">
                    <string>Variables</string>
@@ -409,6 +393,46 @@ selection-background-color: rgb(190, 204, 255);
           </widget>
          </widget>
         </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="statusPanel">
+          <item>
+           <widget class="QPushButton" name="playButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>20</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Play</string>
+            </property>
+            <property name="shortcut">
+             <string>Space</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="seekSlider">
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="status">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item row="2" column="0">
          <widget class="QProgressBar" name="progressBarEdit">
           <property name="value">
@@ -458,8 +482,8 @@ selection-background-color: rgb(190, 204, 255);
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>630</width>
-                       <height>111</height>
+                       <width>905</width>
+                       <height>184</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_9">
@@ -473,8 +497,8 @@ selection-background-color: rgb(190, 204, 255);
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>612</width>
-                           <height>69</height>
+                           <width>879</width>
+                           <height>126</height>
                           </rect>
                          </property>
                          <property name="baseSize">
@@ -503,8 +527,8 @@ selection-background-color: rgb(190, 204, 255);
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>646</width>
-                       <height>107</height>
+                       <width>904</width>
+                       <height>184</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_10">

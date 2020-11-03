@@ -2,17 +2,19 @@ import os
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QHeaderView, QTableWidgetItem, QMessageBox, QFileDialog
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QVariant, Qt
+from PyQt5.QtCore import Qt
 
-from UnicodeCSV import UnicodeWriter
+from unicodeCSV import UnicodeWriter
 from track import Path
+from fileio import findFataFile
+from variablewidget import VariableWidget
 
 class VariableDialog(QDialog):
 
     def __init__(self, parent):
         self.parent = parent         
         super(VariableDialog, self).__init__()
-        uic.loadUi('variabledialog.ui', self)
+        uic.loadUi(findFataFile('variabledialog.ui'), self)
         self.buttonOk.clicked.connect(self.onOkClicked)
         self.buttonCancel.clicked.connect(self.onCancelClicked)
         self.importButton.clicked.connect(self.importFromFile)
@@ -76,7 +78,7 @@ class VariableDialog(QDialog):
         self.accept()
 
     def importFromFile(self):
-        filename = QFileDialog.getOpenFileName(self, "Choose Comma Separated Variables File", os.getcwd(), 'CSV Files (*.csv)')
+        filename, _filter = QFileDialog.getOpenFileName(self, "Choose Comma Separated Variables File", os.getcwd(), 'CSV Files (*.csv)')
         if not filename:
             return        
         
@@ -101,7 +103,7 @@ class VariableDialog(QDialog):
         self.table.updateDelegates()
                 
     def exportToFile(self):
-        filename = QFileDialog.getSaveFileName(self, "Choose Comma Separated Variables File", os.getcwd(), 'CSV Files (*.csv)')
+        filename, _filter = QFileDialog.getSaveFileName(self, "Choose Comma Separated Variables File", os.getcwd(), 'CSV Files (*.csv)')
         if not filename:
             return        
         

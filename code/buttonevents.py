@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 """Define button/checkbox/tab event handlers for the main window"""
-import logging, traceback
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import os, datetime, threading, subprocess, time, sys
-from annotateview import *
-from projectdialog import ProjectDialog
-from heatmap import HeatMap     
+import traceback
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QDialog, QProgressDialog
+
 from filterdialog import FilterDialog
-from variabledialog import *
+from projectdialog import ProjectDialog
+from snapshot import Snapshot
+from track import Path
+from variabledialog import VariableDialog
+
 
 class ButtonEvents():
     def tabChanged(self,  index):
@@ -22,7 +25,7 @@ class ButtonEvents():
             self.useAOIsTrigger(False)
         if index == 1: # search
             if not self.READ_ONLY:
-                 self.actions[7].trigger() # switch to AOI
+                self.actions[7].trigger() # switch to AOI
             self.graphicsView.scene.heatmap.setVisible(True)     
             self.graphicsView.scene.showBackground = False
             self.splitterSearch.insertWidget(0, self.graphicsView)

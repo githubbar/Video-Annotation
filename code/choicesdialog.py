@@ -3,12 +3,13 @@ from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
 import os
+from fileio import findFataFile
 
 class ChoicesDialog(QDialog):
     def __init__(self, choices=None, parent=None):
         self.parent = parent         
         super(ChoicesDialog, self).__init__()
-        uic.loadUi('choicesdialog.ui', self)
+        uic.loadUi(findFataFile('choicesdialog.ui'), self)
         self.addChoice.setIcon(QIcon('icons/plus.png'))
         self.removeChoice.setIcon(QIcon('icons/minus.png'))
         self.addChoice.clicked.connect(self.onAddChoice)
@@ -32,7 +33,7 @@ class ChoicesDialog(QDialog):
 
         
     def loadChoicesFromFile(self):
-        filename = QFileDialog.getOpenFileName(self, "Choose Comma Separated Choices File", os.getcwd())
+        filename, _filter = QFileDialog.getOpenFileName(self, "Choose Comma Separated Choices File", os.getcwd())
         if not filename:
             return        
         

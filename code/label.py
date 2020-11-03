@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 """ Graphics Items """
+from PyQt5.QtCore import QPointF, Qt, QRectF, QEvent
+from PyQt5.QtGui import QFont, QColor, QBrush, QPen
+from PyQt5.QtWidgets import QGraphicsTextItem, QGraphicsItem, qApp
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import os, datetime, threading, subprocess, time, sys, csv
-
-from settings import *
-from propertywidget import *
-from delegates import *
 
 class Label(QGraphicsTextItem):
     id, description = '', ''

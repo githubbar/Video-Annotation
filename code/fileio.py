@@ -3,13 +3,19 @@ Created on Jul 11, 2017
 
 @author: oleykin
 '''
+import os, sys, time, vlc
+from PyQt5.QtCore import QTime
+from PyQt5.QtWidgets import QFileDialog, QVBoxLayout, QCheckBox
 
-import logging, os, sys,time, vlc
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-import menu, buttonevents, searchwidget
-
+def findFataFile(filename):
+    if getattr(sys, 'frozen', False):
+        # The application is frozen
+        datadir = os.path.dirname(sys.executable)
+    else:
+        # The application is not frozen
+        # Change this bit to match where you store your data files:
+        datadir = os.path.dirname(__file__)
+    return os.path.join(datadir, filename)
 
 class QDataExportDialog(QFileDialog):
     def __init__(self, *args, **kwargs):
@@ -111,8 +117,8 @@ class fileio(object):
                 if not os.path.exists(subDir):
                     os.makedirs(subDir)
                 outFileName = os.path.join(subDir, str('image ' 
-                                                            + ' from ' + QTime().addMSecs(t1).toString('hh-mm-ss') 
-                                                            + ' to ' + QTime().addMSecs(t2).toString('hh-mm-ss') + '.png'))
+                                                            + ' from ' + QTime(0,0).addMSecs(t1).toString('hh-mm-ss') 
+                                                            + ' to ' + QTime(0,0).addMSecs(t2).toString('hh-mm-ss') + '.png'))
                 blah = vlc.libvlc_video_take_snapshot(mainwindow.mediaPlayer, 0, outFileName, 0, 0)
                 
                     

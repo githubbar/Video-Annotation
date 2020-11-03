@@ -14,44 +14,46 @@ from delegates import *
 CheckBoxType = QStandardItem.UserType+1
 
 class PropertyWidget(QTreeWidget,  object):
-    def __init__(self,parent,task=None):
-        QTreeWidget.__init__(self,parent)
+    def __init__(self, parent, task=None):
+        QTreeWidget.__init__(self, parent)
         self.expandedCategories = []
-        self.currentItem = None
+        self.currentPath = None
 #         self.headerItem().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.itemExpanded.connect(self.onItemExpanded)
         self.itemCollapsed.connect(self.onItemCollapsed)
         
-    def dataChanged(self,  topLeft,  bottomRight):
+    def dataChanged(self,  topLeft,  bottomRight, roles=list()):
         QTreeWidget.dataChanged(self,  topLeft,  bottomRight)
-        if self.currentItem:
-            self.saveItem(self.currentItem)
-            self.currentItem.update()
+        if self.currentPath:
+            self.saveItem(self.currentPath)
+            self.currentPath.update()
             
     def onItemExpanded(self, item):
         self.expandedCategories.append(item.data(0, Qt.EditRole))
 
     def onItemCollapsed(self, item):
         self.expandedCategories.remove(item.data(0, Qt.EditRole))
-                
+  
     def loadItem(self, item):
 #         print "Loading Item", item
         import operator
-        self.currentItem = item
+        self.currentPath = item
         self.clear()
         """Load selected item properties"""
         sectionItem = PropertyTreeItem(True, 'Default', item.scene())
         self.addTopLevelItem(sectionItem)   
         sectionItem.setExpanded(True)        
-        self.setItemDelegate(CustomDelegate())               
+        delegate = CustomDelegate(self)
+        self.setItemDelegate(delegate)
         
+             
         for name in item.shownFields:
             v = getattr(item, name)
             # if list, get current element
             if type(v) == list:
                 if item.indP == None: continue
                 v = v[item.indP]
-            sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  None, v, ))
+            sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  None, v ))
             
         #### Begin display dymanic project variables 
         if type(item) == Path: 
@@ -64,7 +66,7 @@ class PropertyWidget(QTreeWidget,  object):
             listItems.sort(key=lambda x: (StrToBoolOrKeep(x[5]), x[6], x[0]))
             oldGroupName = None
             currentParent = None
-            for name, vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices in listItems:
+            for name, vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices in listItems:
                 if StrToBoolOrKeep(vShow):
                     v = item.variables[name]
                     if StrToBoolOrKeep(vEachNode): # list
@@ -72,7 +74,7 @@ class PropertyWidget(QTreeWidget,  object):
                         v = v[item.indP]
                     vUserData = vChoices
                     if vGroup == '': 
-                         vGroup = 'General'
+                        vGroup = 'General'
                     if oldGroupName != vGroup:
                         sectionItem = PropertyTreeItem(True, vGroup, item.scene())
                         self.addTopLevelItem(sectionItem)
@@ -125,8 +127,8 @@ class PropertyWidget(QTreeWidget,  object):
                     else:
                         value = top.child(row).data(1, Qt.EditRole)
                         # load video if selected for the first time
-            #            if name == 'videoname' and self.currentItem.videoname=='':
-            #                self.currentItem.scene().loadVideoSignal.emit(value)
+            #            if name == 'videoname' and self.currentPath.videoname=='':
+            #                self.currentPath.scene().loadVideoSignal.emit(value)
 
                         # if list: write to list element
                         l = getattr(item, str(name))
@@ -139,14 +141,13 @@ class PropertyWidget(QTreeWidget,  object):
                         setattr(item, str(name), value)
             item.scene().updateItemListSignal.emit(item)
         #### End save dymanic project variables 
-            
-
-
 
 class PropertyTreeItem(QTreeWidgetItem):
     def __init__(self, header, name,  scene, tooltip=None,  data2=None, vType=None, vUserData=None, parent=None):
         QTreeWidgetItem.__init__(self,  parent)
-        self.setData(0, Qt.EditRole, name)        
+                        
+        self.setData(0, Qt.EditRole, name)    
+            
         if header: # section header items
             self.setFirstColumnSpanned(True)        
             self.setBackground(0, QBrush(QColor("#005500")))
@@ -169,7 +170,7 @@ class PropertyTreeItem(QTreeWidgetItem):
             elif name in ['videoname','imagename']:
                 self.setData(1, EditorTypeRole, 'File')    
                 self.setData(1, UserDataRole, '*.mp4;;*.avi;;*.*')    
-                self.setData(1, UserDataRole+1, os.path.dirname(str(scene.filename)))   
+                self.setData(1, CurrentDirDataRole, os.path.dirname(str(scene.filename)))   
             elif name == 'font':
                 self.setData(1, EditorTypeRole, 'Font')    
             elif vType:
