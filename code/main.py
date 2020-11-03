@@ -645,7 +645,7 @@ def main():
         application_path = os.path.dirname(__file__)
     
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    
+    app.setOverrideCursor(Qt.CrossCursor)    
     window = Main()
     window.appPath = application_path
     window.show()

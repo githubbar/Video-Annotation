@@ -50,7 +50,7 @@ class AddPointCommand(QUndoCommand):
                     if self.i < len(self.path.polygon):
                         self.variables[name] = self.path.variables[name][self.i]  
                     else:
-                        self.variables[name] = QVariant()
+                        self.variables[name] = None
                         
     def undo(self):
             self.path.polygon.remove(self.i)

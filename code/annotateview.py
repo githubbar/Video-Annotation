@@ -402,15 +402,15 @@ class AnnotateView(QGraphicsView):
         self.addAction(quad1)
         quad2 = QAction(self)
         quad2.setShortcut(QKeySequence('Alt+2'))
-        quad2.triggered.connect(lambda: self.fitInView(190, 0, 130, 70, Qt.KeepAspectRatio))                 
+        quad2.triggered.connect(lambda: self.fitInView(190, 0, 140, 80, Qt.KeepAspectRatio))                 
         self.addAction(quad2)
         quad3 = QAction(self)
         quad3.setShortcut(QKeySequence('Alt+3'))
-        quad3.triggered.connect(lambda: self.fitInView(0, 100, 140, 100, Qt.KeepAspectRatio))                 
+        quad3.triggered.connect(lambda: self.fitInView(0, self.size().height()/2, 140, 80, Qt.KeepAspectRatio))                 
         self.addAction(quad3)
         quad4 = QAction(self)
         quad4.setShortcut(QKeySequence('Alt+4'))
-        quad4.triggered.connect(lambda: self.fitInView(220, 100, 100, 100, Qt.KeepAspectRatio))                 
+        quad4.triggered.connect(lambda: self.fitInView(self.size().width()/2, self.size().height()/2, 140, 80, Qt.KeepAspectRatio))                 
         self.addAction(quad4)        
         
         zoomInFontKey = QAction(self)
@@ -467,7 +467,6 @@ class AnnotateView(QGraphicsView):
 
     def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress):
-#             TODO: set cursore to cross while ctrl clicking
 #             if event.modifiers() & Qt.ControlModifier:
 #                 self.setCursor(Qt.CrossCursor)            
             for name in self.scene.variables:
@@ -484,14 +483,17 @@ class AnnotateView(QGraphicsView):
                         li = item.variables[name]
                         if varType == 'Yes/No':                        
                             li[item.indP] = not StrToBoolOrKeep(li[item.indP])
-                        elif varType == 'Integer':                        
-                            li[item.indP] = li[item.indP].toInt()[0]+1
+                        elif varType == 'Integer':
+                            val = int(li[item.indP]) if li[item.indP] else 0                        
+                            li[item.indP] = val+1
                         item.variables[name] = li
                     else:
                         if varType == 'Yes/No':                        
                             item.variables[name] = not item.variables[name]
-                        elif varType == 'Integer':                                
-                            li[item.indP] = li[item.indP].toInt()[0]+1
+                        elif varType == 'Integer':
+                            val = item.variables[name]                           
+                            val = int(val) if val else 0      
+                            item.variables[name] = val+1
                     self.scene.loadSignal.emit(item)
                     return True            
         return QGraphicsView.eventFilter(self, obj, event)

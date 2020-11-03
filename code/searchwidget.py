@@ -120,7 +120,7 @@ class SearchWidget:
     def matchByLineLength(self, item):
         name = 'lineLength'
         vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.graphicsView.scene.variables[name]
-        if item.variables[name].toInt()[0] < 2: return True
+        if int(item.variables[name][0]) < 2: return True
         else: return False
                             
     def matchByTime(self, item, idx):
@@ -351,7 +351,8 @@ class SearchWidget:
         items = {}
         duration = {}    
         for i, match in enumerate(self.matches):
-            subjID = match.item.id.toInt()[0]
+#             TODO: check 2 int() conversions in this file
+            subjID = int(match.item.id[0])
             self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)
             if not subjID in ids:
                 duration[subjID] = [0] * self.aois.rowCount()
@@ -374,7 +375,7 @@ class SearchWidget:
             varNames.append(str(self.aois.item(row, 0).text()))
  
     
-        writer.writerow(varNames)
+        writer.writerow(varNames.encode("utf-8"))
         for subjID in ids:
             line = [subjID]
             line.extend(items[subjID].getVariableValuesList())

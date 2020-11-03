@@ -82,7 +82,7 @@ class Path(QGraphicsPathItem):
         self.startTime = list(map(lambda x: x.time() if type(x) == QDateTime else x, self.startTime))
         self.stopTime = list(map(lambda x: x.time() if type(x) == QDateTime else x, self.stopTime))
         
-        self.variables = s.readQVariantMap()  
+        self.variables = s.readQVariantMap()   
         s >> self.polygon
         s >> self.orientation
         self.setOpacity(s.readFloat())

@@ -99,7 +99,7 @@ class fileio(object):
                     # find records with this id and get filename
                     for i in range(mainwindow.items.rowCount()):
                         item = mainwindow.items.item(i, 0).g
-                        if item.id.toInt()[0] == id:
+                        if int(item.id[0]) == id:
                             videoname = item.videoname
                             break
                     # load video if different id

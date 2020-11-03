@@ -32,7 +32,7 @@ class UnicodeReader:
 
     def next(self):
         row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
+        return [s.encode('utf-8') for s in row]
 
     def __iter__(self):
         return self
@@ -45,7 +45,7 @@ class UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
-        self.queue = cStringIO.StringIO()
+        self.queue = StringIO.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()

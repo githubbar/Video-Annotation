@@ -38,7 +38,6 @@ class CustomDelegate(QStyledItemDelegate):
             editor = DropDownEditor(parent)
             editor.setEditable(True)
             editor.setInsertPolicy(QComboBox.NoInsert)        
-            editor.setAutoCompletion(True)
             editor.setDuplicatesEnabled(False)
             choices = index.data(UserDataRole)
             editor.addItems(choices)
@@ -242,7 +241,7 @@ class FileOpenEdit(QLineEdit):
             self.setText(fName)  
 
 class UniqueLineEditValidator(QValidator):
-    def __init__(self, index,  parnt=None):
+    def __init__(self, index,  parent=None):
         QCompleter.__init__(self, parent)
         self.index = index
          
@@ -276,7 +275,7 @@ class DropDownCompleter(QCompleter):
         class InnerProxyModel(QSortFilterProxyModel):
             def filterAcceptsRow(self, sourceRow, sourceParent):
                 index0 = self.sourceModel().index(sourceRow, 0, sourceParent)
-                return local_completion_prefix.toLower() in self.sourceModel().data(index0).toLower()
+                return local_completion_prefix.lower() in self.sourceModel().data(index0).lower()
         proxy_model = InnerProxyModel()
         proxy_model.setSourceModel(self.source_model)
         QCompleter.setModel(self, proxy_model)
@@ -284,7 +283,7 @@ class DropDownCompleter(QCompleter):
     def splitPath(self, path):
         self.local_completion_prefix = path
         self.updateModel()
-        return ''
+        return ['']
         
 class DropDownEditor(QComboBox):
     def __init__(self, parent = None):
