@@ -171,10 +171,10 @@ class CustomDelegate(QStyledItemDelegate):
             if (option.state & QStyle.State_MouseOver):
                 painter.fillRect(option.rect, Qt.green);
             painter.setPen(QPen(Qt.black))
-            v= index.data(Qt.EditRole)
-            if v.isValid():
-                text = v.family() + ' : ' + str(v.pointSize())
-                painter.drawText(option.rect, Qt.AlignLeft, text)
+            v = index.data(Qt.EditRole)
+#             if v.isValid():
+            text = v.family() + ' : ' + str(v.pointSize())
+            painter.drawText(option.rect, Qt.AlignLeft, text)
             painter.restore()
         else:
             QStyledItemDelegate.paint(self, painter, option, index)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Path Item"""
-from PyQt5.QtCore import Qt, QPointF, QRectF, QLineF
+from PyQt5.QtCore import Qt, QPointF, QRectF, QLineF, QPoint
 from PyQt5.QtGui import QFont, QColor, QPen, QBrush, QPolygonF
 from PyQt5.QtWidgets import QGraphicsPolygonItem, QGraphicsItem
 
@@ -8,6 +8,7 @@ from settings import BIG_INT
 
 
 class AOI(QGraphicsPolygonItem):
+    dx, dy = 10, 10
     id, description, tags = '', '', ''
     shownFields = ['id', 'description', 'tags', 'font']
     checkableFields = []
@@ -31,7 +32,11 @@ class AOI(QGraphicsPolygonItem):
         self.font = font
         self.fontColor = QColor(Qt.black)
         self.color = QColor(random.randrange(0, 255,), random.randrange(0, 255,), random.randrange(0, 255,))
-        if point: self.addPoint(point)                                         
+        if point: 
+            self.addPoint(point)                                         
+            self.addPoint(point + QPoint(self.dx, 0))
+            self.addPoint(point + QPoint(self.dx, self.dy))
+            self.addPoint(point + QPoint(0, self.dy))
 
     def clone(self):    
         other = AOI(self.font, self.opacity())
@@ -170,7 +175,7 @@ class AOI(QGraphicsPolygonItem):
         if (event.buttons() & Qt.LeftButton): 
             if self.scene().mode == 'AOI' or self.scene().mode == 'Edit':   
 #                QGraphicsPolygonItem.mousePressEvent(self, event)
-                if (event.modifiers() & Qt.ControlModifier):
+                if (event.modifiers() & Qt.AltModifier):
                     # add new point between two closest points
                     i = self.getNearestLineSegment(sp)
                     self.insertPoint(i, sp)

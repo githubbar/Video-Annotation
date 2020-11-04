@@ -316,7 +316,7 @@ class Path(QGraphicsPathItem):
 #         QGraphicsPathItem.mousePressEvent(self, event)
         point_append_time = self.scene().time
         Path.mousePressEvent(self, event)
-        if (event.buttons() & Qt.LeftButton): 
+        if (event.buttons() & Qt.LeftButton and self.scene().mode != 'Select'): 
             if not self.choosingOrientation:
                 # save old point
                 if (event.modifiers() & Qt.AltModifier):
@@ -325,7 +325,7 @@ class Path(QGraphicsPathItem):
                     self.insertPoint(i, sp)
                 elif (not self.scene().showOnlyCurrent) and self.indP != None and QLineF(sp, self.polygon.at(self.indP)).length() < 2 * self.R * self.scene().nodeSize:
                     self.updatePointCommand(self.indP, sp)
-                else:
+                elif (event.modifiers() & Qt.ControlModifier):
                     self.addPoint(sp, point_append_time)
                     self.update()     
         elif (event.buttons() & Qt.RightButton): 

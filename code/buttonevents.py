@@ -69,6 +69,9 @@ class ButtonEvents():
                 i.setEnabled(not paths)
                 if paths: i.setAcceptedMouseButtons(Qt.NoButton)
                 else: i.setAcceptedMouseButtons(Qt.LeftButton | Qt.RightButton)
+        # Show AOIs only in AOI and Edit mode
+        self.useAOIsTrigger(self.graphicsView.scene.mode == 'AOI' or self.graphicsView.scene.mode == 'Edit')
+               
         
     def handleFullScreen(self):
         qtMax = 16777215
@@ -140,7 +143,7 @@ class ButtonEvents():
                 match = False
                 if self.matchByList(item, filterDialog.listArea): 
                     for n in range(len(item.polygon)):           
-                       if self.matchByList(item, filterDialog.listArea, n):                    
+                        if self.matchByList(item, filterDialog.listArea, n):                    
                             match = True
                             break
                 if match:

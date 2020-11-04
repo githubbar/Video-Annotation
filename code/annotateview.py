@@ -71,6 +71,7 @@ class AnnotateScene(QGraphicsScene):
         self.heatmap = QGraphicsPixmapItem()
         self.background = QGraphicsPixmapItem()
         self.background.setCursor(Qt.ArrowCursor)
+        self.background.setEnabled(False)
         self.addItem(self.heatmap)
         self.addItem(self.background)
         self.heatmap.setZValue(-1)
@@ -105,6 +106,7 @@ class AnnotateScene(QGraphicsScene):
     def updateProjectProperties(self):
         self.removeItem(self.background)
         self.background = QGraphicsPixmapItem()
+        self.background.setEnabled(False)
         self.addItem(self.background)        
         if self.backgroundPath != '' and self.backgroundPath != None:
             pixmap = QPixmap(os.path.join(os.path.dirname(str(self.filename)), self.backgroundPath))
@@ -317,67 +319,42 @@ class AnnotateScene(QGraphicsScene):
             s.writeQString(i.__class__.__name__)
             i.write(s)
             
+    def findFirstOfTypeAtPoint(self, T, sp):            
+        items = self.items(sp)
+        for i in items:
+            if type(i) ==  T:        
+                return i 
+        return None
+
     def mousePressEvent(self, event):
-        # cycle through stacking order if more than 1 item under mouse
+        # Find first item under the mouse
         sp = event.scenePos()
-        items = self.items(sp)        
-#         if (event.modifiers() & Qt.ControlModifier) and len(items) > 1:            
-#             if not self.s: self.s = items[0]       
-#             else:
-#                 try:
-#                     N = items.index(self.s)
-#                 except ValueError:
-#                     N = 0
-#                 self.s = items[(N+1) % len(items)]
-#                 self.s.stackBefore(items[N])
-        
+ 
         if event.buttons() & Qt.LeftButton:
-            if  event.modifiers() & Qt.ShiftModifier:
-                if self.mode == 'Path':
-                    # Add new track
+            if self.mode == 'Select':
+                pass
+            if self.mode == 'AOI':
+                if (event.modifiers() & Qt.ShiftModifier): 
+                    print("Creating new AOI")
+                    self.undoStack.push(AddCommand(self, AOI(sp,  self.font, 0.7)))                                                             
+                else:
+                    self.currentAOI = self.findFirstOfTypeAtPoint(AOI, sp)                    
+                    if self.currentAOI: self.currentAOI.handleMousePress(event)
+            elif self.mode == 'Path':
+                cp = self.findFirstOfTypeAtPoint(Path, sp)
+                if (event.modifiers() & Qt.ShiftModifier):
                     print("Creating new track")
                     self.currentPath = Path(sp,  self.font, 1.0)
-                    self.undoStack.push(AddCommand(self, self.currentPath))
-            elif event.modifiers() & Qt.AltModifier:
-                if self.mode == 'Path':
-                    # Add point between
-                    self.currentPath.handleMousePress(event)
-            elif event.modifiers() & Qt.ControlModifier:
-                if self.mode == 'Edit' :
-                    for i in self.selectedItems():
-                        item = eval('i.clone()')
-                        self.undoStack.push(AddCommand(self, item))                                             
-                elif self.mode == 'Path':                
-                    if (not self.currentPath):
-                        print("Creating new track")
-                        self.currentPath = Path(sp,  self.font, 1.0)
-                        self.undoStack.push(AddCommand(self, self.currentPath))                                             
-                    else:
+                    self.undoStack.push(AddCommand(self, self.currentPath))                                             
+                elif cp or (event.modifiers() & Qt.ControlModifier) and self.currentPath: 
                         self.currentPath.handleMousePress(event)
-                elif self.mode == 'Polygon':           
-                    for i in items:
-                        if type(i) ==  Polygon:
-                            self.currentPolygon = i
-                    if (not self.currentPolygon):   
-                        self.undoStack.push(AddCommand(self, Polygon(sp,  self.font, 0.4)))                                                             
-                    else:
-                        self.currentPolygon.addPoint(sp)  
-                elif self.mode == 'AOI':
-                    for i in items:
-                        if type(i) ==  AOI:
-                            self.currentAOI= i
-                    if (not self.currentAOI):   
-                        self.undoStack.push(AddCommand(self, AOI(sp,  self.font, 0.7)))                                                             
-                    else:
-                        self.currentAOI.handleMousePress(event)
-                elif self.mode == 'Rectangle':             
-                    self.undoStack.push(AddCommand(self, Rectangle(sp,  self.font, 0.4)))                                             
-                elif self.mode == 'Ellipse':                
-                    self.undoStack.push(AddCommand(self, Ellipse(sp,  self.font, 0.4))) 
-                elif self.mode == 'Label':                
-                    self.undoStack.push(AddCommand(self, Label(sp,  self.font, 0.4)))                 
-                elif self.mode == 'Snapshot':                
-                    self.undoStack.push(AddCommand(self, Snapshot(sp,  self.font, 0.4)))
+            else:             
+                items = self.items(sp)
+                if (event.modifiers() & Qt.ShiftModifier):                
+                    self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
+                else:
+                    if items and type(items[0]) != QGraphicsPixmapItem: 
+                        items[0].handleMousePress(event)
         elif (event.buttons() & Qt.RightButton):
             if self.mode == 'Path' and self.currentPath:                
                 self.currentPath.handleMousePress(event)

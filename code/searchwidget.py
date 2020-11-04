@@ -20,6 +20,7 @@ class SearchWidget:
 #         self.testHeatmap()
 
     # Test Heatmap and shaders
+
     def testHeatmap(self):
 
         paletteFile = 'palettes/jet.png'
@@ -37,8 +38,6 @@ class SearchWidget:
         self.graphicsView.scene.heatmap.setPixmap(p)
         self.graphicsView.scene.heatmap.setScale(1.0 / heatmapScale)
         self.graphicsView.scene.heatmap.setVisible(True)          
-          
-
 
     def addFilterWidget(self, cbParent, lParent, trackLvl=True):
         import operator
@@ -300,7 +299,7 @@ class SearchWidget:
 #         ids = set() # set of subject ids found in matches
 #         for i,  match in enumerate(self.matches):
 #             id = match.item.id
-#             self.updateProgress.emit(int(100.0*i/len(self.matches)), 2)        
+#             self.updateProgress.emit(round(100.0*i/len(self.matches), 2))        
 #             if not id in ids:
 #                 ids.add(id) 
 #         writer = csv.writer(open(outFileName, 'wb'))         
@@ -353,7 +352,7 @@ class SearchWidget:
         for i, match in enumerate(self.matches):
 #             TODO: check 2 int() conversions in this file
             subjID = int(match.item.id[0])
-            self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)
+            self.updateProgress.emit(round(100.0 * i / len(self.matches), 2))
             if not subjID in ids:
                 duration[subjID] = [0] * self.aois.rowCount()
                 items[subjID] = match.item        
@@ -375,7 +374,7 @@ class SearchWidget:
             varNames.append(str(self.aois.item(row, 0).text()))
  
     
-        writer.writerow(varNames.encode("utf-8"))
+        writer.writerow(varNames)
         for subjID in ids:
             line = [subjID]
             line.extend(items[subjID].getVariableValuesList())
@@ -406,7 +405,7 @@ class SearchWidget:
          
         for i, match in enumerate(self.matches):
             id = match.item.id
-            self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)        
+            self.updateProgress.emit(round(100.0 * i / len(self.matches), 2))    
             if not id in ids:
                 minTime = maxTime = QTime(0,0).msecsTo(match.item.startTime[0])
                 for t in match.item.startTime:
@@ -439,8 +438,8 @@ class SearchWidget:
                     self.aois.item(row, 2).setText('0.0')            
                     self.aois.item(row, 3).setText('0.0')
      
-            self.aois.horizontalHeaderItem(3).setText('Number of Subjects: Total =' + str(len(ids)) + ' (avg. trip = ' + str(0.001 * tripDuration / len(ids)) + ' sec.)' + \
-                                                      ' (avg. video = ' + str(0.001 * videoDuration / len(ids)) + ' sec.)')
+            self.aois.horizontalHeaderItem(3).setText(f'Number of Subjects: Total = {len(ids)} (avg. trip = {round(0.001 * tripDuration / len(ids), 2)} sec.) \
+                                                      (avg. video = {round(0.001 * videoDuration / len(ids), 2)} sec.)')
              
         self.completeProgress.emit(self.GUI_NORMAL)
     
@@ -470,7 +469,7 @@ class SearchWidget:
         
         for i, match in enumerate(self.matches):
             id = match.item.id
-            self.updateProgress.emit(int(100.0 * i / len(self.matches)), 2)
+            self.updateProgress.emit(round(100.0 * i / len(self.matches), 2))
             if not id in ids:
                 duration[id] = 0        
             ids.add(id)  # add subject id to the set        
