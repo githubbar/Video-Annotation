@@ -22,7 +22,7 @@ class ProjectDialog(QDialog):
         filename, _filter = QFileDialog.getOpenFileName(self, "Choose Background Image File", os.path.dirname(str(self.parent.graphicsView.scene.filename)))
         if not filename:
             return        
-        relname = os.path.relpath(filename[0],  os.path.dirname(str(self.parent.graphicsView.scene.filename)))
+        relname = os.path.relpath(filename,  os.path.dirname(str(self.parent.graphicsView.scene.filename)))
         self.backgroundFileEdit.setText(relname)
 
     def colorButtonClicked(self):

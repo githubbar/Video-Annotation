@@ -15,7 +15,7 @@ from settings import StrToBoolOrKeep, defaultVariableValues, variableTypes, \
 from vacommands import UpdatePointCommand, UpdateOrientationCommand, RemoveCommand, \
     RemovePointCommand, AddPointCommand
 
-
+NON_EMPTY_TIME = 5000 # time in msec
 class Path(QGraphicsPathItem):
     id, videoname = '', ''
     shownFields = ['id', 'videoname', 'startTime', 'stopTime']
@@ -62,6 +62,23 @@ class Path(QGraphicsPathItem):
         return sh
 
     def write(self, s):
+        #TODO: variables length doesn't match startTime length
+#         n = len(self.startTime)
+#         for name in self.scene().variables:
+#             vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene().variables[name]
+#             if StrToBoolOrKeep(vEachNode): # list
+#                 li = self.variables[name]
+#                 del li[n:]
+                        
+                                   
+        if len(self.startTime) < len(self.variables["Category Shopped"]):
+            print(f'path {self.id}')
+        
+#         print(f'saving path {self.id}: time len = {len(self.startTime)};'\
+#          f'cat shopped = {len(self.variables["Category Shopped"])};' \
+#          f'poly = {len(self.polygon)};' \
+#          f'ori = {len(self.orientation)}')
+
         s.writeQVariant(self.id)
         s.writeQVariant(self.videoname)        
         s.writeQVariantList(self.startTime)        
@@ -165,9 +182,11 @@ class Path(QGraphicsPathItem):
             elif 'shopped' in self.variables and i < len(self.variables['purchased'])  and StrToBoolOrKeep(self.variables['shopped'][i]):
                 painter.setPen(QPen(Qt.blue, 1))
             else:
-                painter.setPen(QPen(self.scene().nodeColor, 1))                
+                painter.setPen(QPen(self.scene().nodeColor, 1))
+            
+            nonEmptyMultiplier = 2 if self.startTime[i].msecsTo(self.stopTime[i]) >= NON_EMPTY_TIME else 1                                 
             if (not self.scene().showOnlyCurrent) or (self.startTime[i] <= self.scene().time <= self.stopTime[i]):
-                painter.drawEllipse(self.polygon.at(i), self.R * self.scene().nodeSize, self.R * self.scene().nodeSize)
+                painter.drawEllipse(self.polygon.at(i), nonEmptyMultiplier* self.R * self.scene().nodeSize, nonEmptyMultiplier* self.R * self.scene().nodeSize)
                 
             # Paint video position indicator and auto-load properties during playback
             if self.scene().currentPath == self and len(self.stopTime) > 0 :
@@ -310,7 +329,7 @@ class Path(QGraphicsPathItem):
 #            self.scene().saveSignal.emit(self)
 
     def handleMousePress(self, event):
-        print('handle mouse over path ' + self.id)
+#         print('handle mouse over path ' + self.id)
         # get new point closest to mouse and load it
         sp = event.scenePos()        
 #         QGraphicsPathItem.mousePressEvent(self, event)
@@ -332,7 +351,7 @@ class Path(QGraphicsPathItem):
             self.choosingOrientation = True    
             
     def mousePressEvent(self, event):
-        print('mouse press over path ' + self.id)
+#         print('mouse press over path ' + self.id)
         if not self.scene().showOnlyCurrent:
             self.indP = self.getNearestPoint(event.scenePos())
             self.scene().loadSignal.emit(self)
@@ -427,7 +446,7 @@ class Path(QGraphicsPathItem):
                 self.updatePoint(self.indP, event.pos())
         
     def keyPressEvent(self, event):
-        print('Path key press')
+#         print('Path key press')
         if event.key() == Qt.Key_Delete:
             self.deletePoint()
 

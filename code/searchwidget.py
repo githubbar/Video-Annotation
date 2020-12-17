@@ -205,7 +205,7 @@ class SearchWidget:
         hm = HeatMap(heatmapBox[0], int(heatmapBox[1] * heatmapScale), heatmapBox[2], int(heatmapBox[3] * heatmapScale), paletteFile)
        
         # add data points        
-        hp = []
+        hp, heatScale = [], []
         for i, match in enumerate(self.matches):
             id = match.item.id
             if not id in ids:                 
@@ -221,21 +221,18 @@ class SearchWidget:
 #            if self.visPurchased.isChecked(): addThis &= StrToBoolOrKeep(match.item.purchased[n])
 #            if self.visShopped.isChecked(): addThis &= StrToBoolOrKeep(match.item.shopped[n])
             if not addThis: continue
-            # create as many points as there are seconds
-            if self.visUseTime.isChecked():
-                count = match.item.startTime[n].secsTo(match.item.stopTime[n])
-            else: count = 1
-            for c in range(count):
-                hp += [(match.item.polygon.at(n).x() * heatmapScale, match.item.polygon.at(n).y() * heatmapScale)]
-
+            hp += [(match.item.polygon.at(n).x() * heatmapScale, match.item.polygon.at(n).y() * heatmapScale)]
+            heatScale += [self.colorScale.value()*match.item.startTime[n].msecsTo(match.item.stopTime[n])*0.001]
+            # TEMP:
         if len(ids)==0:
             return
-#         hm.add_points(hp, self.visRadius.value() * heatmapScale, self.colorScale.value() / len(ids))
-        hm.add_points(hp, self.visRadius.value() * W/100, self.colorScale.value()*256.0 / len(hp))
+
+#         hm.add_points([[50,50], [100,100], [150,150]], self.visRadius.value() * W/100, [.2, .5, .9])
+
+        hm.add_points(hp, self.visRadius.value() * W/100, heatScale)
         heat = hm.get_min_max_heat()
         print("N.Subjects = " + str(len(ids)))
         print('minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1]))
-#         hm.transform_color(0.01 * self.visAlpha.value())
         hm.transform_color(0.01 * self.visAlpha.value())
         p = QPixmap.fromImage(QImage(hm.get_image_buffer(), hm.width, hm.height, QImage.Format_ARGB32))
         self.graphicsView.scene.heatmap.setPixmap(p)

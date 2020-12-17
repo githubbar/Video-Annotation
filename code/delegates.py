@@ -74,7 +74,8 @@ class CustomDelegate(QStyledItemDelegate):
         elif elementType == 'Button':
             return None
         elif elementType == 'File':
-            editor = FileOpenEdit(index, self, parent)
+#             editor = FileOpenEdit(index, self, parent)
+            editor = FileOpenEdit(index, self.parent().currentPath.scene(), self, parent)
             editor.installEventFilter(self)            
             return editor
         elif elementType == 'Font':
@@ -222,8 +223,9 @@ class CustomDelegate(QStyledItemDelegate):
         return QRect(check_box_point, check_box_rect.size())
 
 class FileOpenEdit(QLineEdit):
-    def __init__(self, index, delegate = None, parent = None):
+    def __init__(self, index, scene, delegate = None, parent = None):
         QLineEdit.__init__(self, parent)
+        self.scene = scene
         self.delegate = delegate
         self.index = index        
         self.myFilter = index.data(UserDataRole)
@@ -238,7 +240,8 @@ class FileOpenEdit(QLineEdit):
         if self.projectpath and fName:
             fName = os.path.relpath(str(fName), str(self.projectpath))
         if fName:
-            self.setText(fName)  
+            self.setText(fName)
+            self.scene.loadVideoSignal.emit(fName) 
 
 class UniqueLineEditValidator(QValidator):
     def __init__(self, index,  parent=None):

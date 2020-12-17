@@ -86,7 +86,7 @@ class PropertyWidget(QTreeWidget,  object):
 #        self.expandAll()
 
     def saveItem(self, item):
-        print("Saving Item",  item)
+#         print("Saving Item",  item)
         for name in item.shownFields:
             # find matching top level item                   
             foundItems = self.findItems(name, Qt.MatchExactly | Qt.MatchRecursive)

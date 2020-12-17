@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Fix tracks 21 - 33, 43-112
 """
 Annotation Tool: For annotating track time series over tracking video
 Copyright: Alex Leykin @ CIL
@@ -9,7 +10,13 @@ http://indiana.edu/~cil
 ====================================================================================
 
 """
-import logging, os, sys, threading, time, \
+import logging, os
+logfile = os.path.join(os.getcwd(), 'debug.log')
+logging.basicConfig(filename=logfile, level=logging.DEBUG) 
+# logging.basicConfig(filename='warning.log', level=logging.WARNING) 
+# logging.basicConfig(filename='error.log', level=logging.ERROR) 
+
+import sys, threading, time, \
     qdarkstyle, vlc, menu, searchwidget, buttonevents, helpbrowser
 import PyQt5
 from PyQt5 import uic
@@ -22,10 +29,6 @@ from annotateview import AnnotateScene, AnnotateView
 from pathtablewidget import PathTableWidget
 from aoitablewidget import AOITableWidget
 from fileio import findFataFile, QDataExportDialog, fileio
-
-logging.basicConfig(filename='debug.log', level=logging.DEBUG) 
-logging.basicConfig(filename='warning.log', level=logging.WARNING) 
-logging.basicConfig(filename='error.log', level=logging.ERROR) 
 
 
 # Create a class for our main window
@@ -52,7 +55,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         # Menu
         menu.createMenu(self)
 
-
         # Toolbar
         self.actions = []
         if self.READ_ONLY:
@@ -66,7 +68,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             for i, text in enumerate(self.graphicsView.scene.modes):
                 action = QAction(QIcon(os.path.join(self.appPath, 'icons/') + text + '.png'), text, self)
                 if text != 'Separator':
-                    action.setShortcut(QKeySequence('Ctrl+'+str(n)))
+                    action.setShortcut(QKeySequence('Ctrl+' + str(n)))
                     n = n + 1
                     action.setCheckable(True)
                     
@@ -178,11 +180,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             self.fileOpen(sys.argv[1])
         
         self.preloadFiles()
+#         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
 
     def preloadFiles(self):
+        # TODO: nodes are shifted
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
-#         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data new.vaproj'
-        filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
+#         filename = r'E:\Box Sync\CIL Exchange\Video Annotation Code\code\test.vaproj'
+        filename = r'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
         self.fileOpen(filename)        
 #         self.fileSave(filename)        
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
@@ -226,7 +230,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.mediaPlayer.set_time(self.mediaPlayer.get_time() + 5000)            
         self.updateUI()        
 
-
 #    def eventFilter(self, object, event):
 #        if (event.type() == QEvent.MouseButtonPress):
 #            print "The bad guy which steals the MousePress is"
@@ -267,24 +270,24 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     def generateFixationSnapshots(self, filename):
         fileio.generateFixationSnapshots(self, filename)
          
-    def exportTrackData(self, filename=''):
+    def exportTrackData(self, filename = False):
         # choose export file
         dlg = QDataExportDialog()
         dlg.setFileMode(QFileDialog.AnyFile)
-        dlg.setFilter("CSV Files (*.csv)")
-        outFileName = None        
-        if (dlg.exec_()):
+        dlg.setNameFilter("CSV Files (*.csv)")
+       
+        if not filename and dlg.exec_():
             if len(dlg.selectedFiles()) > 0:
-                outFileName = dlg.selectedFiles()[0]
+                filename = dlg.selectedFiles()[0]
 #         outFileName = QDataExportDialog.getSaveFileName(self, "Choose File to Export To", os.getcwdu())
 #         outFileName = 'e:/Projects/Visual Attention/Project Time 2011 Mobile Tier Productivity/Data/Jewel Osco - Naperville/Manual Eye Tracking/test.csv'
-        if not outFileName:
+        if not filename:
             return
         self.progressBarEdit.show()
         self.repaint()   
         exportDistDuration = True if dlg.checkExportDistDuration.checkState() == Qt.Checked else False
         exportAOIDistDuration = True if dlg.checkExportAOIDistDuration.checkState() == Qt.Checked else False
-        threading.Thread(target=self.doExportData, name="exportDataThread", args=(outFileName, exportDistDuration, exportAOIDistDuration, )).start()
+        threading.Thread(target=self.doExportData, name="exportDataThread", args=(filename, exportDistDuration, exportAOIDistDuration,)).start()
 
     def fixData(self):
         varNames = ['id', 'seq. number', 'x', 'y', 'video name', 'startTime', 'stopTime']
@@ -313,14 +316,14 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
                 
     def doExportData(self, outFileName, exportDistDuration, exportAOIDistDuration):
         import subprocess, csv
-        writer = csv.writer(open(outFileName, 'wb'))
+        writer = csv.writer(open(outFileName, 'w', newline=''))
         varNames = ['id']
         if exportDistDuration:
             varNames.extend(['trip length', 'trip duration'])
         if exportAOIDistDuration:
             varNames.extend(['AOI Name', 'AOI path legth', 'AOI duration', 'Category Shop Count']) 
         varNames.extend(['seq. number', 'x', 'y', 'startTime', 'stopTime'])
-        varNames.extend([str(key) for key in list(self.graphicsView.scene.variables.keys())])   
+        varNames.extend([key for key in list(self.graphicsView.scene.variables.keys())])   
         writer.writerow(varNames)
 
         for i in range(self.items.rowCount()):
@@ -337,18 +340,18 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
           
 #             stimes = sorted(item.startTime)
 
-            tAll = QTime(0,0).addSecs(item.startTime[0].secsTo(item.stopTime[-1]))
+            tAll = QTime(0, 0).addSecs(item.startTime[0].secsTo(item.stopTime[-1]))
             
             # BEGIN reset AOI aggregates
-            aoiName, aoiL, aoiD = {},{},{}
+            aoiName, aoiL, aoiD = {}, {}, {}
             for rowAOI in range(self.aois.rowCount()):
                 aoi = self.aois.item(rowAOI, 0)
-                aoiName[rowAOI]= aoi.text()
+                aoiName[rowAOI] = aoi.text()
                 aoiL[rowAOI] = aoi.g.getTrackLength(item)
                 aoiD[rowAOI] = aoi.g.getTrackDuration(item)
             # END reset AOI aggregates
             
-            # BEGIN reset Categoryaggregates
+            # BEGIN reset Category aggregates
             catShopCount = 1
             currentCat = ''
             # END reset Category aggregates            
@@ -357,7 +360,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
                 varList = item.getVariableValuesList(n)
                 row = [ str(item.id)]
                 p = item.polygon.at(n)
-                tNode = QTime(0,0).addSecs(item.startTime[n].secsTo(item.stopTime[n]))
+                tNode = QTime(0, 0).addSecs(item.startTime[n].secsTo(item.stopTime[n]))
 
                 for nn in range(n, len(idx)):
                     cat = item.variables['Category Shopped'][nn] 
@@ -371,11 +374,10 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
                     row.extend([str(item.getPathLength()), str(tAll.toString('hh:mm:ss'))])
                 if exportAOIDistDuration:
                     try:
-                        rowAOI = next(aoii for aoii,v in enumerate(self.aois.getAllItems()) if v.g.contains(p))
+                        rowAOI = next(aoii for aoii, v in enumerate(self.aois.getAllItems()) if v.g.contains(p))
                         row.extend([str(aoiName[rowAOI]), str(aoiL[rowAOI]), str(aoiD[rowAOI]), str(catShopCount)])
                     except:
                         row.extend(['None', '0', '0', '0'])
-                    
 
                 row.extend([str(j), str(p.x()), str(p.y()), \
                   str(item.startTime[n].toString('hh:mm:ss')), \
@@ -503,7 +505,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         """Set the position based on the time on Path node"""
         if item.indP == None or item.startTime[item.indP] == None: 
             return
-        time = QTime(0,0).msecsTo(item.startTime[item.indP])
+        time = QTime(0, 0).msecsTo(item.startTime[item.indP])
         self.mediaPlayer.set_time(time + 66)
 #        print 'scene time '+self.graphicsView.scene.time.toString('hh:mm:ss.zzz')
 #        print 'setting video time to '+item.startTime[item.indP].toString('hh:mm:ss.zzz')
@@ -519,13 +521,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         
         time = self.mediaPlayer.get_time()
         if time != -1:
-            self.graphicsView.scene.time = QTime(0,0).addMSecs(time)
+            self.graphicsView.scene.time = QTime(0, 0).addMSecs(time)
             if self.graphicsView.scene.currentPath and self.synctaction.isChecked():
 #                self.graphicsView.scene.currentPath.time = self.graphicsView.scene.time
                 self.graphicsView.scene.currentPath.update()
             self.status.setText(self.graphicsView.scene.time.toString('hh:mm:ss.zzz'))
         else:
-            self.status.setText(QTime(0,0).toString('hh:mm:ss.zzz'))
+            self.status.setText(QTime(0, 0).toString('hh:mm:ss.zzz'))
             
     def deleteItem(self):
         if self.items.currentItem():
@@ -650,23 +652,8 @@ def main():
     window.appPath = application_path
     window.show()
     sys.exit(app.exec())
+
   
 if __name__ == "__main__":
     main()
-    
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
 

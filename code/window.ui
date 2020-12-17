@@ -880,23 +880,19 @@ selection-background-color: rgb(190, 204, 255);
                 <item>
                  <widget class="QDoubleSpinBox" name="colorScale">
                   <property name="decimals">
-                   <number>1</number>
+                   <number>2</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.010000000000000</double>
                   </property>
                   <property name="maximum">
                    <double>10.000000000000000</double>
                   </property>
                   <property name="singleStep">
-                   <double>0.100000000000000</double>
+                   <double>0.010000000000000</double>
                   </property>
                   <property name="value">
                    <double>1.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="visUseTime">
-                  <property name="text">
-                   <string>Time</string>
                   </property>
                  </widget>
                 </item>

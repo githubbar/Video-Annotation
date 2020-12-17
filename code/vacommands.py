@@ -67,7 +67,7 @@ class AddPointCommand(QUndoCommand):
                 if StrToBoolOrKeep(vEachNode): # list
                     li = self.path.variables[name]
                     del[li[self.i]]
-                    self.path.variables[name] = li
+#                     self.path.variables[name] = li
             
             # move to the previous item
             if self.path.indP > 0:
@@ -91,7 +91,7 @@ class AddPointCommand(QUndoCommand):
             if StrToBoolOrKeep(vEachNode): # list
                 li = self.path.variables[name]
                 li.insert(self.i, self.variables[name])
-                self.path.variables[name] = li
+#                 self.path.variables[name] = li
        
         self.path.indP = self.i
         path = QPainterPath()

@@ -194,17 +194,21 @@ class HeatMap(object):
             compileShader("""
                 uniform float r;
                 attribute vec2 point;
+                attribute float scale;
                 varying vec2 center;
+                varying float hscale;
+
  
                 void main() {
                     gl_Position = ftransform();
                     center = point;
+                    hscale = scale;
                 }
             """, GL_VERTEX_SHADER),
             compileShader("""
                 uniform float r;
-                uniform float scale;
                 varying vec2 center;
+                varying float hscale;
  
                 void main() {
                     float d = distance(gl_FragCoord.xy, center);
@@ -212,7 +216,7 @@ class HeatMap(object):
                  
                     gl_FragColor.rgb = vec3(1.0, 1.0, 1.0);
                     //gl_FragColor.a = (0.5 + cos(d * 3.14159265 / r) * 0.5) * 0.25;
-                    gl_FragColor.a = (0.5 + cos(d * 3.14159265 / r) * 0.5) * scale;
+                    gl_FragColor.a = (0.5 + cos(d * 3.14159265 / r) * 0.5) * hscale;
                     // Alternate fading algorithms
                     //gl_FragColor.a = (1.0 - (log(1.1+d) / log(1.1+r)));
                     //gl_FragColor.a = (1.0 - (pow(d, 0.5) / pow(r, 0.5)));
@@ -224,18 +228,25 @@ class HeatMap(object):
                 }
             """, GL_FRAGMENT_SHADER))
     
-    def add_points(self, points, radius, scale):
+    def add_points(self, points, radius, heatScale):
         # Render all points with the specified radius
         glUseProgram(self.faded_points_program)
         glUniform1f(glGetUniformLocation(self.faded_points_program, 'r'), radius)
-        glUniform1f(glGetUniformLocation(self.faded_points_program, 'scale'), scale)
-        
+
         point_attrib_location = glGetAttribLocation(self.faded_points_program, 'point')
         glEnableVertexAttribArray(point_attrib_location)
         glVertexAttribPointer(point_attrib_location, 2, GL_FLOAT, False, 0,
                               struct.pack("ff" * 4 * len(points),
                                           *(val for (x, y) in points
                                                 for val in (x - self.left, y - self.bottom) * 4)))
+        
+
+        heatscale_attrib_location = glGetAttribLocation(self.faded_points_program, 'scale')        
+        glEnableVertexAttribArray(heatscale_attrib_location)
+        glVertexAttribPointer(heatscale_attrib_location, 1, GL_FLOAT, False, 0,
+                              struct.pack("f" *  len(heatScale),
+                                          *(val for val in heatScale)))
+        
         
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, self.fbo)
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
