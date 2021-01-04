@@ -406,6 +406,11 @@ class AnnotateView(QGraphicsView):
         stopTimeKey.setShortcut(Qt.Key_F2)        
         stopTimeKey.triggered.connect(self.stopTimeKeyPressed)           
         self.addAction(stopTimeKey)
+        clearKey = QAction(self)
+        clearKey.setShortcut(Qt.Key_QuoteLeft)        
+        clearKey.triggered.connect(self.clearPointVariablesPressed)           
+        self.addAction(clearKey)        
+        
         qApp.installEventFilter(self) 
         self.setDragMode(QGraphicsView.ScrollHandDrag)             
 
@@ -430,6 +435,11 @@ class AnnotateView(QGraphicsView):
             i.font = f
             self.scene.loadSignal.emit(i)
         self.scene.update()    
+
+    def clearPointVariablesPressed(self):
+        if self.scene.currentPath and self.scene.currentPath.indP != None:
+            self.scene.currentPath.clearPointVariables()
+            self.scene.loadSignal.emit(self.scene.currentPath)
 
     def startTimeKeyPressed(self):
         if self.scene.currentPath and self.scene.currentPath.indP != None:

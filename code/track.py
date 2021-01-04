@@ -178,9 +178,16 @@ class Path(QGraphicsPathItem):
                 painter.setPen(QPen(self.scene().nodeColor, 1))
                 painter.setBrush(QBrush(Qt.red))
             elif 'purchased' in self.variables and i < len(self.variables['purchased']) and StrToBoolOrKeep(self.variables['purchased'][i]):
-                painter.setPen(QPen(Qt.green, 1))
+                if not self.variables['Category Shopped'][i]:
+                    painter.setPen(QPen(Qt.gray, 1))
+                else:
+                    painter.setPen(QPen(Qt.green, 1))
+                 
             elif 'shopped' in self.variables and i < len(self.variables['purchased'])  and StrToBoolOrKeep(self.variables['shopped'][i]):
-                painter.setPen(QPen(Qt.blue, 1))
+                if not self.variables['Category Shopped'][i]:
+                    painter.setPen(QPen(Qt.gray, 1))
+                else:
+                    painter.setPen(QPen(Qt.blue, 1))
             else:
                 painter.setPen(QPen(self.scene().nodeColor, 1))
             
@@ -247,6 +254,13 @@ class Path(QGraphicsPathItem):
         else:
             self.scene().undoStack.push(RemovePointCommand(self, self.indP, self.polygon[self.indP]))                                             
     
+    def clearPointVariables(self):
+        if self.indP:
+            for name in self.scene().variables:
+                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
+                if StrToBoolOrKeep(vEachNode):
+                        self.variables[name][self.indP] = None
+
     def addPoint(self, p, time):
 #        # temp
 #        import random
