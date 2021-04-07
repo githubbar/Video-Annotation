@@ -37,8 +37,8 @@ class PropertyWidget(QTreeWidget,  object):
     def loadItem(self, item):
 #         print "Loading Item", item
         import operator
+        self.clear()        
         self.currentPath = item
-        self.clear()
         """Load selected item properties"""
         sectionItem = PropertyTreeItem(True, 'Default', item.scene())
         self.addTopLevelItem(sectionItem)   

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# TODO: Fix tracks 51 -112
+# TODO: Fix tracks 108 -112
 """
 Annotation Tool: For annotating track time series over tracking video
 Copyright: Alex Leykin @ CIL
@@ -179,7 +179,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
         
-        self.preloadFiles()
+#         self.preloadFiles()
 #         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
 
     def preloadFiles(self):

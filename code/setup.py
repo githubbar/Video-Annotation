@@ -67,6 +67,7 @@ setup(
         description = "Video Annotation Tool",
         author = "author",
         options = {"build_exe": {
+            "build_exe": "../release/Video Annotation Tool",
             "excludes":  ["tcl","tk","Tkinter"],  
             "includes":  ['qdarkstyle', 'unittest', 'numpy.core._methods', 'numpy.lib.format', 'OpenGL.GLU.glustruct'],
             "include_files": include_files,

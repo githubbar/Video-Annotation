@@ -350,7 +350,7 @@ class AnnotateScene(QGraphicsScene):
                         self.currentPath.handleMousePress(event)
             else:             
                 items = self.items(sp)
-                if (event.modifiers() & Qt.ShiftModifier):                
+                if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')):                
                     self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
                 else:
                     if items and type(items[0]) != QGraphicsPixmapItem: 
@@ -437,6 +437,13 @@ class AnnotateView(QGraphicsView):
         self.scene.update()    
 
     def clearPointVariablesPressed(self):
+#         TEMP: clear for all points
+#         if self.scene.currentPath:
+#             for idx in range(len(self.scene.currentPath.startTime)):
+#                 self.scene.currentPath.indP = idx
+#                 self.scene.currentPath.clearPointVariables()
+#             self.scene.loadSignal.emit(self.scene.currentPath)
+       
         if self.scene.currentPath and self.scene.currentPath.indP != None:
             self.scene.currentPath.clearPointVariables()
             self.scene.loadSignal.emit(self.scene.currentPath)

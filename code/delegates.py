@@ -241,6 +241,7 @@ class FileOpenEdit(QLineEdit):
             fName = os.path.relpath(str(fName), str(self.projectpath))
         if fName:
             self.setText(fName)
+            print('File opened')
             self.scene.loadVideoSignal.emit(fName) 
 
 class UniqueLineEditValidator(QValidator):

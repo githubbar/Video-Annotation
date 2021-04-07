@@ -15,7 +15,7 @@ from settings import StrToBoolOrKeep, defaultVariableValues, variableTypes, \
 from vacommands import UpdatePointCommand, UpdateOrientationCommand, RemoveCommand, \
     RemovePointCommand, AddPointCommand
 
-NON_EMPTY_TIME = 5000 # time in msec
+NON_EMPTY_TIME = 2000 # time in msec
 class Path(QGraphicsPathItem):
     id, videoname = '', ''
     shownFields = ['id', 'videoname', 'startTime', 'stopTime']
@@ -269,6 +269,7 @@ class Path(QGraphicsPathItem):
 #            p = QPointF(random.uniform(1, 320), random.uniform(1, 180))
 #        # end temp
         idx = len(self.polygon)
+        # TODO: block time overlap while creating nodes
         self.scene().undoStack.push(AddPointCommand(self, idx, p, time))       
         self.indP = idx
         
@@ -292,6 +293,8 @@ class Path(QGraphicsPathItem):
             return 0
         i1 = 0
         d1 = BIG_INT
+        # FIXME: doesn't always insert for the closest segment (find segment)
+        
         for i in range(self.polygon.count() - 1):
             l = QLineF(self.polygon.at(i), self.polygon.at(i + 1))
             n = l.normalVector()
