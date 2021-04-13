@@ -51,6 +51,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.show()
         self.appPath = ""        
         self.help = None
+        self.lastDir = os.path.expanduser("~")
 #         bool(glutInit) 
         # Menu
         menu.createMenu(self)
@@ -179,14 +180,14 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
         
-#         self.preloadFiles()
+        # self.preloadFiles()
 #         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
 
     def preloadFiles(self):
         # TODO: nodes are shifted
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename = r'E:\Box Sync\CIL Exchange\Video Annotation Code\code\test.vaproj'
-        filename = r'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.vaproj'
+        filename = r'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Richardson Road\data.vaproj'
         self.fileOpen(filename)        
 #         self.fileSave(filename)        
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
@@ -406,11 +407,12 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
 
     def fileOpen(self, filename=''):
         if not filename:
-            home = os.path.expanduser("~")            
-            filename, _filter = QFileDialog.getOpenFileName(self, "Open File", home, "VA Projects (*.vaproj);;All Files (*.*)")
+                        
+            filename, _filter = QFileDialog.getOpenFileName(self, "Open File", self.lastDir, "VA Projects (*.vaproj);;All Files (*.*)")
 
         if not filename:
             return
+        self.lastDir = os.path.dirname(filename)
         self.clear()        
         self.fileNew()
         self.graphicsView.scene.filename = filename
@@ -467,7 +469,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             filename = self.graphicsView.scene.filename
         
         if not self.graphicsView.scene.filename:  # run "save as" if no file name
-            filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", '')
+            filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", self.lastDir, "VA Projects (*.vaproj);;All Files (*.*)")
             if not filename:
                 return     
         else:
@@ -477,7 +479,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
                 backupFolder = os.path.join(path, 'backups')
                 if not os.path.exists(backupFolder):
                     os.makedirs(backupFolder)
-                shutil.move(str(self.graphicsView.scene.filename), os.path.join(path, 'backups', datetime.datetime.today().strftime("%Y%m%d%H%M%S") + ' backup.vaproj'))  
+                shutil.move(str(self.graphicsView.scene.filename), os.path.join(path, 'backups', datetime.datetime.today().strftime("%Y%m%d%H%M%S") + ' backup.vaproj'))
+        self.lastDir = os.path.dirname(filename)
         file = QFile(filename)
         file.open(QIODevice.WriteOnly)
         s = QDataStream(file)
@@ -486,7 +489,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.graphicsView.scene.filename = filename
             
     def fileSaveAs(self):
-        filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", os.getcwd())
+        filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", self.lastDir, "VA Projects (*.vaproj);;All Files (*.*)")
         if not filename:
             return     
         self.graphicsView.scene.filename = filename                
