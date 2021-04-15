@@ -24,7 +24,7 @@ class PropertyWidget(QTreeWidget,  object):
         
     def dataChanged(self,  topLeft,  bottomRight, roles=list()):
         QTreeWidget.dataChanged(self,  topLeft,  bottomRight)
-        if self.currentPath:
+        if self.currentPath != None:
             self.saveItem(self.currentPath)
             self.currentPath.update()
             

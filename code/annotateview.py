@@ -176,7 +176,7 @@ class AnnotateScene(QGraphicsScene):
                         item.variables[name] = line[idx] 
                     
         # update current Path
-        if self.currentPath:
+        if self.currentPath != None:
             self.loadSignal.emit(self.currentPath)
         
     def loadNodeLevelVars(self, filename):
@@ -339,7 +339,7 @@ class AnnotateScene(QGraphicsScene):
                     self.undoStack.push(AddCommand(self, AOI(sp,  self.font, 0.7)))                                                             
                 else:
                     self.currentAOI = self.findFirstOfTypeAtPoint(AOI, sp)                    
-                    if self.currentAOI: self.currentAOI.handleMousePress(event)
+                    if self.currentAOI != None: self.currentAOI.handleMousePress(event)
             elif self.mode == 'Path':
                 cp = self.findFirstOfTypeAtPoint(Path, sp)
                 if (event.modifiers() & Qt.ShiftModifier):
@@ -353,10 +353,10 @@ class AnnotateScene(QGraphicsScene):
                 if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')):                
                     self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
                 else:
-                    if items and type(items[0]) != QGraphicsPixmapItem: 
+                    if items != None and type(items[0]) != QGraphicsPixmapItem: 
                         items[0].handleMousePress(event)
         elif (event.buttons() & Qt.RightButton):
-            if self.mode == 'Path' and self.currentPath:                
+            if self.mode == 'Path' and self.currentPath != None:                
                 self.currentPath.handleMousePress(event)
         QGraphicsScene.mousePressEvent(self,  event)          
 
@@ -438,23 +438,23 @@ class AnnotateView(QGraphicsView):
 
     def clearPointVariablesPressed(self):
 #         TEMP: clear for all points
-#         if self.scene.currentPath:
+#         if self.scene.currentPath != None:
 #             for idx in range(len(self.scene.currentPath.startTime)):
 #                 self.scene.currentPath.indP = idx
 #                 self.scene.currentPath.clearPointVariables()
 #             self.scene.loadSignal.emit(self.scene.currentPath)
        
-        if self.scene.currentPath and self.scene.currentPath.indP != None:
+        if self.scene.currentPath  != None and self.scene.currentPath.indP != None:
             self.scene.currentPath.clearPointVariables()
             self.scene.loadSignal.emit(self.scene.currentPath)
 
     def startTimeKeyPressed(self):
-        if self.scene.currentPath and self.scene.currentPath.indP != None:
+        if self.scene.currentPath  != None and self.scene.currentPath.indP != None:
             self.scene.currentPath.startTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
             
     def stopTimeKeyPressed(self):
-        if self.scene.currentPath and self.scene.currentPath.indP  != None:
+        if self.scene.currentPath  != None and self.scene.currentPath.indP  != None:
             self.scene.currentPath.stopTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
 
@@ -478,7 +478,7 @@ class AnnotateView(QGraphicsView):
                         if varType == 'Yes/No':                        
                             li[item.indP] = not StrToBoolOrKeep(li[item.indP])
                         elif varType == 'Integer':
-                            val = int(li[item.indP]) if li[item.indP] else 0                        
+                            val = int(li[item.indP]) if li[item.indP] != None else 0                        
                             li[item.indP] = val+1
                         item.variables[name] = li
                     else:
@@ -486,7 +486,7 @@ class AnnotateView(QGraphicsView):
                             item.variables[name] = not item.variables[name]
                         elif varType == 'Integer':
                             val = item.variables[name]                           
-                            val = int(val) if val else 0      
+                            val = int(val) if val != None else 0      
                             item.variables[name] = val+1
                     self.scene.loadSignal.emit(item)
                     return True            
@@ -507,7 +507,7 @@ class AnnotateView(QGraphicsView):
 
     def drawBackground (self, painter,  r):
         QGraphicsView.drawBackground(self,  painter,  r)
-        if self.scene.showBackground:
+        if self.scene.showBackground != None:
             painter.setPen(QColor("black"))
             painter.setOpacity(0.1)
             r = self.sceneRect()

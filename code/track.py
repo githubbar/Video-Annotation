@@ -255,7 +255,7 @@ class Path(QGraphicsPathItem):
             self.scene().undoStack.push(RemovePointCommand(self, self.indP, self.polygon[self.indP]))                                             
     
     def clearPointVariables(self):
-        if self.indP:
+        if self.indP != None:
             for name in self.scene().variables:
                 vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
                 if StrToBoolOrKeep(vEachNode):
@@ -369,6 +369,7 @@ class Path(QGraphicsPathItem):
             
     def mousePressEvent(self, event):
 #         print('mouse press over path ' + self.id)
+# TODO: if x is not same as if x != None, FIX THROUGHTOUT CODE!!!!!
         if not self.scene().showOnlyCurrent:
             self.indP = self.getNearestPoint(event.scenePos())
             self.scene().loadSignal.emit(self)
