@@ -262,14 +262,9 @@ class Path(QGraphicsPathItem):
                         self.variables[name][self.indP] = None
 
     def addPoint(self, p, time):
-#        # temp
-#        import random
-#        random.seed()
-#        for i in range(1000):
-#            p = QPointF(random.uniform(1, 320), random.uniform(1, 180))
-#        # end temp
         idx = len(self.polygon)
         # TODO: block time overlap while creating nodes
+        print(f'Adding point {p} to track id="{self.id}"')
         self.scene().undoStack.push(AddPointCommand(self, idx, p, time))       
         self.indP = idx
         
@@ -347,6 +342,8 @@ class Path(QGraphicsPathItem):
 
     def handleMousePress(self, event):
 #         print('handle mouse over path ' + self.id)
+        if self.scene() == None:
+            return
         # get new point closest to mouse and load it
         sp = event.scenePos()        
 #         QGraphicsPathItem.mousePressEvent(self, event)
@@ -425,9 +422,26 @@ class Path(QGraphicsPathItem):
             self.variables.pop(name)
 
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSceneHasChanged and self.scene():
-            self.populateVariables()            
-            if (self.polygon.count() == 0 and self.p0):
+                # FIXME: data corruption, node info is shifted one node forward upon creating a new track (when shift+clicking the first node), but not always. When a lot of time passed, seems to do it!
+        print('--------------------------------------------------------------------')                
+        print(f'Item in track id="{self.id}" changed. Change type: {change}')
+        if self.scene() == None: 
+            return QGraphicsItem.itemChange(self, change, value)
+        # item selected or made visible => make it the current item
+        if value:        
+            self.scene().currentPath = self     
+
+        if self.scene() and self.scene().currentPath:
+            print(f'Current path id="{self.scene().currentPath.id}"')
+        else:
+            print(f'No current path')
+        # if change == QGraphicsItem.ItemSelectedHasChanged and value:
+        #     self.scene().currentPath = self
+        #     print(f'Path selected')
+        if change == QGraphicsItem.ItemSceneHasChanged:
+            self.populateVariables()       
+            if (self.polygon.count() == 0 and self.p0 != None):
+                print(f'Adding point')
                 self.addPoint(self.p0, self.scene().time)   
                 self.p0 = None 
             path = QPainterPath()

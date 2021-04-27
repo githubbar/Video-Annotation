@@ -184,7 +184,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
 #         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
 
     def preloadFiles(self):
-        # TODO: nodes are shifted
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename = r'E:\Box Sync\CIL Exchange\Video Annotation Code\code\test.vaproj'
         filename = r'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Richardson Road\data.vaproj'
@@ -492,7 +491,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         filename, _filter = QFileDialog.getSaveFileName(self, "Save File As", self.lastDir, "VA Projects (*.vaproj);;All Files (*.*)")
         if not filename:
             return     
-        self.graphicsView.scene.filename = filename                
+        self.graphicsView.scene.filename = filename
+        self.setWindowTitle(self.graphicsView.scene.filename + ' - Video Annotation Tool') 
         self.fileSave()
 
     def stop(self):

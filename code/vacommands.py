@@ -42,15 +42,15 @@ class AddPointCommand(QUndoCommand):
         self.p = p
         self.startTime = self.stopTime = startTime
         self.stopTime = startTime.addMSecs(int(1000/self.path.scene().FPS))
-        # make a copy of node-level variables
+        # do NOT make a copy of node-level variables
         for name in self.path.scene().variables:
                 vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.path.scene().variables[name]
 #                 print(f'len = {len(self.variables["purchased"])} i = {i}')
                 if StrToBoolOrKeep(vEachNode): # list
-                    if self.i < len(self.path.polygon):
-                        self.variables[name] = self.path.variables[name][self.i]  
-                    else:
-                        self.variables[name] = None
+                    # if self.i < len(self.path.polygon):
+                        # self.variables[name] = self.path.variables[name][self.i]  
+                    # else:
+                    self.variables[name] = None
                         
     def undo(self):
             self.path.polygon.remove(self.i)

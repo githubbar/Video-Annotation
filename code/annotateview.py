@@ -27,10 +27,10 @@ from track import Path
 
 class AnnotateScene(QGraphicsScene):
     
-    loadSignal  = pyqtSignal(QGraphicsItem)
-    saveSignal  = pyqtSignal(QGraphicsItem)
-    loadVideoSignal  = pyqtSignal('QString')    
-    initCategoriesSignal  = pyqtSignal()    
+    loadSignal = pyqtSignal(QGraphicsItem)
+    saveSignal = pyqtSignal(QGraphicsItem)
+    loadVideoSignal = pyqtSignal('QString')    
+    initCategoriesSignal = pyqtSignal()    
     updateVideoSignal = pyqtSignal(QGraphicsItem)      
     addItemListSignal = pyqtSignal(QGraphicsItem)          
     addAOIListSignal = pyqtSignal(QGraphicsItem)          
@@ -38,7 +38,7 @@ class AnnotateScene(QGraphicsScene):
     removeAOIListSignal = pyqtSignal(QGraphicsItem)       
     updateItemListSignal = pyqtSignal(QGraphicsItem)              
     changeCurrentItemSignal = pyqtSignal()        
-    modes = ('Select', 'Path', 'Separator', 'Edit', 'Polygon',  'Rectangle',  'Label', 'Snapshot', 'AOI')    
+    modes = ('Select', 'Path', 'Separator', 'Edit', 'Polygon', 'Rectangle', 'Label', 'Snapshot', 'AOI')    
     gridD = 1
     
     currentPath = None        
@@ -56,14 +56,14 @@ class AnnotateScene(QGraphicsScene):
     font = QFont('Verdana', 2.2)    
     #    add dialog to change K to project properties
     
-    time = QTime(0,0)
+    time = QTime(0, 0)
     
     def __init__(self):
         QGraphicsScene.__init__(self)
         # Undo stack
         self.nodeColor = Qt.red
         self.undoStack = QUndoStack(self)      
-        self.setSceneRect(0,  0,  320.0, 180.0)
+        self.setSceneRect(0, 0, 320.0, 180.0)
         self.clear()
    
     def clear(self):
@@ -82,10 +82,10 @@ class AnnotateScene(QGraphicsScene):
         self.currentPolygon = None              
         self.currentAOI = None         
         self.backgroundPath = ''  
-        self.s = None      # current stacking item index
+        self.s = None  # current stacking item index
         self.variables.clear()
         
-    def removeItem(self,  item):
+    def removeItem(self, item):
         if type(item) == Path:
             self.removeItemListSignal.emit(item)
             self.currentPath = None
@@ -94,7 +94,7 @@ class AnnotateScene(QGraphicsScene):
             self.currentAOI = None
         QGraphicsScene.removeItem(self, item)
 
-    def addItem(self,  item):
+    def addItem(self, item):
         QGraphicsScene.addItem(self, item)
         if type(item) == Path:
             self.addItemListSignal.emit(item)
@@ -113,7 +113,7 @@ class AnnotateScene(QGraphicsScene):
             if pixmap.isNull():
                 QMessageBox.warning(None, "Warning!", "Background image is in wrong format!")
             self.background.setPixmap(pixmap)
-            self.background.setTransform(QTransform.fromScale((self.width()+1)/pixmap.width(),  (self.height()+1)/pixmap.height()));
+            self.background.setTransform(QTransform.fromScale((self.width() + 1) / pixmap.width(), (self.height() + 1) / pixmap.height()));
 #             self.background.scale()
             
             self.background.setZValue(-2)        
@@ -136,19 +136,19 @@ class AnnotateScene(QGraphicsScene):
         ids = next(reader)
         for line in reader:
             line = list(map(str.strip, line))
-            name = line[0] # variable name
+            name = line[0]  # variable name
             print(name)
-            if not name in self.variables: # skip non-existing variables
+            if not name in self.variables:  # skip non-existing variables
                 continue     
-            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.variables[name]
-            if StrToBoolOrKeep(vEachNode): # skip node-level variables: we are importing only Path level variables
+            vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.variables[name]
+            if StrToBoolOrKeep(vEachNode):  # skip node-level variables: we are importing only Path level variables
                 continue
             # set variable value for every track
             for item in list(self.items()):
                 if type(item) == Path: 
                     try:
-                        intID = str(int(item.id)) # strip leading zeros
-                        idx = ids.index(intID) # find ID in the list
+                        intID = str(int(item.id))  # strip leading zeros
+                        idx = ids.index(intID)  # find ID in the list
                     except ValueError:
                         continue
                     if vType == 'DropDown':
@@ -160,7 +160,7 @@ class AnnotateScene(QGraphicsScene):
                             choice = line[idx].strip()
                             if choice in vChoices:
                                 item.variables[name] = choice
-                            else:  
+                            else: 
                                 continue
                     elif vType == 'MultiChoice':
                         strList = []
@@ -192,7 +192,7 @@ class AnnotateScene(QGraphicsScene):
             # Find node with the closest start time
             idx = min(list(range(len(item.startTime))), key=lambda i:abs(item.startTime[i].msecsTo(t1.time())))
            
-            #TODO: assign check=true to varname and idx pos
+            # TODO: assign check=true to varname and idx pos
             li = item.variables[eName]
             li[idx] = True
             item.variables[eName] = li
@@ -205,38 +205,38 @@ class AnnotateScene(QGraphicsScene):
 #         dy = 30
 #             MAX_X=2000
 #             MAX_Y=2000  
-        MIN_X=-830
-        MAX_X=1297
-        MIN_Y=-876            
-        MAX_Y=976      
+        MIN_X = -830
+        MAX_X = 1297
+        MIN_Y = -876            
+        MAX_Y = 976      
 #         w=1068
 #         h=866
-        w=100
-        h=100 # dimensions of floor in feet
+        w = 100
+        h = 100  # dimensions of floor in feet
         reader = csv.reader(open(filename, 'rb'))
 #         ids = reader.next()
         for line in reader:
-            id = line[0] # variable name
+            id = line[0]  # variable name
             item = Path()
             item.id = id
             item.videoname = 'videos\LBS_011906_1600PM-XVID.avi'
             self.addItem(item)      
-            ts= line[3::3]
-            xs= line[4::3]
-            ys= line[5::3]
-            for t, x, y in zip(ts,xs,ys):
+            ts = line[3::3]
+            xs = line[4::3]
+            ys = line[5::3]
+            for t, x, y in zip(ts, xs, ys):
 #                 if not (MIN_X<float(x)<MAX_X) or not (MIN_Y<float(y)<MAX_Y):
 #                     continue
                 if not t.strip():
                     continue;
-                tm = QTime(0,0).addMSecs(1000.0*int(t)/self.FPS)
+                tm = QTime(0, 0).addMSecs(1000.0 * int(t) / self.FPS)
 #                 X = -float(x)*scalex+dx
 #                 Y = float(y)*scaley+dy
 #                 X = w*(float(x)-MAX_X)/(MIN_X-MAX_X)
 #                 Y = h*(float(y)-MIN_Y)/(MAX_Y-MIN_Y)
-                X = w*(1-float(y))
-                Y = h*(1-float(x))
-                item.addPoint(QPointF(X,Y), tm)
+                X = w * (1 - float(y))
+                Y = h * (1 - float(x))
+                item.addPoint(QPointF(X, Y), tm)
 #                 item.startTime[item.indP] = tm
 #                 item.stopTime[item.indP] = tm
 #                 item.polygon.append(QPointF(X,Y))
@@ -256,11 +256,11 @@ class AnnotateScene(QGraphicsScene):
             if type(item) == Path: 
                 item.renameVariable(oldname, newname)     
         
-    def load(self, s, buildNumber, merge = False):
+    def load(self, s, buildNumber, merge=False):
         # read scene properties
         w = s.readFloat()
         h = s.readFloat()
-        self.setSceneRect(0,  0,  w, h)
+        self.setSceneRect(0, 0, w, h)
         if buildNumber < 47:
             self.backgroundPath = s.readString().decode("utf-8")
         else:
@@ -286,7 +286,7 @@ class AnnotateScene(QGraphicsScene):
         nItems = s.readInt()
         for i in range(nItems):
             cItem = s.readQString()
-            item = eval(cItem+'()') # create an item instance of appropriate type
+            item = eval(cItem + '()')  # create an item instance of appropriate type
             if type(item) == QGraphicsPixmapItem:
                 continue                      
             item.read(s, buildNumber)
@@ -311,7 +311,7 @@ class AnnotateScene(QGraphicsScene):
         # write project variables
         s.writeQVariantMap(self.variables)
         # write items
-        s.writeInt(len(list(self.items()))-2) # minus the heatmap and the background image
+        s.writeInt(len(list(self.items())) - 2)  # minus the heatmap and the background image
         for i in list(self.items()):
             # skip heatmap
             if type(i) == QGraphicsPixmapItem:
@@ -319,10 +319,10 @@ class AnnotateScene(QGraphicsScene):
             s.writeQString(i.__class__.__name__)
             i.write(s)
             
-    def findFirstOfTypeAtPoint(self, T, sp):            
+    def findFirstOfTypeAtPoint(self, T, sp): 
         items = self.items(sp)
         for i in items:
-            if type(i) ==  T:        
+            if type(i) == T: 
                 return i 
         return None
 
@@ -336,35 +336,38 @@ class AnnotateScene(QGraphicsScene):
             if self.mode == 'AOI':
                 if (event.modifiers() & Qt.ShiftModifier): 
                     print("Creating new AOI")
-                    self.undoStack.push(AddCommand(self, AOI(sp,  self.font, 0.7)))                                                             
+                    self.undoStack.push(AddCommand(self, AOI(sp, self.font, 0.7)))                                                             
                 else:
                     self.currentAOI = self.findFirstOfTypeAtPoint(AOI, sp)                    
                     if self.currentAOI != None: self.currentAOI.handleMousePress(event)
             elif self.mode == 'Path':
-                cp = self.findFirstOfTypeAtPoint(Path, sp)
                 if (event.modifiers() & Qt.ShiftModifier):
                     print("Creating new track")
-                    self.currentPath = Path(sp,  self.font, 1.0)
-                    self.undoStack.push(AddCommand(self, self.currentPath))                                             
-                elif cp or (event.modifiers() & Qt.ControlModifier) and self.currentPath: 
-                        self.currentPath.handleMousePress(event)
-            else:             
+                    # self.currentPath = Path(sp, self.font, 1.0)
+                    newPath = Path(sp, self.font, 1.0)
+                    self.undoStack.push(AddCommand(self, newPath))                                             
+                elif self.findFirstOfTypeAtPoint(Path, sp) != None or (event.modifiers() & Qt.ControlModifier) and self.currentPath != None:
+                    print("Mouse press on existing track")
+                    # FIXME: after deleting track : AttributeError: 'NoneType' object has no attribute 'handleMousePress'
+                    self.currentPath.handleMousePress(event)
+            else: 
                 items = self.items(sp)
-                if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')):                
+                if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')): 
                     self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
                 else:
-                    if items != None and type(items[0]) != QGraphicsPixmapItem: 
+                    if items != None and items[0] != None and type(items[0]) != QGraphicsPixmapItem: 
                         items[0].handleMousePress(event)
         elif (event.buttons() & Qt.RightButton):
-            if self.mode == 'Path' and self.currentPath != None:                
+            if self.mode == 'Path' and self.currentPath != None: 
                 self.currentPath.handleMousePress(event)
-        QGraphicsScene.mousePressEvent(self,  event)          
+        QGraphicsScene.mousePressEvent(self, event)          
+
 
 class AnnotateView(QGraphicsView):
     
     def __init__(self, parent):
-        QGraphicsView.__init__(self,  parent)
-        self.scene= AnnotateScene()
+        QGraphicsView.__init__(self, parent)
+        self.scene = AnnotateScene()
         self.setScene(self.scene)
 #        self.scene.setSceneRect(0, 0, 320, 180)
         Z = 1.0
@@ -383,11 +386,11 @@ class AnnotateView(QGraphicsView):
         self.addAction(quad2)
         quad3 = QAction(self)
         quad3.setShortcut(QKeySequence('Alt+3'))
-        quad3.triggered.connect(lambda: self.fitInView(0, self.size().height()/2, 140, 80, Qt.KeepAspectRatio))                 
+        quad3.triggered.connect(lambda: self.fitInView(0, self.size().height() / 2, 140, 80, Qt.KeepAspectRatio))                 
         self.addAction(quad3)
         quad4 = QAction(self)
         quad4.setShortcut(QKeySequence('Alt+4'))
-        quad4.triggered.connect(lambda: self.fitInView(self.size().width()/2, self.size().height()/2, 140, 80, Qt.KeepAspectRatio))                 
+        quad4.triggered.connect(lambda: self.fitInView(self.size().width() / 2, self.size().height() / 2, 140, 80, Qt.KeepAspectRatio))                 
         self.addAction(quad4)        
         
         zoomInFontKey = QAction(self)
@@ -423,7 +426,7 @@ class AnnotateView(QGraphicsView):
     def zoomInFontPressed(self):
         for i in self.scene.selectedItems():
             f = i.font 
-            f.setPointSizeF(f.pointSizeF()*self.FONT_ZOOM_FACTOR)
+            f.setPointSizeF(f.pointSizeF() * self.FONT_ZOOM_FACTOR)
             i.font = f
             self.scene.loadSignal.emit(i)
         self.scene.update()    
@@ -431,7 +434,7 @@ class AnnotateView(QGraphicsView):
     def zoomOutFontPressed(self):
         for i in self.scene.selectedItems():
             f = i.font 
-            f.setPointSizeF(f.pointSizeF()/self.FONT_ZOOM_FACTOR)
+            f.setPointSizeF(f.pointSizeF() / self.FONT_ZOOM_FACTOR)
             i.font = f
             self.scene.loadSignal.emit(i)
         self.scene.update()    
@@ -444,27 +447,26 @@ class AnnotateView(QGraphicsView):
 #                 self.scene.currentPath.clearPointVariables()
 #             self.scene.loadSignal.emit(self.scene.currentPath)
        
-        if self.scene.currentPath  != None and self.scene.currentPath.indP != None:
+        if self.scene.currentPath != None and self.scene.currentPath.indP != None:
             self.scene.currentPath.clearPointVariables()
             self.scene.loadSignal.emit(self.scene.currentPath)
 
     def startTimeKeyPressed(self):
-        if self.scene.currentPath  != None and self.scene.currentPath.indP != None:
+        if self.scene.currentPath != None and self.scene.currentPath.indP != None:
             self.scene.currentPath.startTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
             
     def stopTimeKeyPressed(self):
-        if self.scene.currentPath  != None and self.scene.currentPath.indP  != None:
+        if self.scene.currentPath != None and self.scene.currentPath.indP != None:
             self.scene.currentPath.stopTime[self.scene.currentPath.indP] = self.scene.time
             self.scene.loadSignal.emit(self.scene.currentPath)
-
 
     def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress):
 #             if event.modifiers() & Qt.ControlModifier:
 #                 self.setCursor(Qt.CrossCursor)            
             for name in self.scene.variables:
-                vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene.variables[name]
+                vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene.variables[name]
                 shortcut = vShortcut
                 if not shortcut.strip():
                     continue
@@ -472,31 +474,31 @@ class AnnotateView(QGraphicsView):
                     # toggle corresponding variable
                     item = self.scene.currentPath                    
                     varType = vType
-                    if StrToBoolOrKeep(vEachNode): # list                    
+                    if StrToBoolOrKeep(vEachNode):  # list                    
                         if item.indP == None: continue
                         li = item.variables[name]
-                        if varType == 'Yes/No':                        
+                        if varType == 'Yes/No': 
                             li[item.indP] = not StrToBoolOrKeep(li[item.indP])
                         elif varType == 'Integer':
                             val = int(li[item.indP]) if li[item.indP] != None else 0                        
-                            li[item.indP] = val+1
+                            li[item.indP] = val + 1
                         item.variables[name] = li
                     else:
-                        if varType == 'Yes/No':                        
+                        if varType == 'Yes/No': 
                             item.variables[name] = not item.variables[name]
                         elif varType == 'Integer':
                             val = item.variables[name]                           
                             val = int(val) if val != None else 0      
-                            item.variables[name] = val+1
+                            item.variables[name] = val + 1
                     self.scene.loadSignal.emit(item)
                     return True            
         return QGraphicsView.eventFilter(self, obj, event)
             
-#Size scene to fit the view
+# Size scene to fit the view
     
     def fitSceneInView(self):
         self.setTransform(QTransform())
-        s = min(self.width()/self.scene.width(), self.height()/self.scene.height())
+        s = min(self.width() / self.scene.width(), self.height() / self.scene.height())
         self.scale(s, s);
 
     def wheelEvent(self, event):
@@ -505,8 +507,8 @@ class AnnotateView(QGraphicsView):
             factor = 1.0 / factor
         self.scale(factor, factor)
 
-    def drawBackground (self, painter,  r):
-        QGraphicsView.drawBackground(self,  painter,  r)
+    def drawBackground (self, painter, r):
+        QGraphicsView.drawBackground(self, painter, r)
         if self.scene.showBackground != None:
             painter.setPen(QColor("black"))
             painter.setOpacity(0.1)
