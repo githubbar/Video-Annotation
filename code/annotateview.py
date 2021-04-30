@@ -37,7 +37,7 @@ class AnnotateScene(QGraphicsScene):
     removeItemListSignal = pyqtSignal(QGraphicsItem)    
     removeAOIListSignal = pyqtSignal(QGraphicsItem)       
     updateItemListSignal = pyqtSignal(QGraphicsItem)              
-    changeCurrentItemSignal = pyqtSignal()        
+    changeCurrentItemSignal = pyqtSignal(QGraphicsItem)        
     modes = ('Select', 'Path', 'Separator', 'Edit', 'Polygon', 'Rectangle', 'Label', 'Snapshot', 'AOI')    
     gridD = 1
     
@@ -99,6 +99,7 @@ class AnnotateScene(QGraphicsScene):
         if type(item) == Path:
             self.addItemListSignal.emit(item)
             self.currentPath = item
+            # print(f'QAnnotateScene::addItem new track added ="{self.currentPath.id}"') 
         if type(item) == AOI:
             self.addAOIListSignal.emit(item)
             self.currentAOI = item
@@ -327,40 +328,42 @@ class AnnotateScene(QGraphicsScene):
         return None
 
     def mousePressEvent(self, event):
+        QGraphicsScene.mousePressEvent(self, event)        
         # Find first item under the mouse
         sp = event.scenePos()
- 
         if event.buttons() & Qt.LeftButton:
             if self.mode == 'Select':
                 pass
             if self.mode == 'AOI':
                 if (event.modifiers() & Qt.ShiftModifier): 
                     print("Creating new AOI")
-                    self.undoStack.push(AddCommand(self, AOI(sp, self.font, 0.7)))                                                             
+                    return self.undoStack.push(AddCommand(self, AOI(sp, self.font, 0.7)))                                                             
                 else:
                     self.currentAOI = self.findFirstOfTypeAtPoint(AOI, sp)                    
-                    if self.currentAOI != None: self.currentAOI.handleMousePress(event)
+                    if self.currentAOI != None: 
+                        return self.currentAOI.handleMousePress(event)
             elif self.mode == 'Path':
                 if (event.modifiers() & Qt.ShiftModifier):
                     print("Creating new track")
                     # self.currentPath = Path(sp, self.font, 1.0)
                     newPath = Path(sp, self.font, 1.0)
-                    self.undoStack.push(AddCommand(self, newPath))                                             
+                    return self.undoStack.push(AddCommand(self, newPath))                                             
                 elif self.findFirstOfTypeAtPoint(Path, sp) != None or (event.modifiers() & Qt.ControlModifier) and self.currentPath != None:
                     print("Mouse press on existing track")
                     # FIXME: after deleting track : AttributeError: 'NoneType' object has no attribute 'handleMousePress'
-                    self.currentPath.handleMousePress(event)
+                    return self.currentPath.handleMousePress(event)
             else: 
                 items = self.items(sp)
                 if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')): 
-                    self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
+                    return self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
                 else:
-                    if items != None and items[0] != None and type(items[0]) != QGraphicsPixmapItem: 
-                        items[0].handleMousePress(event)
+                    if items != None and items[0] != None and type(items[0]) != QGraphicsPixmapItem:
+                        return items[0].handleMousePress(event)
         elif (event.buttons() & Qt.RightButton):
             if self.mode == 'Path' and self.currentPath != None: 
-                self.currentPath.handleMousePress(event)
-        QGraphicsScene.mousePressEvent(self, event)          
+                return self.currentPath.handleMousePress(event)
+           
+          
 
 
 class AnnotateView(QGraphicsView):

@@ -17,16 +17,15 @@ class PropertyWidget(QTreeWidget,  object):
     def __init__(self, parent, task=None):
         QTreeWidget.__init__(self, parent)
         self.expandedCategories = []
-        self.currentPath = None
+        self.currentItem = None
 #         self.headerItem().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.itemExpanded.connect(self.onItemExpanded)
         self.itemCollapsed.connect(self.onItemCollapsed)
         
     def dataChanged(self,  topLeft,  bottomRight, roles=list()):
+        print (f'PropertyWidget::dataChanged id="{self.currentItem.id if self.currentItem else None}"')
         QTreeWidget.dataChanged(self,  topLeft,  bottomRight)
-        if self.currentPath != None:
-            self.saveItem(self.currentPath)
-            self.currentPath.update()
+        # self.saveItem(self.currentItem)
             
     def onItemExpanded(self, item):
         self.expandedCategories.append(item.data(0, Qt.EditRole))
@@ -35,10 +34,12 @@ class PropertyWidget(QTreeWidget,  object):
         self.expandedCategories.remove(item.data(0, Qt.EditRole))
   
     def loadItem(self, item):
-#         print "Loading Item", item
+        # print (f'Loading Item {item.id}')
         import operator
-        self.clear()        
-        self.currentPath = item
+        self.clear()
+        self.currentItem = item
+
+        # self.currentPath = item
         """Load selected item properties"""
         sectionItem = PropertyTreeItem(True, 'Default', item.scene())
         self.addTopLevelItem(sectionItem)   
@@ -55,7 +56,7 @@ class PropertyWidget(QTreeWidget,  object):
                 v = v[item.indP]
             sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  None, v ))
             
-        #### Begin display dymanic project variables 
+        #### Begin display dynamic project variables 
         if type(item) == Path: 
             ## Add Section Headers
             listItems = []
@@ -81,12 +82,12 @@ class PropertyWidget(QTreeWidget,  object):
                         sectionItem.setExpanded(sectionItem.data(0, Qt.EditRole) in self.expandedCategories)                                                
                         oldGroupName = vGroup                    
                     sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  vDescr, v, vType, vUserData))
-       #### End display dymanic project variables 
+        #### End display dynamic project variables 
         self.setIndentation(10)
 #        self.expandAll()
 
     def saveItem(self, item):
-#         print("Saving Item",  item)
+        # print(f'Saving Item {item.id}')
         for name in item.shownFields:
             # find matching top level item                   
             foundItems = self.findItems(name, Qt.MatchExactly | Qt.MatchRecursive)

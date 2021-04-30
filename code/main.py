@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# TODO: Fix tracks 108 -112
 """
 Annotation Tool: For annotating track time series over tracking video
 Copyright: Alex Leykin @ CIL
@@ -137,7 +136,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.graphicsView.scene.removeItemListSignal.connect(self.items.removeItem)  
         self.graphicsView.scene.removeAOIListSignal.connect(self.aois.removeItem)  
         self.graphicsView.scene.updateItemListSignal.connect(self.items.updateItem)  
-        self.graphicsView.scene.changeCurrentItemSignal.connect(self.changeCurrentItem)  
+        self.graphicsView.scene.changeCurrentItemSignal.connect(self.items.changeCurrentItem)  
         self.items.itemClicked.connect(self.checkItem)
         self.items.currentItemChanged.connect(self.currentItemChanged)
         self.items.deleteKeyPressed.connect(self.deleteItem)
@@ -505,6 +504,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.mediaPlayer.set_position(Position / 1000.0)
 
     def updateVideo(self, item):
+        # print(f'update video {self.graphicsView.scene.time}')
         """Set the position based on the time on Path node"""
         if item.indP == None or item.startTime[item.indP] == None: 
             return
@@ -516,6 +516,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         
     def updateUI(self):
         """updates the user interface"""
+        print(f'update ui {self.graphicsView.scene.time}')
         self.seekSlider.setValue(self.mediaPlayer.get_position() * 1000)
         if not self.mediaPlayer.is_playing():
             self.timer.stop()
@@ -531,6 +532,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             self.status.setText(self.graphicsView.scene.time.toString('hh:mm:ss.zzz'))
         else:
             self.status.setText(QTime(0, 0).toString('hh:mm:ss.zzz'))
+        if self.graphicsView.scene != None:
+            self.graphicsView.scene.loadSignal.emit(self.graphicsView.scene.currentPath)
             
     def deleteItem(self):
         if self.items.currentItem():
@@ -545,22 +548,23 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             item.g.setVisible(True)
         else:
             item.g.setVisible(False)
-
-    def changeCurrentItem(self):        
-        #  choose current item
-        for n in range(self.items.rowCount()):
-            i = self.items.item(n, 0)
-            if self.graphicsView.scene.currentPath == i.g:
-                self.items.setCurrentItem(i)
-                i.g.setVisible(True)
-                i.setCheckState(Qt.Checked)
                 
     def currentItemChanged(self, current, previous):
-        self.graphicsView.scene.clearSelection()
+        print('--------------------------------------------------------------------')                
+        print(f'QMainWindow::currentItemChanged new track id="{current.g.id}"') 
+        if previous != None:
+            print(f'previous track id="{previous.g.id}"')
+            self.propertyWidget.saveItem(previous.g) 
+        if self.graphicsView.scene and self.graphicsView.scene.currentPath:
+            print(f'scene.currentPath id="{self.graphicsView.scene.currentPath.id}"')
+        else:
+            print(f'No current track')        
+            
+        # self.graphicsView.scene.clearSelection()
         if current:
             current.g.setSelected(True)
             self.graphicsView.scene.currentPath = current.g
-            self.graphicsView.scene.loadSignal.emit(self.graphicsView.scene.currentPath)            
+            self.propertyWidget.loadItem(current.g)            
             if current.g.videoname != '': self.loadVideo(current.g.videoname)               
             self.timer.start()
         
@@ -653,6 +657,8 @@ def main():
     app.setOverrideCursor(Qt.CrossCursor)    
     window = Main()
     window.appPath = application_path
+    window.move(1920, 0)
+    window.resize(1920, 2160)
     window.show()
     sys.exit(app.exec())
 

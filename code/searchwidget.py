@@ -183,7 +183,7 @@ class SearchWidget:
         result = self.results.item(row, 1).data(Qt.UserRole)        
         self.graphicsView.scene.currentPath = result.item
         self.graphicsView.scene.currentPath.indP = result.n
-        self.changeCurrentItem()      
+        self.scene.changeCurrentItemSignal.emit(self.graphicsView.scene.currentPath)      
         if self.mediaPlayer.play() != -1:            
             self.playButton.setIcon(QIcon('icons/player_pause.png'))
             self.timer.start()

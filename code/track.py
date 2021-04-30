@@ -62,17 +62,15 @@ class Path(QGraphicsPathItem):
         return sh
 
     def write(self, s):
-        #TODO: variables length doesn't match startTime length
-#         n = len(self.startTime)
-#         for name in self.scene().variables:
-#             vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene().variables[name]
-#             if StrToBoolOrKeep(vEachNode): # list
-#                 li = self.variables[name]
-#                 del li[n:]
-                        
-                                   
+        #FIXME: variables length doesn't match startTime length
+        n = len(self.startTime)
+        for name in self.scene().variables:
+            vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.scene().variables[name]
+            if StrToBoolOrKeep(vEachNode): # list
+                li = self.variables[name]
+                del li[n:]
         if len(self.startTime) < len(self.variables["Category Shopped"]):
-            print(f'path {self.id}')
+            print(f'Error: Variables length is more than startTime length, path id = {self.id}')
         
 #         print(f'saving path {self.id}: time len = {len(self.startTime)};'\
 #          f'cat shopped = {len(self.variables["Category Shopped"])};' \
@@ -199,14 +197,16 @@ class Path(QGraphicsPathItem):
             if self.scene().currentPath == self and len(self.stopTime) > 0 :
                 painter.setBrush(QBrush(Qt.transparent))                                
                 painter.setPen(QPen(QBrush(Qt.red), 2))
-#                 print(f'i is {i} scene time is {self.scene().time} \nstarttime is {self.startTime[i]} stoptime is {self.stopTime[i]}')                
+#                 print(f'i is {i} scene time is {self.scene().time} \nstarttime is {self.startTime[i]} stoptime is {self.stopTime[i]}')
+                #     # FIXME: 1) doesn't always fire on empty nodes
                 if i > 0 and self.scene().time > self.stopTime[i - 1] and self.scene().time < self.startTime[i]:
                     painter.drawEllipse(self.getSegmentPosInTime(i - 1, self.scene().time), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize)
-                elif self.scene().time > self.startTime[i] and self.scene().time < self.stopTime[i]:
-                    painter.drawEllipse(self.polygon.at(i), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize) 
+                elif i < len(self.startTime-1) and self.scene().time >= self.startTime[i] and self.scene().time < self.startTime[i+1]:
+                    # print(f'node------------ {i}')
+                    painter.drawEllipse(self.polygon.at(i), self.R * self.scene().nodeSize,  self.R * self.scene().nodeSize) 
                     self.indP = i
-                    self.scene().loadSignal.emit(self)     
-
+                    self.scene().loadSignal.emit(self)
+     
     def getSegmentPosInTime(self, i, t, linear=False):
         t0 = QTime(0,0).msecsTo(t)
         t1 = QTime(0,0).msecsTo(self.stopTime[i])
@@ -282,7 +282,7 @@ class Path(QGraphicsPathItem):
                 mind = dist
                 mini = i
         return mini
-
+   
     def getNearestLineSegment(self, p):
         if self.polygon.count() < 2:
             return 0
@@ -325,20 +325,40 @@ class Path(QGraphicsPathItem):
             l = l + QLineF(p1, p2).length()
         return l
 
-    def focusInEvent (self, event):
-        QGraphicsItem.focusInEvent(self, event)
-        # save existing currentPath path
-        if self.scene().currentPath != self and self.polygon.count():
-            self.scene().saveSignal.emit(self.scene().currentPath)        
-        self.scene().loadSignal.emit(self)     
-        self.scene().currentPath = self
-        self.scene().changeCurrentItemSignal.emit()
-
-    def focusOutEvent (self, event):
-        QGraphicsItem.focusOutEvent(self, event)
-        # When would I need to save on Focus Out?
-#        if self.polygon.count():
-#            self.scene().saveSignal.emit(self)
+    # def focusInEvent (self, event):
+    #     self.scene().saveSignal.emit(self)
+    #     # # save existing currentPath path
+    #     # # self.scene().loadSignal.emit(self)
+    #
+    #     # print('--------------------------------------------------------------------')                
+    #     # print(f'QGraphicsItem::focusInEvent in track id="{self.id}" ')
+    #     # if self.scene() and self.scene().currentPath:
+    #     #     print(f'Current path id="{self.scene().currentPath.id}"')
+    #     # else:
+    #     #     print(f'No current path')             
+    #     # # if self.id != self.scene().currentPath.id:
+    #     # if self.scene().currentPath != self and self.polygon.count():
+    #     #     self.scene().saveSignal.emit(self.scene().currentPath)         
+    #     # self.scene().changeCurrentItemSignal.emit(self.id)
+    #     # return QGraphicsItem.focusInEvent(self, event)
+    #     # # self.scene().currentPath = self
+    #
+    #     # QGraphicsItem.focusInEvent(self, event)
+    #     # save existing currentPath path
+    #     self.scene().changeCurrentItemSignal.emit(self.id)
+    #
+    #
+    #     # QGraphicsItem.focusInEvent(self, event)
+    #     # # save existing currentPath path
+    #     # if self.scene().currentPath != self and self.polygon.count():
+    #     #     self.scene().saveSignal.emit(self.scene().currentPath)        
+    #     # self.scene().loadSignal.emit(self)     
+    #     # self.scene().currentPath = self
+    #     # # self.scene().changeCurrentItemSignal.emit()
+    #
+    # def focusOutEvent (self, event):
+    #     QGraphicsItem.focusOutEvent(self, event)
+    #     # When would I need to save on Focus Out?
 
     def handleMousePress(self, event):
 #         print('handle mouse over path ' + self.id)
@@ -348,6 +368,8 @@ class Path(QGraphicsPathItem):
         sp = event.scenePos()        
 #         QGraphicsPathItem.mousePressEvent(self, event)
         point_append_time = self.scene().time
+
+    #     # and then pressing F2, F3, etc
         Path.mousePressEvent(self, event)
         if (event.buttons() & Qt.LeftButton and self.scene().mode != 'Select'): 
             if not self.choosingOrientation:
@@ -362,19 +384,21 @@ class Path(QGraphicsPathItem):
                     self.addPoint(sp, point_append_time)
                     self.update()     
         elif (event.buttons() & Qt.RightButton): 
-            self.choosingOrientation = True    
+            self.choosingOrientation = True  
             
     def mousePressEvent(self, event):
-#         print('mouse press over path ' + self.id)
-# TODO: if x is not same as if x != None, FIX THROUGHTOUT CODE!!!!!
+        print(f'Track::mousePressEvent id="{self.id}"')
+        # TODO: if x is not same as if x != None, FIX THROUGHTOUT CODE!!!!!
+        self.scene().changeCurrentItemSignal.emit(self)
+        
         if not self.scene().showOnlyCurrent:
             self.indP = self.getNearestPoint(event.scenePos())
-            self.scene().loadSignal.emit(self)
             self.scene().currentPath = self
-            self.setSelected(True)          
+            self.scene().loadSignal.emit(self)
+            # self.setSelected(True)          
         self.scene().updateVideoSignal.emit(self)               
-        self.update()     
-
+        self.update()
+  
     def getVariableValuesList(self, idx=None):
         if idx == None:
             idx = self.indP
@@ -422,19 +446,21 @@ class Path(QGraphicsPathItem):
             self.variables.pop(name)
 
     def itemChange(self, change, value):
-                # FIXME: data corruption, node info is shifted one node forward upon creating a new track (when shift+clicking the first node), but not always. When a lot of time passed, seems to do it!
-        print('--------------------------------------------------------------------')                
-        print(f'Item in track id="{self.id}" changed. Change type: {change}')
+        # print(f'Path::itemChange')
+        
         if self.scene() == None: 
             return QGraphicsItem.itemChange(self, change, value)
+        # print('--------------------------------------------------------------------')                
+        # print(f'QGraphicsItem::itemChange in track id="{self.id}" changed. Change type: {change}')
+        # if self.scene().currentPath:
+        #     print(f'Current path id="{self.scene().currentPath.id}"')
+        # else:
+        #     print(f'No current path')
+    
         # item selected or made visible => make it the current item
-        if value:        
-            self.scene().currentPath = self     
+        # if value:        
+        #     self.scene().currentPath = self     
 
-        if self.scene() and self.scene().currentPath:
-            print(f'Current path id="{self.scene().currentPath.id}"')
-        else:
-            print(f'No current path')
         # if change == QGraphicsItem.ItemSelectedHasChanged and value:
         #     self.scene().currentPath = self
         #     print(f'Path selected')
@@ -466,7 +492,7 @@ class Path(QGraphicsPathItem):
     def mouseReleaseEvent(self, event):                
             # TODO: choosing orientation undo !!!
 #            self.updateOrientationCommand(self.indP, sp)
-        self.scene().loadSignal.emit(self)            
+        # self.scene().loadSignal.emit(self)            
         self.choosingOrientation = False
 
     def mouseMoveEvent(self, event):
