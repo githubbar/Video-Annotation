@@ -312,7 +312,7 @@
               <widget class="QWidget" name="layoutWidget">
                <layout class="QVBoxLayout" name="verticalLayout">
                 <item>
-                 <widget class="PathTableWidget" name="items">
+                 <widget class="PathItemsWidget" name="items">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -330,35 +330,6 @@ selection-background-color: rgb(190, 204, 255);
                   <property name="selectionMode">
                    <enum>QAbstractItemView::SingleSelection</enum>
                   </property>
-                  <property name="sortingEnabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="columnCount">
-                   <number>1</number>
-                  </property>
-                  <attribute name="horizontalHeaderVisible">
-                   <bool>false</bool>
-                  </attribute>
-                  <attribute name="horizontalHeaderDefaultSectionSize">
-                   <number>100</number>
-                  </attribute>
-                  <attribute name="horizontalHeaderMinimumSectionSize">
-                   <number>100</number>
-                  </attribute>
-                  <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-                   <bool>true</bool>
-                  </attribute>
-                  <attribute name="horizontalHeaderStretchLastSection">
-                   <bool>true</bool>
-                  </attribute>
-                  <attribute name="verticalHeaderVisible">
-                   <bool>false</bool>
-                  </attribute>
-                  <column>
-                   <property name="text">
-                    <string>Path</string>
-                   </property>
-                  </column>
                  </widget>
                 </item>
                 <item>
@@ -482,8 +453,8 @@ selection-background-color: rgb(190, 204, 255);
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>1069</width>
-                       <height>229</height>
+                       <width>131</width>
+                       <height>161</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_9">
@@ -497,8 +468,8 @@ selection-background-color: rgb(190, 204, 255);
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>1043</width>
-                           <height>173</height>
+                           <width>98</width>
+                           <height>28</height>
                           </rect>
                          </property>
                          <property name="baseSize">
@@ -527,8 +498,8 @@ selection-background-color: rgb(190, 204, 255);
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>1069</width>
-                       <height>229</height>
+                       <width>98</width>
+                       <height>28</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_10">
@@ -966,11 +937,6 @@ selection-background-color: rgb(190, 204, 255);
    <header>annotateview.h</header>
   </customwidget>
   <customwidget>
-   <class>PathTableWidget</class>
-   <extends>QTableWidget</extends>
-   <header>pathtablewidget.h</header>
-  </customwidget>
-  <customwidget>
    <class>PropertyWidget</class>
    <extends>QTreeWidget</extends>
    <header>propertywidget.h</header>
@@ -978,7 +944,12 @@ selection-background-color: rgb(190, 204, 255);
   <customwidget>
    <class>AOITableWidget</class>
    <extends>QTableWidget</extends>
-   <header location="global">aoitablewidget.h</header>
+   <header>aoitablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PathItemsWidget</class>
+   <extends>QListWidget</extends>
+   <header location="global">pathitemswidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

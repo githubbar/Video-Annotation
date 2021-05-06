@@ -75,7 +75,7 @@ class CustomDelegate(QStyledItemDelegate):
             return None
         elif elementType == 'File':
 #             editor = FileOpenEdit(index, self, parent)
-            editor = FileOpenEdit(index, self.parent().currentPath.scene(), self, parent)
+            editor = FileOpenEdit(index, self.parent().currentItem.scene(), self, parent)
             editor.installEventFilter(self)            
             return editor
         elif elementType == 'Font':

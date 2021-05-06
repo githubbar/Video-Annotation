@@ -26,18 +26,22 @@ from track import Path
 
 
 class AnnotateScene(QGraphicsScene):
-    
+
+    requestRowCountSignal = pyqtSignal(QGraphicsItem)        
     loadSignal = pyqtSignal(QGraphicsItem)
     saveSignal = pyqtSignal(QGraphicsItem)
     loadVideoSignal = pyqtSignal('QString')    
     initCategoriesSignal = pyqtSignal()    
-    updateVideoSignal = pyqtSignal(QGraphicsItem)      
-    addItemListSignal = pyqtSignal(QGraphicsItem)          
+    updateVideoSignal = pyqtSignal(QGraphicsItem)    
     addAOIListSignal = pyqtSignal(QGraphicsItem)          
-    removeItemListSignal = pyqtSignal(QGraphicsItem)    
     removeAOIListSignal = pyqtSignal(QGraphicsItem)       
-    updateItemListSignal = pyqtSignal(QGraphicsItem)              
-    changeCurrentItemSignal = pyqtSignal(QGraphicsItem)        
+    
+    # Item list signals
+    addItemListSignal = pyqtSignal('QString')
+    updateItemListSignal = pyqtSignal('QString')    
+    removeItemListSignal = pyqtSignal('QString')
+    changeCurrentItemSignal = pyqtSignal('QString')
+        
     modes = ('Select', 'Path', 'Separator', 'Edit', 'Polygon', 'Rectangle', 'Label', 'Snapshot', 'AOI')    
     gridD = 1
     
@@ -87,7 +91,7 @@ class AnnotateScene(QGraphicsScene):
         
     def removeItem(self, item):
         if type(item) == Path:
-            self.removeItemListSignal.emit(item)
+            self.removeItemListSignal.emit(item.id)
             self.currentPath = None
         if type(item) == AOI:
             self.removeAOIListSignal.emit(item)
@@ -97,7 +101,7 @@ class AnnotateScene(QGraphicsScene):
     def addItem(self, item):
         QGraphicsScene.addItem(self, item)
         if type(item) == Path:
-            self.addItemListSignal.emit(item)
+            self.addItemListSignal.emit(item.id)
             self.currentPath = item
             # print(f'QAnnotateScene::addItem new track added ="{self.currentPath.id}"') 
         if type(item) == AOI:
@@ -319,7 +323,11 @@ class AnnotateScene(QGraphicsScene):
                 continue            
             s.writeQString(i.__class__.__name__)
             i.write(s)
-            
+       
+    def findPath(self, id):
+        matches = [x for x in self.items() if type(x) == Path and x.id == id]
+        return matches[0] if len(matches) > 0 else None 
+       
     def findFirstOfTypeAtPoint(self, T, sp): 
         items = self.items(sp)
         for i in items:
@@ -337,31 +345,31 @@ class AnnotateScene(QGraphicsScene):
             if self.mode == 'AOI':
                 if (event.modifiers() & Qt.ShiftModifier): 
                     print("Creating new AOI")
-                    return self.undoStack.push(AddCommand(self, AOI(sp, self.font, 0.7)))                                                             
+                    self.undoStack.push(AddCommand(self, AOI(sp, self.font, 0.7)))                                                             
                 else:
                     self.currentAOI = self.findFirstOfTypeAtPoint(AOI, sp)                    
                     if self.currentAOI != None: 
-                        return self.currentAOI.handleMousePress(event)
+                        self.currentAOI.handleMousePress(event)
             elif self.mode == 'Path':
                 if (event.modifiers() & Qt.ShiftModifier):
                     print("Creating new track")
-                    # self.currentPath = Path(sp, self.font, 1.0)
                     newPath = Path(sp, self.font, 1.0)
-                    return self.undoStack.push(AddCommand(self, newPath))                                             
+                    # self.addItemListSignal.emit(newPath.id)
+                    self.undoStack.push(AddCommand(self, newPath))
+                    self.currentPath.handleMousePress(event)                    
                 elif self.findFirstOfTypeAtPoint(Path, sp) != None or (event.modifiers() & Qt.ControlModifier) and self.currentPath != None:
                     print("Mouse press on existing track")
-                    # FIXME: after deleting track : AttributeError: 'NoneType' object has no attribute 'handleMousePress'
-                    return self.currentPath.handleMousePress(event)
+                    self.currentPath.handleMousePress(event)
             else: 
                 items = self.items(sp)
                 if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')): 
-                    return self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
+                    self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
                 else:
                     if items != None and items[0] != None and type(items[0]) != QGraphicsPixmapItem:
-                        return items[0].handleMousePress(event)
+                        items[0].handleMousePress(event)
         elif (event.buttons() & Qt.RightButton):
             if self.mode == 'Path' and self.currentPath != None: 
-                return self.currentPath.handleMousePress(event)
+                self.currentPath.handleMousePress(event)
            
           
 

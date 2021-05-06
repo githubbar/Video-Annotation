@@ -47,13 +47,13 @@ class ButtonEvents():
                 a.setChecked(False)
         self.graphicsView.scene.mode = sender.text()
        
-
-        # Update track visibility based on items list checkboxes
-        for n in range(self.items.rowCount()):
-            if self.items.item(n, 0).checkState() == Qt.Checked:
-                self.items.item(n, 0).g.setVisible(True)
-            else:
-                self.items.item(n, 0).g.setVisible(False)
+        #
+        # # Update track visibility based on items list checkboxes
+        # for n in range(self.items.rowCount()):
+        #     if self.items.item(n, 0).checkState() == Qt.Checked:
+        #         self.items.item(n, 0).g.setVisible(True)
+        #     else:
+        #         self.items.item(n, 0).g.setVisible(False)
 
         # Select or Path modes: show Paths and disable static figures
         paths = (self.graphicsView.scene.mode == 'Select' or self.graphicsView.scene.mode == 'Path') and (self.tabWidget.currentIndex() == 0)

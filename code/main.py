@@ -25,7 +25,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QTime, QFile, QIODevice, QDataS
 from PyQt5.QtGui import QIcon, QKeySequence
 from vacommands import RemoveCommand
 from annotateview import AnnotateScene, AnnotateView
-from pathtablewidget import PathTableWidget
+from pathitemswidget import PathItemsWidget
 from aoitablewidget import AOITableWidget
 from fileio import findFataFile, QDataExportDialog, fileio
 
@@ -124,22 +124,41 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         ff5.setShortcut(QKeySequence('CTRL+Right'))        
         ff5.triggered.connect(self.ff5)    
         self.addAction(ff5)           
+   
+        self.connectSignals()
+
+        if (len(sys.argv) > 1):
+            self.fileOpen(sys.argv[1])
         
+        # self.preloadFiles()
+#         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
+
+    def connectSignals(self):
         # Edit tab
 #         self.splitterEditTop.setSizes([5,3])
+
+        # Scene->Property Widget signals
         self.graphicsView.scene.loadSignal.connect(self.propertyWidget.loadItem)  
-        self.graphicsView.scene.saveSignal.connect(self.propertyWidget.saveItem)          
+        self.graphicsView.scene.saveSignal.connect(self.propertyWidget.saveItem)
+
+        # Scene->Item List signals 
+        self.graphicsView.scene.addItemListSignal.connect(self.items.onAddItem)
+        self.graphicsView.scene.removeItemListSignal.connect(self.items.onRemoveItem)  
+        self.graphicsView.scene.updateItemListSignal.connect(self.items.onUpdateItem)  
+        self.graphicsView.scene.changeCurrentItemSignal.connect(self.items.onChangeCurrentItem)  
+        
+        # Item List->Scene signals
+        self.items.itemClicked.connect(self.onItemClicked)
+        self.items.currentItemChanged.connect(self.onCurrentItemChanged)
+        self.items.deleteKeyPressed.connect(self.onDeleteItem)
+
+
+                  
+                  
         self.graphicsView.scene.loadVideoSignal.connect(self.loadVideo)          
-        self.graphicsView.scene.updateVideoSignal.connect(self.updateVideo)    
-        self.graphicsView.scene.addItemListSignal.connect(self.items.addItem)  
+        self.graphicsView.scene.updateVideoSignal.connect(self.updateVideo)   
         self.graphicsView.scene.addAOIListSignal.connect(self.aois.addItem)  
-        self.graphicsView.scene.removeItemListSignal.connect(self.items.removeItem)  
         self.graphicsView.scene.removeAOIListSignal.connect(self.aois.removeItem)  
-        self.graphicsView.scene.updateItemListSignal.connect(self.items.updateItem)  
-        self.graphicsView.scene.changeCurrentItemSignal.connect(self.items.changeCurrentItem)  
-        self.items.itemClicked.connect(self.checkItem)
-        self.items.currentItemChanged.connect(self.currentItemChanged)
-        self.items.deleteKeyPressed.connect(self.deleteItem)
         self.aois.deleteKeyPressed.connect(self.deleteAOI)
         self.checkAll.clicked.connect(self.toggleAllItems)
         self.filterTracks.clicked.connect(self.showFilterDialog)
@@ -175,12 +194,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         # Visualize tab
         self.visButton.clicked.connect(self.visClicked)
 #         self.variablesClicked()
+                
 
-        if (len(sys.argv) > 1):
-            self.fileOpen(sys.argv[1])
-        
-        # self.preloadFiles()
-#         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
 
     def preloadFiles(self):
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
@@ -428,6 +443,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             QMessageBox.warning(self, "Warning!", "The data file is in format for build " + str(buildNumber) + ' \nCurrent software build is ' + str(self.BUILD_NUMBER))
 #            return
         self.graphicsView.scene.load(s, buildNumber)
+        self.checkAllItems(False)
         self.actions[0].trigger()
         self.graphicsView.scene.update()
         self.initSearchWidget()
@@ -436,8 +452,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     def clear(self):
         self.graphicsView.scene.undoStack.clear()
         self.graphicsView.scene.clear()
-        self.items.clearContents()
-        self.items.setRowCount(0)
+        self.items.clear()
         self.aois.clearContents()
         self.aois.setRowCount(0)
         self.actions[0].trigger()
@@ -516,7 +531,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         
     def updateUI(self):
         """updates the user interface"""
-        print(f'update ui {self.graphicsView.scene.time}')
+        # print(f'update ui {self.graphicsView.scene.time}')
         self.seekSlider.setValue(self.mediaPlayer.get_position() * 1000)
         if not self.mediaPlayer.is_playing():
             self.timer.stop()
@@ -535,54 +550,64 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         if self.graphicsView.scene != None:
             self.graphicsView.scene.loadSignal.emit(self.graphicsView.scene.currentPath)
             
-    def deleteItem(self):
-        if self.items.currentItem():
-            self.graphicsView.scene.undoStack.push(RemoveCommand(self.graphicsView.scene, self.items.currentItem().g))                                        
-
     def deleteAOI(self):
         if self.aois.currentItem():
             self.graphicsView.scene.undoStack.push(RemoveCommand(self.graphicsView.scene, self.aois.currentItem().g))                                        
                 
-    def checkItem(self, item):
+    def onDeleteItem(self):
+        if self.items.currentItem():
+            currentPath = self.graphicsView.scene.findPath(self.items.currentItem().text())        
+            if currentPath:            
+                print(f'QMainWindow::onDeleteItem new track id="{currentPath.id}"')            
+                self.graphicsView.scene.undoStack.push(RemoveCommand(self.graphicsView.scene, currentPath))                                        
+
+    def onItemClicked(self, item):
+        # Find path by id 
+        path = self.graphicsView.scene.findPath(item.text())
+        if path == None: 
+            return
+        print(f'QMainWindow::onItemClicked new track id="{path.id}"')        
         if item.checkState() == Qt.Checked:
-            item.g.setVisible(True)
+            path.setVisible(True)
+            self.graphicsView.scene.changeCurrentItemSignal.emit(path.id)            
         else:
-            item.g.setVisible(False)
-                
-    def currentItemChanged(self, current, previous):
-        print('--------------------------------------------------------------------')                
-        print(f'QMainWindow::currentItemChanged new track id="{current.g.id}"') 
-        if previous != None:
-            print(f'previous track id="{previous.g.id}"')
-            self.propertyWidget.saveItem(previous.g) 
-        if self.graphicsView.scene and self.graphicsView.scene.currentPath:
-            print(f'scene.currentPath id="{self.graphicsView.scene.currentPath.id}"')
-        else:
-            print(f'No current track')        
-            
-        # self.graphicsView.scene.clearSelection()
-        if current:
-            current.g.setSelected(True)
-            self.graphicsView.scene.currentPath = current.g
-            self.propertyWidget.loadItem(current.g)            
-            if current.g.videoname != '': self.loadVideo(current.g.videoname)               
-            self.timer.start()
+            path.setVisible(False)
         
+                
+    def onCurrentItemChanged(self, current, previous):
+        # if previous:
+        #     previousPath = self.graphicsView.scene.findPath(previous.text())
+        #     if previousPath:
+        #         self.propertyWidget.saveItem(previousPath) 
+        
+        currentPath = self.graphicsView.scene.findPath(current.text())        
+        if currentPath:
+            print(f'QMainWindow::onCurrentItemChanged new track id="{currentPath.id}"')            
+            current.setCheckState(Qt.Checked)
+            currentPath.setVisible(True)
+            currentPath.setSelected(True)
+            
+            self.graphicsView.scene.currentPath = currentPath
+            self.propertyWidget.loadItem(currentPath)            
+            if currentPath.videoname != '': self.loadVideo(currentPath.videoname)               
+            self.timer.start()
+            
     def toggleAllItems(self):
-        nItems = self.items.rowCount()
+        nItems = self.items.count()
         if nItems == 0:
             return
-        if self.items.item(0, 0).checkState() == Qt.Unchecked:
+        if self.items.item(0).checkState() == Qt.Unchecked:
             self.checkAllItems(True)
         else: 
             self.checkAllItems(False)
             
     def checkAllItems(self, check=True):
-        nItems = self.items.rowCount()
+        nItems = self.items.count()
         for n in range(nItems):
-            self.items.item(n, 0).setCheckState(Qt.Checked if check else Qt.Unchecked)
-            self.items.item(n, 0).g.setVisible(check)
-                
+            self.items.item(n).setCheckState(Qt.Checked if check else Qt.Unchecked)
+            path = self.graphicsView.scene.findPath(self.items.item(n).text())
+            if path: path.setVisible(check) 
+                            
     def showUndoHistory(self):
         self.undoView.show()
         self.undoView.adjustSize()

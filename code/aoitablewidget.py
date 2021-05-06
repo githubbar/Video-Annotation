@@ -42,7 +42,6 @@ class AOITableWidget(QTableWidget):
         for n in range(self.rowCount()):
             if self.item(n, 0).g == item:
                 self.item(n, 0).setText(item.id)
-#                self.setItem(n, 0, PathTableItem(item.id, item))
 
 
     def getAllItems(self):

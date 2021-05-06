@@ -198,10 +198,9 @@ class Path(QGraphicsPathItem):
                 painter.setBrush(QBrush(Qt.transparent))                                
                 painter.setPen(QPen(QBrush(Qt.red), 2))
 #                 print(f'i is {i} scene time is {self.scene().time} \nstarttime is {self.startTime[i]} stoptime is {self.stopTime[i]}')
-                #     # FIXME: 1) doesn't always fire on empty nodes
                 if i > 0 and self.scene().time > self.stopTime[i - 1] and self.scene().time < self.startTime[i]:
                     painter.drawEllipse(self.getSegmentPosInTime(i - 1, self.scene().time), 2 * self.R * self.scene().nodeSize, 2 * self.R * self.scene().nodeSize)
-                elif i < len(self.startTime-1) and self.scene().time >= self.startTime[i] and self.scene().time < self.startTime[i+1]:
+                elif i < len(self.startTime)-1 and self.scene().time >= self.startTime[i] and self.scene().time < self.startTime[i+1]:
                     # print(f'node------------ {i}')
                     painter.drawEllipse(self.polygon.at(i), self.R * self.scene().nodeSize,  self.R * self.scene().nodeSize) 
                     self.indP = i
@@ -263,10 +262,14 @@ class Path(QGraphicsPathItem):
 
     def addPoint(self, p, time):
         idx = len(self.polygon)
-        # TODO: block time overlap while creating nodes
-        print(f'Adding point {p} to track id="{self.id}"')
+        # print(f'Adding point {p} to track id="{self.id}"')
+        self.indP = idx        
         self.scene().undoStack.push(AddPointCommand(self, idx, p, time))       
-        self.indP = idx
+        
+        # Block time overlap while adding nodes
+        if idx > 0:
+            self.startTime[idx] = max(self.startTime[idx], self.stopTime[idx-1].addMSecs(10))
+            self.stopTime[idx] = max(self.startTime[idx], self.stopTime[idx])
         
     def insertPoint(self, i, p):
         if len(self.polygon) < 2 or i >= len(self.polygon) - 1: 
@@ -369,8 +372,6 @@ class Path(QGraphicsPathItem):
 #         QGraphicsPathItem.mousePressEvent(self, event)
         point_append_time = self.scene().time
 
-    #     # and then pressing F2, F3, etc
-        Path.mousePressEvent(self, event)
         if (event.buttons() & Qt.LeftButton and self.scene().mode != 'Select'): 
             if not self.choosingOrientation:
                 # save old point
@@ -385,17 +386,18 @@ class Path(QGraphicsPathItem):
                     self.update()     
         elif (event.buttons() & Qt.RightButton): 
             self.choosingOrientation = True  
+        Path.mymousePressEvent(self, event)
             
-    def mousePressEvent(self, event):
+    def mymousePressEvent(self, event):
         print(f'Track::mousePressEvent id="{self.id}"')
-        # TODO: if x is not same as if x != None, FIX THROUGHTOUT CODE!!!!!
-        self.scene().changeCurrentItemSignal.emit(self)
-        
+   
+        self.scene().changeCurrentItemSignal.emit(self.id)
         if not self.scene().showOnlyCurrent:
             self.indP = self.getNearestPoint(event.scenePos())
             self.scene().currentPath = self
             self.scene().loadSignal.emit(self)
-            # self.setSelected(True)          
+            self.setSelected(True)
+                  
         self.scene().updateVideoSignal.emit(self)               
         self.update()
   
@@ -456,7 +458,7 @@ class Path(QGraphicsPathItem):
         #     print(f'Current path id="{self.scene().currentPath.id}"')
         # else:
         #     print(f'No current path')
-    
+
         # item selected or made visible => make it the current item
         # if value:        
         #     self.scene().currentPath = self     
@@ -467,7 +469,7 @@ class Path(QGraphicsPathItem):
         if change == QGraphicsItem.ItemSceneHasChanged:
             self.populateVariables()       
             if (self.polygon.count() == 0 and self.p0 != None):
-                print(f'Adding point')
+                # print(f'Adding point')
                 self.addPoint(self.p0, self.scene().time)   
                 self.p0 = None 
             path = QPainterPath()

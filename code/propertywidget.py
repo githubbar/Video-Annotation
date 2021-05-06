@@ -3,7 +3,7 @@
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-import sys
+import sys, traceback, operator
 from label import *
 from track import *
 from polygon import *
@@ -22,10 +22,10 @@ class PropertyWidget(QTreeWidget,  object):
         self.itemExpanded.connect(self.onItemExpanded)
         self.itemCollapsed.connect(self.onItemCollapsed)
         
-    def dataChanged(self,  topLeft,  bottomRight, roles=list()):
+    def dataChanged(self,  topLeft, bottomRight, roles=list()):
         print (f'PropertyWidget::dataChanged id="{self.currentItem.id if self.currentItem else None}"')
         QTreeWidget.dataChanged(self,  topLeft,  bottomRight)
-        # self.saveItem(self.currentItem)
+        self.saveItem(self.currentItem)
             
     def onItemExpanded(self, item):
         self.expandedCategories.append(item.data(0, Qt.EditRole))
@@ -34,20 +34,20 @@ class PropertyWidget(QTreeWidget,  object):
         self.expandedCategories.remove(item.data(0, Qt.EditRole))
   
     def loadItem(self, item):
-        # print (f'Loading Item {item.id}')
-        import operator
+        print (f'Loading Item {item.id}')
+        
+        # traceback.print_stack(file=sys.stdout)
+
         self.clear()
         self.currentItem = item
-
-        # self.currentPath = item
+        
         """Load selected item properties"""
         sectionItem = PropertyTreeItem(True, 'Default', item.scene())
         self.addTopLevelItem(sectionItem)   
         sectionItem.setExpanded(True)        
         delegate = CustomDelegate(self)
         self.setItemDelegate(delegate)
-        
-             
+                     
         for name in item.shownFields:
             v = getattr(item, name)
             # if list, get current element
@@ -55,7 +55,12 @@ class PropertyWidget(QTreeWidget,  object):
                 if item.indP == None: continue
                 v = v[item.indP]
             sectionItem.addChild(PropertyTreeItem(False, name,  item.scene(),  None, v ))
-            
+
+        #
+        # if not item.id:
+        #     return        
+        #
+
         #### Begin display dynamic project variables 
         if type(item) == Path: 
             ## Add Section Headers
@@ -66,7 +71,6 @@ class PropertyWidget(QTreeWidget,  object):
                 listItems.append(listItem)
             listItems.sort(key=lambda x: (StrToBoolOrKeep(x[5]), x[6], x[0]))
             oldGroupName = None
-            currentParent = None
             for name, vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices in listItems:
                 if StrToBoolOrKeep(vShow):
                     v = item.variables[name]
@@ -87,13 +91,17 @@ class PropertyWidget(QTreeWidget,  object):
 #        self.expandAll()
 
     def saveItem(self, item):
-        # print(f'Saving Item {item.id}')
+        print(f'Saving Item {item.id}')
+
         for name in item.shownFields:
             # find matching top level item                   
             foundItems = self.findItems(name, Qt.MatchExactly | Qt.MatchRecursive)
             if not foundItems:
-                return
+                continue
             value = foundItems[0].data(1, Qt.EditRole)
+            # remember new item id
+            if name == 'id':
+                newid = value
             # if list
             l = getattr(item, str(name))
             if type(l) == list:
@@ -140,7 +148,7 @@ class PropertyWidget(QTreeWidget,  object):
                                 l[item.indP] = value
                                 value = l
                         setattr(item, str(name), value)
-            item.scene().updateItemListSignal.emit(item)
+            item.scene().updateItemListSignal.emit(newid)
         #### End save dymanic project variables 
 
 class PropertyTreeItem(QTreeWidgetItem):
