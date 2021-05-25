@@ -465,8 +465,8 @@ QListWidget::item  {
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>1069</width>
-                       <height>229</height>
+                       <width>131</width>
+                       <height>161</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_9">
@@ -480,8 +480,8 @@ QListWidget::item  {
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>1043</width>
-                           <height>173</height>
+                           <width>98</width>
+                           <height>28</height>
                           </rect>
                          </property>
                          <property name="baseSize">
@@ -510,8 +510,8 @@ QListWidget::item  {
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>1069</width>
-                       <height>229</height>
+                       <width>98</width>
+                       <height>28</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_10">
