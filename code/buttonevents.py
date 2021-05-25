@@ -132,14 +132,15 @@ class ButtonEvents():
         filterDialog.layout().removeWidget(filterDialog.checkboxScrollArea)
         self.addFilterWidget(None, filterDialog.listArea, False)
         if filterDialog.exec_() == QDialog.Accepted:
-            progress= QProgressDialog('Filtering records...', 'Cancel', 0, self.items.rowCount(), self)
+            progress= QProgressDialog('Filtering records...', 'Cancel', 0, self.items.count(), self)
             progress.setWindowModality(Qt.WindowModal)
 
-            for i in range(self.items.rowCount()):
+            for i in range(self.items.count()):
                 progress.setValue(i)
                 if (progress.wasCanceled()):
                     break
-                item = self.items.item(i, 0).g
+                item = self.graphicsView.scene.findPath(item = self.items.item(i).text())
+                if item == None: continue
                 match = False
                 if self.matchByList(item, filterDialog.listArea): 
                     for n in range(len(item.polygon)):           
@@ -147,10 +148,10 @@ class ButtonEvents():
                             match = True
                             break
                 if match:
-                    self.items.item(i, 0).setCheckState(Qt.Checked)
+                    self.items.item(i).setCheckState(Qt.Checked)
                     item.setVisible(True)
                 else:         
-                    self.items.item(i, 0).setCheckState(Qt.Unchecked)
+                    self.items.item(i).setCheckState(Qt.Unchecked)
                     item.setVisible(False)                    
             progress.setValue(self.items.rowCount())
         self.completeProgress.emit(self.GUI_NORMAL)

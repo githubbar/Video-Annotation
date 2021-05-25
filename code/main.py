@@ -11,7 +11,8 @@ http://indiana.edu/~cil
 """
 import logging, os
 logfile = os.path.join(os.getcwd(), 'debug.log')
-logging.basicConfig(filename=logfile, level=logging.DEBUG) 
+LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
+logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
 # logging.basicConfig(filename='warning.log', level=logging.WARNING) 
 # logging.basicConfig(filename='error.log', level=logging.ERROR) 
 
@@ -24,9 +25,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QAction, QToolBar, QInputDialog, 
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer, QTime, QFile, QIODevice, QDataStream
 from PyQt5.QtGui import QIcon, QKeySequence
 from vacommands import RemoveCommand
-from annotateview import AnnotateScene, AnnotateView
-from pathitemswidget import PathItemsWidget
-from aoitablewidget import AOITableWidget
+
 from fileio import findFataFile, QDataExportDialog, fileio
 
 
@@ -46,7 +45,9 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
     
     def __init__(self):
         super(Main, self).__init__()
+        logging.debug('Beginning to load UI')
         uic.loadUi(findFataFile('window.ui'), self)
+        logging.debug('Loaded UI')
         self.show()
         self.appPath = ""        
         self.help = None
@@ -547,7 +548,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
             self.status.setText(self.graphicsView.scene.time.toString('hh:mm:ss.zzz'))
         else:
             self.status.setText(QTime(0, 0).toString('hh:mm:ss.zzz'))
-        if self.graphicsView.scene != None:
+        if self.graphicsView.scene != None and self.graphicsView.scene.currentPath != None:
             self.graphicsView.scene.loadSignal.emit(self.graphicsView.scene.currentPath)
             
     def deleteAOI(self):
@@ -558,7 +559,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         if self.items.currentItem():
             currentPath = self.graphicsView.scene.findPath(self.items.currentItem().text())        
             if currentPath:            
-                print(f'QMainWindow::onDeleteItem new track id="{currentPath.id}"')            
+                print(f'QMainWindow::onDeleteItem new track id="{currentPath.id}"')
+        
                 self.graphicsView.scene.undoStack.push(RemoveCommand(self.graphicsView.scene, currentPath))                                        
 
     def onItemClicked(self, item):

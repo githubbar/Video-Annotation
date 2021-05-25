@@ -41,7 +41,7 @@ class Path(QGraphicsPathItem):
         self.font = font
         self.p0 = point
         self.choosingOrientation = False
-#         self.variables = dict()
+        self.variables = {}
 #         self.gyro = dict()
 #         self.accel = dict()
         
@@ -262,7 +262,7 @@ class Path(QGraphicsPathItem):
 
     def addPoint(self, p, time):
         idx = len(self.polygon)
-        # print(f'Adding point {p} to track id="{self.id}"')
+        print(f'Adding point {p} to track id="{self.id}"')
         self.indP = idx        
         self.scene().undoStack.push(AddPointCommand(self, idx, p, time))       
         
@@ -469,7 +469,7 @@ class Path(QGraphicsPathItem):
         if change == QGraphicsItem.ItemSceneHasChanged:
             self.populateVariables()       
             if (self.polygon.count() == 0 and self.p0 != None):
-                # print(f'Adding point')
+                print(f'Adding first point id={self.id}')
                 self.addPoint(self.p0, self.scene().time)   
                 self.p0 = None 
             path = QPainterPath()

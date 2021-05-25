@@ -1,6 +1,11 @@
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem 
 from PyQt5.QtCore import QItemSelectionModel
+import logging, os
+
+LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
+logfile = os.path.join(os.getcwd(), 'debug.log')
+logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
 
 
 class PathItemsWidget(QListWidget):
@@ -8,9 +13,11 @@ class PathItemsWidget(QListWidget):
     idChangedSignal =  pyqtSignal('QString')
     
     def __init__(self, parent):
+        logging.debug('Loading...')
         QListWidget.__init__(self, parent)
         self.setSortingEnabled(True)
         # self.currentTextChanged.connect(self.onCurrentTextChanged)
+        logging.debug('Done loading...')
     def keyPressEvent(self, event):
         print(f'PathItemsWidget::keyPressEvent ')
         

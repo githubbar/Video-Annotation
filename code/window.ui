@@ -320,8 +320,17 @@
                    </sizepolicy>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">selection-color: rgb(0, 0, 0);
-selection-background-color: rgb(190, 204, 255);
+                   <string notr="true">QListWidget {
+	selection-color: rgb(0, 255, 0);
+	selection-background-color: rgb(190, 204, 255);
+	font-size: 14pt;
+}
+
+QListWidget::indicator  { 
+}
+
+QListWidget::item  { 
+}
 </string>
                   </property>
                   <property name="alternatingRowColors">
@@ -329,6 +338,9 @@ selection-background-color: rgb(190, 204, 255);
                   </property>
                   <property name="selectionMode">
                    <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="sortingEnabled">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -453,8 +465,8 @@ selection-background-color: rgb(190, 204, 255);
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>131</width>
-                       <height>161</height>
+                       <width>1069</width>
+                       <height>229</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_9">
@@ -468,8 +480,8 @@ selection-background-color: rgb(190, 204, 255);
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>98</width>
-                           <height>28</height>
+                           <width>1043</width>
+                           <height>173</height>
                           </rect>
                          </property>
                          <property name="baseSize">
@@ -498,8 +510,8 @@ selection-background-color: rgb(190, 204, 255);
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>98</width>
-                       <height>28</height>
+                       <width>1069</width>
+                       <height>229</height>
                       </rect>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_10">
@@ -949,7 +961,7 @@ selection-background-color: rgb(190, 204, 255);
   <customwidget>
    <class>PathItemsWidget</class>
    <extends>QListWidget</extends>
-   <header location="global">pathitemswidget.h</header>
+   <header>pathitemswidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

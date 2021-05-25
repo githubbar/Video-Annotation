@@ -85,14 +85,17 @@ class AddPointCommand(QUndoCommand):
         self.path.startTime.insert(self.i,  self.startTime)
         self.path.stopTime.insert(self.i,  self.stopTime) 
         self.path.polygon.insert(self.i,  self.p)
-        
+        print(f'Adding startTime to track id="{self.path.id}", new length={len(self.path.startTime)}')
+
+        # FIXME: !!!!! all the shit in prev track shifts by +1 on creating new track♦
+        # above the starttime length is 1, length of vars below is leftover from the old track, why?
         for name in self.path.scene().variables:
             vDescr, vType, vShow, vShortcut,  vEachNode, vGroup, vChoices = self.path.scene().variables[name]
             if StrToBoolOrKeep(vEachNode): # list
                 li = self.path.variables[name]
                 li.insert(self.i, self.variables[name])
 #                 self.path.variables[name] = li
-       
+        print(f'Adding vars to track id="{self.path.id}", new length={len(self.path.variables["Category Shopped"])}')
         self.path.indP = self.i
         path = QPainterPath()
         self.path.addQuadFromPolygon(path, self.path.polygon)
