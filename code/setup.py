@@ -12,12 +12,11 @@ import os, glob
 import PyQt5
 from main import Main
 
-
 Target_1 = Executable(
     # what to build
     script = "main.py",
     initScript = None,
-    base = 'Win32GUI', # comment this out to see consol to debug
+    # base = 'Win32GUI', # comment this out to see consol to debug
     targetName = "VideoAnnotationTool.exe",
 #     compress = True,
 #     copyDependentFiles = True,
@@ -52,7 +51,12 @@ vlcDir = str("c:/Program Files/VideoLAN/VLC")
 for f in glob.glob(os.path.join(vlcDir,'*.dll')):
     include_files.append((f, os.path.basename(f)))
 include_files.append((os.path.join(vlcDir, 'plugins'), 'plugins'))
-  
+
+# Copy all .py files
+codeDir = os.path.dirname(__file__)
+for f in glob.glob(os.path.join(codeDir,'*.py')):
+    include_files.append((f, os.path.basename(f)))
+      
 # Copy qt.conf from (without it the icons don't show)
 include_files.append('qt.conf')
   

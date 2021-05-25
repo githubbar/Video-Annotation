@@ -9,37 +9,25 @@ Software bindings:
 import os
 import logging
 from annotatescene import AnnotateScene
+from settings import StrToBoolOrKeep, keyEventToKeySequence
+
+
+from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtGui import QTransform, QKeySequence, QColor
+from PyQt5.QtWidgets import QGraphicsView, QAction, qApp
+
 
 LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
 logfile = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
 
 
-from PyQt5.QtCore import pyqtSignal, QTime, Qt, QDateTime, QPointF, QEvent
-from PyQt5.QtGui import QFont, QPixmap, QTransform, QPainterPath, QKeySequence, \
-    QColor
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QUndoStack, \
-    QGraphicsPixmapItem, QMessageBox, QGraphicsView, QAction, qApp
-
-from aoi import AOI
-from vacommands import AddCommand
-from ellipse import Ellipse
-from label import Label
-from polygon import Polygon
-from rectangle import Rectangle
-from settings import StrToBoolOrKeep, keyEventToKeySequence
-from snapshot import Snapshot
-from track import Path
-
-  
-          
-
-
 class AnnotateView(QGraphicsView):
     
     def __init__(self, parent):
-        logging.debug('Loading...')
         QGraphicsView.__init__(self, parent)
+        logging.debug('Loading...')
+       
         self.scene = AnnotateScene()
         self.setScene(self.scene)
 #        self.scene.setSceneRect(0, 0, 320, 180)

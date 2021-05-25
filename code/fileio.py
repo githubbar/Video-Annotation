@@ -6,6 +6,12 @@ Created on Jul 11, 2017
 import os, sys, time, vlc
 from PyQt5.QtCore import QTime
 from PyQt5.QtWidgets import QFileDialog, QVBoxLayout, QCheckBox
+import logging
+logfile = os.path.join(os.getcwd(), 'debug.log')
+LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
+logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
+# logging.basicConfig(filename='warning.log', level=logging.WARNING) 
+# logging.basicConfig(filename='error.log', level=logging.ERROR) 
 
 def findFataFile(filename):
     if getattr(sys, 'frozen', False):
@@ -15,6 +21,8 @@ def findFataFile(filename):
         # The application is not frozen
         # Change this bit to match where you store your data files:
         datadir = os.path.dirname(__file__)
+
+    logging.debug(f'Data path is {datadir}')
     return os.path.join(datadir, filename)
 
 class QDataExportDialog(QFileDialog):
