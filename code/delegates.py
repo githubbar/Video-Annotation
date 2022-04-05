@@ -304,6 +304,7 @@ class DropDownEditor(QComboBox):
     def eventFilter(self, object, event):
         if (event.type() == QEvent.Shortcut or event.type() == QEvent.ShortcutOverride) \
         and event.key:
+            print(f'key pressed in dropdown {event.key}')
             event.accept()
             return True
         else: 

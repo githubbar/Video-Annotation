@@ -16,7 +16,7 @@ Target_1 = Executable(
     # what to build
     script = "main.py",
     initScript = None,
-    # base = 'Win32GUI', # comment this out to see consol to debug
+    base = 'Win32GUI', # comment this out to see consol to debug
     targetName = "VideoAnnotationTool.exe",
 #     compress = True,
 #     copyDependentFiles = True,

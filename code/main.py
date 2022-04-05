@@ -28,7 +28,6 @@ from vacommands import RemoveCommand
 
 from fileio import findFataFile, QDataExportDialog, fileio
 
-#TOOD: add token to github 2
 # Create a class for our main window
 class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.SearchWidget):
     GUI_NORMAL = 0
@@ -130,6 +129,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
 
         if (len(sys.argv) > 1):
             self.fileOpen(sys.argv[1])
+        if (len(sys.argv) > 2):
+            self.loadData(sys.argv[2])            
         
         # self.preloadFiles()
 #         self.exportTrackData('E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Twin Oaks\data.csv')
@@ -196,13 +197,13 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.visButton.clicked.connect(self.visClicked)
 #         self.variablesClicked()
                 
-
-
     def preloadFiles(self):
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename = r'E:\Box Sync\CIL Exchange\Video Annotation Code\code\test.vaproj'
         filename = r'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Richardson Road\data.vaproj'
-        self.fileOpen(filename)        
+        dataFileName = r'E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Richardson Road\Import into VA\Survey for import into VA minus 1.csv'
+        self.fileOpen(filename)
+        self.loadData(dataFileName)        
 #         self.fileSave(filename)        
 #         filename  = 'E:\Box Sync\CIL Exchange\Video Annotation\Giant Eagle - Washington\data.vaproj'
 #         filename  = 'E:\Box Sync\Video Annotation\Stop n Shop - Wyckoff\data.vaproj'
@@ -309,7 +310,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         varNames.extend([str(key) for key in list(self.graphicsView.scene.variables.keys())])   
         
         for i in range(self.items.rowCount()):
-            item = self.items.item(i, 0).g
+            itemId = self.items.item(i).text() 
+            item = self.graphicsView.scene.findPath(itemId)
             # sort indexes by ascending start time 
             idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k])
             name = 'cartType'
@@ -342,7 +344,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         writer.writerow(varNames)
 
         for i in range(self.items.rowCount()):
-            item = self.items.item(i, 0).g
+            itemId = self.items.item(i).text() 
+            item = self.graphicsView.scene.findPath(itemId)
 #             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #             # BEGIN TEMP: Crop extra startTime entries in the list
 #             item.startTime = item.startTime[:item.polygon.size()]            
@@ -415,7 +418,8 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         path, fname = os.path.split(str(self.graphicsView.scene.filename))
         relpath = os.path.relpath(str(dirname), path)
         for i in range(self.items.rowCount()):
-            item = self.items.item(i, 0).g
+            itemId = self.items.item(i).text() 
+            item = self.graphicsView.scene.findPath(itemId)
             path, fname = os.path.split(str(item.videoname))
             item.videoname = os.path.join(relpath, fname)
 
@@ -575,7 +579,6 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         else:
             path.setVisible(False)
         
-                
     def onCurrentItemChanged(self, current, previous):
         # if previous:
         #     previousPath = self.graphicsView.scene.findPath(previous.text())
@@ -669,8 +672,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.helpWindow.layout().addWidget(helpPanel)
         self.helpWindow.setMinimumSize(1200, 1400)
         self.help.contentWidget().linkActivated.connect(helpBrowser.load)
-    
-            
+
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName('Video Annotation Tool')
@@ -681,6 +683,9 @@ def main():
         application_path = os.path.dirname(__file__)
     
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    # with open('mydark.stylesheet', 'r', encoding='utf-8') as file:
+    #     app.setStyleSheet(file.read())
+        
     app.setOverrideCursor(Qt.CrossCursor)    
     window = Main()
     window.appPath = application_path

@@ -19,15 +19,18 @@ class VariableWidget(QTableWidget):
         self.setSortingEnabled(False)
         row = self.rowCount()
         self.insertRow(row)
-        self.setItem(row,  0,  QTableWidgetItem('unknown'))
+        newItem = QTableWidgetItem('unknown')
+        self.setItem(row,  0,  newItem)
         self.setItem(row,  1,  QTableWidgetItem('String'))        
         self.setItem(row,  2,  QTableWidgetItem('String'))        
-        self.setItem(row,  3,  QTableWidgetItem(False))
+        self.setItem(row,  3,  QTableWidgetItem(''))
         self.setItem(row,  4,  QTableWidgetItem(''))
-        self.setItem(row,  5,  QTableWidgetItem(False))
+        self.setItem(row,  5,  QTableWidgetItem(''))
         self.setItem(row,  6,  QTableWidgetItem(''))
         self.setItem(row,  7,  QTableWidgetItem(''))
         self.setSortingEnabled(True)
+        self.setFocus()
+        self.setCurrentCell(row, 0)
         self.updateDelegates()
     
     def onItemChanged(self, it):
@@ -65,7 +68,7 @@ class VariableWidget(QTableWidget):
     def updateDelegates(self):
         # Set Choices for dropdowns
         for i in range(self.rowCount()):
-            self.item(i, 0).setData(EditorTypeRole,  'UniqueString')
+            self.item(i, 0).setData(EditorTypeRole,  'String')
             self.item(i, 1).setData(EditorTypeRole,  'String')
             self.item(i, 2).setData(EditorTypeRole,  'DropDown')
             self.item(i, 3).setData(EditorTypeRole,  'Yes/No')
@@ -73,7 +76,8 @@ class VariableWidget(QTableWidget):
             self.item(i, 5).setData(EditorTypeRole,  'Yes/No')
             self.item(i, 6).setData(EditorTypeRole,  'String')
             self.item(i, 7).setData(EditorTypeRole,  'Button')
-            self.item(i, 2).setData(UserDataRole, '')            
+            # self.item(i, 2).setData(UserDataRole, '')
+            self.item(i, 2).setData(UserDataRole, variableTypes)            
             if self.item(i, 2).data(Qt.DisplayRole) in ['DropDown', 'MultiChoice']:
                 self.item(i, 7).setData(UserDataRole, ['...', self.displayChoices])
 #            if isReadOnly:

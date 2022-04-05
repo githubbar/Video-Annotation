@@ -38,7 +38,7 @@ class ChoicesDialog(QDialog):
             return        
         
         import csv
-        reader = csv.reader(open(filename, 'rb'))
+        reader = csv.reader(open(filename))
         for row in reader:
             for choice in row:
                 item = QListWidgetItem(choice)

@@ -83,7 +83,7 @@ class VariableDialog(QDialog):
             return        
         
         import csv
-        reader = csv.reader(open(filename, 'rb'))
+        reader = csv.reader(open(filename))
         self.table.setSortingEnabled(False)
         for line in reader:
             line = list(map(str.strip, line))

@@ -518,7 +518,7 @@ class Path(QGraphicsPathItem):
         gyro = dict()
         accel = dict()
         if os.path.isfile(filename):
-            with open(filename, 'rb') as tsvin:
+            with open(filename) as tsvin:
                 tsvin = csv.reader(tsvin, delimiter='\t')
                 
                 for row in tsvin:

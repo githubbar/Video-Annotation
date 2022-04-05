@@ -86,7 +86,7 @@ class fileio(object):
         
         thresh = 1.0
         import csv
-        reader = csv.reader(open(filename, 'rb'), delimiter='\t')
+        reader = csv.reader(open(filename), delimiter='\t')
         header = next(reader)
         result = []
         seen = {}
@@ -106,7 +106,8 @@ class fileio(object):
                 if id != oldid:
                     # find records with this id and get filename
                     for i in range(mainwindow.items.rowCount()):
-                        item = mainwindow.items.item(i, 0).g
+                        itemId = mainwindow.items.item(i).text() 
+                        item = mainwindow.graphicsView.scene.findPath(itemId)
                         if int(item.id[0]) == id:
                             videoname = item.videoname
                             break

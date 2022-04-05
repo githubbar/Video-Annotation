@@ -1,3 +1,25 @@
+QWidget {
+ 	font-size: 14pt;
+ 	color: white;  
+ 	font-family: "Segoe UI";     
+ 	background: black;
+}
+
+QTabBar::tab {background: black;}
+
+QTabBar::tab:selected {background: gray;}
+
+QButton {
+ 	font-size: 18pt; 
+}
+
+
+/*
+
+QComboBox {
+ 	font-size: 28pt; 
+}
+
 QTreeWidget {
     color: #55AAFF;
 }
@@ -17,3 +39,4 @@ QPlainTextEdit {
 QPalette : Link {
     color: #33D4FF;
 }
+*/

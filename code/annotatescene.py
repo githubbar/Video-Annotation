@@ -138,8 +138,9 @@ class AnnotateScene(QGraphicsScene):
                 item.setVisible(visible)
  
     def loadData(self, filename):
+        # "E:\Box Sync\CIL Exchange\Video Annotation\Schnucks Richardson Road\Import into VA\Survey for import into VA minus 1.csv"
         import csv
-        reader = csv.reader(open(filename, 'rb'))
+        reader = csv.reader(open(filename))
         ids = next(reader)
         for line in reader:
             line = list(map(str.strip, line))
@@ -188,7 +189,7 @@ class AnnotateScene(QGraphicsScene):
         
     def loadNodeLevelVars(self, filename):
         import csv
-        reader = csv.reader(open(filename, 'rb'))
+        reader = csv.reader(open(filename))
         header = next(reader)
         for line in reader:
             id = line[0].strip() 
@@ -220,7 +221,7 @@ class AnnotateScene(QGraphicsScene):
 #         h=866
         w = 100
         h = 100  # dimensions of floor in feet
-        reader = csv.reader(open(filename, 'rb'))
+        reader = csv.reader(open(filename))
 #         ids = reader.next()
         for line in reader:
             id = line[0]  # variable name

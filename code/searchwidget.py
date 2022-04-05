@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QCheckBox, QTableWidget, QHeaderView, \
 from delegates import URLDelegate
 from heatmap import HeatMap
 from settings import StrToBoolOrKeep
+from torchvision.io import _video_opt
 
 
 TOOLBOX_ITEM_VERTICAL_STEP = 60
@@ -131,10 +132,12 @@ class SearchWidget:
 
     def doSearch(self):
         # scan all items
-        for i in range(self.items.rowCount()):
-            if not self.go: break                            
-            item = self.items.item(i, 0).g
-            self.updateProgress.emit(int(100.0 * i / self.items.rowCount()))
+        for i in range(self.items.count()):
+            if not self.go: break          
+            # FIXME: TypeError: item(self, int): too many arguments                  
+            itemId = self.items.item(i).text() 
+            item = self.graphicsView.scene.findPath(itemId)
+            self.updateProgress.emit(int(100.0 * i / self.items.count()))
             # scan all nodes
             if not self.matchByCheckable(item, self.checkboxArea): continue
             if not self.matchByList(item, self.listArea): continue
@@ -351,14 +354,14 @@ class SearchWidget:
             subjID = int(match.item.id[0])
             self.updateProgress.emit(round(100.0 * i / len(self.matches), 2))
             if not subjID in ids:
-                duration[subjID] = [0] * self.aois.rowCount()
+                duration[subjID] = [0] * self.aois.count()
                 items[subjID] = match.item        
             ids.add(subjID)  # add subject id to the set
             if not self.go: 
                 break                
             p = QPointF(match.item.polygon.at(match.n).x(), match.item.polygon.at(match.n).y())
             t = match.item.startTime[match.n].msecsTo(match.item.stopTime[match.n])
-            for row in range(self.aois.rowCount()):
+            for row in range(self.aois.count()):
                 aoi = self.aois.item(row, 0).g
                 if aoi.contains(p):
                     duration[subjID][row] += t
@@ -367,7 +370,7 @@ class SearchWidget:
         writer = csv.writer(open(outFileName, 'wb'))          
         varNames = ['id']
         varNames.extend([str(key) for key in self.graphicsView.scene.variables.keys()])
-        for row in range(self.aois.rowCount()):
+        for row in range(self.aois.count()):
             varNames.append(str(self.aois.item(row, 0).text()))
  
     
@@ -376,7 +379,7 @@ class SearchWidget:
             line = [subjID]
             line.extend(items[subjID].getVariableValuesList())
 
-            for row in range(self.aois.rowCount()):
+            for row in range(self.aois.count()):
                 line.append(0.001 * duration[subjID][row])
             try:
                 writer.writerow(line)
@@ -395,7 +398,7 @@ class SearchWidget:
         fixated = {}  # dictionary of sets of ids fixated on AOI
         tripDuration = 0  # total cumultative trip duration (from first to last gazepoint)
         videoDuration = 0  # total trip duration (length of video file)
-        for i in range(self.aois.rowCount()):
+        for i in range(self.aois.count()):
             duration[i] = 0
             durationNoClusters[i] = 0
             fixated[i] = set()
@@ -419,13 +422,13 @@ class SearchWidget:
                 break                
             p = QPointF(match.item.polygon.at(match.n).x(), match.item.polygon.at(match.n).y())
             t = match.item.startTime[match.n].msecsTo(match.item.stopTime[match.n])
-            for row in range(self.aois.rowCount()):
+            for row in range(self.aois.count()):
                 aoi = self.aois.item(row, 0).g
                 if aoi.contains(p):
                     duration[row] += t
                     fixated[row].add(id)
         if (len(ids) > 0):
-            for row in range(self.aois.rowCount()):
+            for row in range(self.aois.count()):
                 if len(fixated[row]) > 0:
                     self.aois.item(row, 1).setText(str(round(0.001 * duration[row] / len(fixated[row]), 2)))
                     self.aois.item(row, 2).setText(str(round(100.0 * len(fixated[row]) / len(ids), 1)))            
@@ -511,8 +514,8 @@ class SearchWidget:
         writer = csv.writer(open(outFileName, 'wb'))         
         varNames = ['AOI', 'Average Duration', 'Percentage Fixated', 'Number of Subjects']
         writer.writerow(varNames)
-        for row in range(self.aois.rowCount()):
-            self.updateProgress.emit(int(100.0 * row / self.aois.rowCount()))           
+        for row in range(self.aois.count()):
+            self.updateProgress.emit(int(100.0 * row / self.aois.count()))           
             row = [ str(self.aois.item(row, 0).text()), str(self.aois.item(row, 1).text()), str(self.aois.item(row, 2).text()), str(self.aois.item(row, 3).text())]
             try:
                 writer.writerow(row)
