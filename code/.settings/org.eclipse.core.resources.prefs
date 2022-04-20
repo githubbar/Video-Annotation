@@ -6,6 +6,7 @@ encoding/buttonevents.py=utf-8
 encoding/delegates.py=utf-8
 encoding/ellipse.py=utf-8
 encoding/heatmap.py=utf-8
+encoding/heatmapSNS.py=utf-8
 encoding/helpbrowser.py=utf-8
 encoding/label.py=utf-8
 encoding/main.py=utf-8

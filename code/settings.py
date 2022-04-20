@@ -4,9 +4,14 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import PyQt5
 import logging, sys, os, math, traceback
-        
+import OpenGL.platform.win32
+
 # Log everything, and send it to stderr.
-logging.basicConfig(level=logging.DEBUG)
+LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
+logfile = os.path.join(os.getcwd(), 'debug.log')
+logging.basicConfig(filename=logfile, level=logging.INFO, format=LOG_FORMAT) 
+OpenGL.FULL_LOGGING = False
+
 
 settings = {
 "apiPath": "C:/Program Files/EyeTechDS/bin",  

@@ -49,7 +49,7 @@ class ButtonEvents():
        
         #
         # # Update track visibility based on items list checkboxes
-        # for n in range(self.items.rowCount()):
+        # for n in range(self.items.count()):
         #     if self.items.item(n, 0).checkState() == Qt.Checked:
         #         self.items.item(n, 0).g.setVisible(True)
         #     else:
@@ -139,7 +139,7 @@ class ButtonEvents():
                 progress.setValue(i)
                 if (progress.wasCanceled()):
                     break
-                item = self.graphicsView.scene.findPath(item = self.items.item(i).text())
+                item = self.graphicsView.scene.findPath(self.items.item(i).text())
                 if item == None: continue
                 match = False
                 if self.matchByList(item, filterDialog.listArea): 
@@ -153,7 +153,7 @@ class ButtonEvents():
                 else:         
                     self.items.item(i).setCheckState(Qt.Unchecked)
                     item.setVisible(False)                    
-            progress.setValue(self.items.rowCount())
+            progress.setValue(self.items.count())
         self.completeProgress.emit(self.GUI_NORMAL)
         
     def variablesClicked(self):

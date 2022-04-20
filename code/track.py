@@ -389,7 +389,7 @@ class Path(QGraphicsPathItem):
         Path.mymousePressEvent(self, event)
             
     def mymousePressEvent(self, event):
-        print(f'Track::mousePressEvent id="{self.id}"')
+        # print(f'Track::mousePressEvent id="{self.id}"')
    
         self.scene().changeCurrentItemSignal.emit(self.id)
         if not self.scene().showOnlyCurrent:
@@ -397,6 +397,7 @@ class Path(QGraphicsPathItem):
             self.scene().currentPath = self
             self.scene().loadSignal.emit(self)
             self.setSelected(True)
+            # print(f'Track::mousePressEvent id="{self.id}" n={self.indP}')
                   
         self.scene().updateVideoSignal.emit(self)               
         self.update()

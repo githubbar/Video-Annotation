@@ -24,8 +24,6 @@ from OpenGL.GL.shaders import *
 from OpenGL.GL.EXT.framebuffer_object import *
 from OpenGL.GL.ARB.multitexture import *
 
-logging.basicConfig( level = logging.DEBUG )
-OpenGL.FULL_LOGGING = True
 
 
 class HeatMap(object):
@@ -135,7 +133,7 @@ class HeatMap(object):
     def _create_framebuffer(self):
         self.texture = glGenTextures(1)
         self.fbo = glGenFramebuffersEXT(1)
-        logging.debug("fbo = {0}".format(self.fbo))
+        # logging.debug("fbo = {0}".format(self.fbo))
 
         glActiveTextureARB(GL_TEXTURE1)
         glBindTexture(GL_TEXTURE_2D, self.texture)
@@ -166,7 +164,7 @@ class HeatMap(object):
 
     def _compile_programs(self):
         # Shader program to transform color into the proper palette based on the alpha channel
-        logging.debug("compiling color transform shader")
+        logging.info("compiling color transform shader")
 
         self.color_transform_program = compileProgram(
             compileShader("""
@@ -189,7 +187,7 @@ class HeatMap(object):
             """, GL_FRAGMENT_SHADER), validate=False)
         #  NOTE: pass VALIDATE=False parameter to compileProgram                      
         # Shader program to place heat points
-        logging.debug("compiling heat point shader")
+        logging.info("compiling heat point shader")
         self.faded_points_program = compileProgram(
             compileShader("""
                 uniform float r;
@@ -224,7 +222,7 @@ class HeatMap(object):
                     //gl_FragColor.a = (1.0 - (d / r)) / 2.0;
                      
                     // Clamp the alpha to the range [0.0, 1.0]
-                    //gl_FragColor.a = clamp(gl_FragColor.a, 0.0, 1.0);
+                    // gl_FragColor.a = clamp(gl_FragColor.a, 0.0, 1.0);
                 }
             """, GL_FRAGMENT_SHADER))
     

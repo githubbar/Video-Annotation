@@ -17,11 +17,6 @@ from PyQt5.QtGui import QTransform, QKeySequence, QColor
 from PyQt5.QtWidgets import QGraphicsView, QAction, qApp
 
 
-LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
-logfile = os.path.join(os.getcwd(), 'debug.log')
-logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
-
-
 class AnnotateView(QGraphicsView):
     
     def __init__(self, parent):

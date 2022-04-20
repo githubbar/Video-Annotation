@@ -10,11 +10,6 @@ http://indiana.edu/~cil
 
 """
 import logging, os
-logfile = os.path.join(os.getcwd(), 'debug.log')
-LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
-logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
-# logging.basicConfig(filename='warning.log', level=logging.WARNING) 
-# logging.basicConfig(filename='error.log', level=logging.ERROR) 
 
 import sys, threading, time, \
     qdarkstyle, vlc, menu, searchwidget, buttonevents, helpbrowser
@@ -309,7 +304,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         varNames = ['id', 'seq. number', 'x', 'y', 'video name', 'startTime', 'stopTime']
         varNames.extend([str(key) for key in list(self.graphicsView.scene.variables.keys())])   
         
-        for i in range(self.items.rowCount()):
+        for i in range(self.items.count()):
             itemId = self.items.item(i).text() 
             item = self.graphicsView.scene.findPath(itemId)
             # sort indexes by ascending start time 
@@ -343,7 +338,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         varNames.extend([key for key in list(self.graphicsView.scene.variables.keys())])   
         writer.writerow(varNames)
 
-        for i in range(self.items.rowCount()):
+        for i in range(self.items.count()):
             itemId = self.items.item(i).text() 
             item = self.graphicsView.scene.findPath(itemId)
 #             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -354,7 +349,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
 #             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # sort indexes by ascending start time 
             idx = sorted(list(range(len(item.startTime))), key=lambda k: item.startTime[k])
-            self.updateProgressEdit.emit(int(100.0 * i / self.items.rowCount()))
+            self.updateProgressEdit.emit(int(100.0 * i / self.items.count()))
           
 #             stimes = sorted(item.startTime)
 
@@ -417,7 +412,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         
         path, fname = os.path.split(str(self.graphicsView.scene.filename))
         relpath = os.path.relpath(str(dirname), path)
-        for i in range(self.items.rowCount()):
+        for i in range(self.items.count()):
             itemId = self.items.item(i).text() 
             item = self.graphicsView.scene.findPath(itemId)
             path, fname = os.path.split(str(item.videoname))

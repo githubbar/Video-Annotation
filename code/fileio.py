@@ -7,11 +7,6 @@ import os, sys, time, vlc
 from PyQt5.QtCore import QTime
 from PyQt5.QtWidgets import QFileDialog, QVBoxLayout, QCheckBox
 import logging
-logfile = os.path.join(os.getcwd(), 'debug.log')
-LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
-logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
-# logging.basicConfig(filename='warning.log', level=logging.WARNING) 
-# logging.basicConfig(filename='error.log', level=logging.ERROR) 
 
 def findFataFile(filename):
     if getattr(sys, 'frozen', False):
@@ -105,7 +100,7 @@ class fileio(object):
                 seen[(id, idx)] = 1
                 if id != oldid:
                     # find records with this id and get filename
-                    for i in range(mainwindow.items.rowCount()):
+                    for i in range(mainwindow.items.count()):
                         itemId = mainwindow.items.item(i).text() 
                         item = mainwindow.graphicsView.scene.findPath(itemId)
                         if int(item.id[0]) == id:

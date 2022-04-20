@@ -6,38 +6,30 @@ from PyQt5.QtWidgets import QCheckBox, QTableWidget, QHeaderView, \
     QTableWidgetItem, QFileDialog, QDialog, QWidget, QVBoxLayout
 
 from delegates import URLDelegate
-from heatmap import HeatMap
+from heatmapSNS import HeatMapSNS
 from settings import StrToBoolOrKeep
 from torchvision.io import _video_opt
 
 
-TOOLBOX_ITEM_VERTICAL_STEP = 60
+TOOLBOX_ITEM_VERTICAL_STEP = 40
 class SearchWidget:
     matches = []
     def initSearchWidget(self):
         self.results.setItemDelegate(URLDelegate())        
         self.results.cellDoubleClicked.connect(self.playResultItem)
         self.addFilterWidget(self.checkboxArea, self.listArea, False)
-#         self.testHeatmap()
+        # self.testHeatmap()
 
     # Test Heatmap and shaders
 
     def testHeatmap(self):
-
-        paletteFile = 'palettes/jet.png'
-        heatmapScale = 4.0
         W = int(self.graphicsView.scene.width())
         H = int(self.graphicsView.scene.height())
-        heatmapBox = [0, W, 0, H]
-        hp = [(100,100),(120,100),(100,120)]
-        hm = HeatMap(heatmapBox[0], int(heatmapBox[1] * heatmapScale), heatmapBox[2], int(heatmapBox[3] * heatmapScale), paletteFile)
-        hm.add_points(hp, self.visRadius.value() * W/100, self.colorScale.value()*256.0 / len(hp))
-        heat = hm.get_min_max_heat()
-        print('minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1]))
-        hm.transform_color(0.01 * self.visAlpha.value())
-        p = QPixmap.fromImage(QImage(hm.get_image_buffer(), hm.width, hm.height, QImage.Format_ARGB32))
+        hp = []
+        for i in range(100, 301, 50):
+            hp += [[i,100, 10000*i]]
+        p = HeatMapSNS.getPixmap(hp, W, H, self.visRadius.value() * W/100)
         self.graphicsView.scene.heatmap.setPixmap(p)
-        self.graphicsView.scene.heatmap.setScale(1.0 / heatmapScale)
         self.graphicsView.scene.heatmap.setVisible(True)          
 
     def addFilterWidget(self, cbParent, lParent, trackLvl=True):
@@ -110,6 +102,8 @@ class SearchWidget:
                         widgetMatch = True
                         break
                 else:
+                    if not isinstance(item.variables[name], str):
+                        print('not string')
                     choices = item.variables[name].split(', ')
                     if value in choices: 
                         widgetMatch = True
@@ -200,22 +194,16 @@ class SearchWidget:
     def visClicked(self):
         self.OnGUIMode(self.GUI_EXPORT)
         ids = set()  # set of subject ids found in matches
-        paletteFile = 'palettes/jet.png'
-        heatmapScale = 4.0
-        W = int(self.graphicsView.scene.width())
-        H = int(self.graphicsView.scene.height())
-        heatmapBox = [0, W, 0, H]
-        hm = HeatMap(heatmapBox[0], int(heatmapBox[1] * heatmapScale), heatmapBox[2], int(heatmapBox[3] * heatmapScale), paletteFile)
-       
+
         # add data points        
-        hp, heatScale = [], []
+        hp = []
         for i, match in enumerate(self.matches):
             id = match.item.id
             if not id in ids:                 
                 ids.add(id)  # add subject id to the set
                         
             self.progressBar.setValue(int(100.0 * i / len(self.matches)))         
-            self.searchWidget.repaint()          
+            # self.searchWidget.repaint()          
             if not self.go: 
                 hp = []
                 break                
@@ -224,22 +212,19 @@ class SearchWidget:
 #            if self.visPurchased.isChecked(): addThis &= StrToBoolOrKeep(match.item.purchased[n])
 #            if self.visShopped.isChecked(): addThis &= StrToBoolOrKeep(match.item.shopped[n])
             if not addThis: continue
-            hp += [(match.item.polygon.at(n).x() * heatmapScale, match.item.polygon.at(n).y() * heatmapScale)]
-            heatScale += [self.colorScale.value()*match.item.startTime[n].msecsTo(match.item.stopTime[n])*0.001]
-            # TEMP:
+            pt = match.item.polygon.at(n)
+            t = match.item.startTime[match.n].msecsTo(match.item.stopTime[match.n])
+            if t > 0:
+                hp += [[int(pt.x()), int(pt.y()), t]]
         if len(ids)==0:
             return
-
-#         hm.add_points([[50,50], [100,100], [150,150]], self.visRadius.value() * W/100, [.2, .5, .9])
-
-        hm.add_points(hp, self.visRadius.value() * W/100, heatScale)
-        heat = hm.get_min_max_heat()
-        print("N.Subjects = " + str(len(ids)))
-        print('minHeat = ' + str(heat[0]) + ' maxHeat = ' + str(heat[1]))
-        hm.transform_color(0.01 * self.visAlpha.value())
-        p = QPixmap.fromImage(QImage(hm.get_image_buffer(), hm.width, hm.height, QImage.Format_ARGB32))
+        nSubjects = len(set([x.item.id for x in  self.matches]))
+        print(nSubjects)
+        # print("N.Subjects = " + str(len(ids)))
+        W = int(self.graphicsView.scene.width())
+        H = int(self.graphicsView.scene.height())
+        p = HeatMapSNS.getPixmap(hp, W, H, self.visRadius.value() * W/100, nSubjects, self.colorScale.value())
         self.graphicsView.scene.heatmap.setPixmap(p)
-        self.graphicsView.scene.heatmap.setScale(1.0 / heatmapScale)
         self.graphicsView.scene.heatmap.setVisible(True)          
         self.OnGUIMode(self.GUI_NORMAL)          
 
@@ -248,7 +233,7 @@ class SearchWidget:
         outFileName, _filter = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
         if not outFileName:
             return
-        QPixmap.grabWidget(self.graphicsView).save(outFileName)
+        self.graphicsView.grab().save(outFileName)
         
     def exportVideoClicked(self):
         # choose export folder

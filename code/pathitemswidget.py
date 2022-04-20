@@ -3,11 +3,6 @@ from PyQt5.QtWidgets import QListWidget, QListWidgetItem
 from PyQt5.QtCore import QItemSelectionModel
 import logging, os
 
-LOG_FORMAT = '%(module)s - %(levelname)s - %(message)s'
-logfile = os.path.join(os.getcwd(), 'debug.log')
-logging.basicConfig(filename=logfile, level=logging.DEBUG, format=LOG_FORMAT) 
-
-
 class PathItemsWidget(QListWidget):
     deleteKeyPressed = pyqtSignal()      
     idChangedSignal =  pyqtSignal('QString')
@@ -36,7 +31,7 @@ class PathItemsWidget(QListWidget):
             self.setCurrentItem(matches[0], QItemSelectionModel.ClearAndSelect)
                 
     def onAddItem(self, id):
-        print(f'PathItemsWidget::onAddItem id={id}')        
+        # print(f'PathItemsWidget::onAddItem id={id}')        
         item = QListWidgetItem(id)
         item.setCheckState(Qt.Unchecked)
         # item.setFlags(Qt.ItemIsEditable | item.flags())
