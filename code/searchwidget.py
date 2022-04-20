@@ -3,15 +3,15 @@ import logging, os, threading, time
 from PyQt5.QtCore import Qt, QPointF, QTime, QVariant
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import QCheckBox, QTableWidget, QHeaderView, \
-    QTableWidgetItem, QFileDialog, QDialog, QWidget, QVBoxLayout
+    QTableWidgetItem, QFileDialog, QDialog, QWidget, QVBoxLayout, QPushButton
 
 from delegates import URLDelegate
 from heatmapSNS import HeatMapSNS
 from settings import StrToBoolOrKeep
 from torchvision.io import _video_opt
+from variableChooserDialog import VariableChooserDialog
 
-
-TOOLBOX_ITEM_VERTICAL_STEP = 40
+TOOLBOX_ITEM_VERTICAL_STEP = 45
 class SearchWidget:
     matches = []
     def initSearchWidget(self):
@@ -219,7 +219,7 @@ class SearchWidget:
         if len(ids)==0:
             return
         nSubjects = len(set([x.item.id for x in  self.matches]))
-        print(nSubjects)
+        # print(nSubjects)
         # print("N.Subjects = " + str(len(ids)))
         W = int(self.graphicsView.scene.width())
         H = int(self.graphicsView.scene.height())
@@ -275,45 +275,40 @@ class SearchWidget:
         outFileName, _filter = QFileDialog.getSaveFileName(self, "Choose File to Export To", os.getcwd())
         if not outFileName:
             return
+        
+        varDialog = VariableChooserDialog(self.graphicsView.scene.variables)
+        if varDialog.exec_() == QDialog.Rejected:
+            return
+        
         self.OnGUIMode(self.GUI_EXPORT)
-        threading.Thread(target=self.doExportMatchData, name="exportDataThread", args=(outFileName,)).start()
+        varNames = [b.text() for b in varDialog.listArea.findChildren(QPushButton) if b.isChecked()]
+        threading.Thread(target=self.doExportMatchData, name="exportDataThread", args=(outFileName, varNames)).start()
 
-    def doExportMatchData(self, outFileName):
-        import subprocess, csv
-        # BEGIN TEMP
-#         ids = set() # set of subject ids found in matches
-#         for i,  match in enumerate(self.matches):
-#             id = match.item.id
-#             self.updateProgress.emit(round(100.0*i/len(self.matches), 2))        
-#             if not id in ids:
-#                 ids.add(id) 
-#         writer = csv.writer(open(outFileName, 'wb'))         
-#         for id in ids:
-#             writer.writerow([id])
-#         self.completeProgress.emit(self.GUI_NORMAL)
-#         return
-        # END TEMP
-        print('running 1')
-        writer = csv.writer(open(outFileName, 'wb'))         
-        varNames = ['id', 'node number', 'x', 'y', 'video name', 'startTime', 'stopTime']
-        varNames.extend([str(key) for key in self.graphicsView.scene.variables.keys()])   
-        writer.writerow(varNames)
-        for i, match in enumerate(self.matches):
-            self.updateProgress.emit(int(100.0 * i / len(self.matches)))
-            varList = match.item.getVariableValuesList(match.n)
-            row = [ str(match.item.id), str(match.n), \
-                   str(match.item.polygon.at(match.n).x()), str(match.item.polygon.at(match.n).y()), \
-                   str(match.item.videoname), \
-              str(match.item.startTime[match.n].toString('hh-mm-ss')), \
-              str(match.item.stopTime[match.n].toString('hh-mm-ss')) ]
-            print('running 2')
-            row.extend(varList)
-            # TODO: write unicode to CSV, also in Path.py line 335
-            try:
-                writer.writerow(row)
-            except UnicodeEncodeError: 
-                continue
-            if not self.go: break
+    def doExportMatchData(self, outFileName, varNames):
+        import csv
+        builtInVarNames = ['id', 'node number', 'x', 'y', 'video name', 'startTime', 'stopTime']
+          
+        allVarNames = builtInVarNames + varNames
+        # print(f'varNames = {varNames}')
+        with open(outFileName, 'w') as csvfile:
+            writer = csv.writer(csvfile)        
+            writer.writerow(allVarNames)
+            for i, match in enumerate(self.matches):
+                self.updateProgress.emit(int(100.0 * i / len(self.matches)))
+                row = [ str(match.item.id), str(match.n), \
+                       str(match.item.polygon.at(match.n).x()), str(match.item.polygon.at(match.n).y()), \
+                       str(match.item.videoname), \
+                  str(match.item.startTime[match.n].toString('hh-mm-ss')), \
+                  str(match.item.stopTime[match.n].toString('hh-mm-ss')) ]
+                  
+                varList = match.item.getVariableValuesList(match.n, varNames)
+                row.extend(varList)
+                try:
+                    writer.writerow(row)
+                except UnicodeEncodeError: 
+                    continue
+                if not self.go: break
+                
         self.completeProgress.emit(self.GUI_NORMAL)
  
     def updateStatsClicked(self):

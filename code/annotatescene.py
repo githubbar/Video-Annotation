@@ -368,7 +368,7 @@ class AnnotateScene(QGraphicsScene):
                 if (event.modifiers() & Qt.ShiftModifier and (self.mode != 'Select')): 
                     self.undoStack.push(AddCommand(self, eval(f'{self.mode}(sp, self.font, 0.4)')))
                 else:
-                    if items != None and items[0] != None and type(items[0]) != QGraphicsPixmapItem:
+                    if items != None and len(items)>0 and items[0] != None and type(items[0]) != QGraphicsPixmapItem:
                         items[0].handleMousePress(event)
         elif (event.buttons() & Qt.RightButton):
             if self.mode == 'Path' and self.currentPath != None: 

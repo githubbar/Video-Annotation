@@ -42,10 +42,7 @@ else:
 # Copy necessary dll's from the PyQt plugins directory
 include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'sqldrivers', 'qsqlite.dll'), 'plugins/sqldrivers/qsqlite.dll'))  # help stores in sql lite format
 include_files.append((os.path.join(str(PyQt5.QtCore.QLibraryInfo.location(PyQt5.QtCore.QLibraryInfo.PluginsPath)), 'imageformats'), 'plugins/imageformats'))
- 
-# Copy OpenGL files
-# include_files.append(r'C:\Users\oleykin\AppData\Local\Programs\Python\Python36\Lib\site-packages\OpenGL\DLLS\glut64.vc14.dll')
-  
+
 # Copy VLC dll's 
 vlcDir = str("c:/Program Files/VideoLAN/VLC")
 for f in glob.glob(os.path.join(vlcDir,'*.dll')):
@@ -73,9 +70,8 @@ setup(
         options = {"build_exe": {
             "build_exe": "../release/Video Annotation Tool",
             "excludes":  ["tcl","tk","Tkinter"],  
-            "includes":  ['qdarkstyle', 'unittest', 'numpy.core._methods', 'numpy.lib.format', 'OpenGL.GLU.glustruct'],
-            "include_files": include_files,
-            "packages": ["OpenGL"]           
+            "includes":  ['qdarkstyle', 'unittest', 'numpy.core._methods', 'numpy.lib.format'],
+            "include_files": include_files
             } 
        },
       

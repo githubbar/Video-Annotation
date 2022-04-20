@@ -23,7 +23,7 @@ class HeatMapSNS(object):
 
     @staticmethod
     def getPixmap(points, w, h, radius, nSubjects=1, colorScale=None):
-        print(points)
+        # print(points)
         data = np.zeros((h, w))
         for p in points:
             data[p[1]][p[0]] += p[2] # add the time in seconds

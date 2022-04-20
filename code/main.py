@@ -677,10 +677,8 @@ def main():
     elif __file__:
         application_path = os.path.dirname(__file__)
     
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    # with open('mydark.stylesheet', 'r', encoding='utf-8') as file:
-    #     app.setStyleSheet(file.read())
-        
+    myCSStweaks = '''QWidget{ font-size: 18px; }'''
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5() + myCSStweaks)
     app.setOverrideCursor(Qt.CrossCursor)    
     window = Main()
     window.appPath = application_path

@@ -402,11 +402,13 @@ class Path(QGraphicsPathItem):
         self.scene().updateVideoSignal.emit(self)               
         self.update()
   
-    def getVariableValuesList(self, idx=None):
+    def getVariableValuesList(self, idx=None, varNames=None):
         if idx == None:
             idx = self.indP
         varList = []
-        for name in self.scene().variables:
+        if not varNames:
+            varNames = self.scene().variables
+        for name in varNames:
             vDescr, vType, vShow, vShortcut, vEachNode, vGroup, vChoices = self.scene().variables[name]
             if StrToBoolOrKeep(vEachNode) and idx != None:
                 v = self.variables[name][idx]
