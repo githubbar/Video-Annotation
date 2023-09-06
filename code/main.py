@@ -3,7 +3,7 @@
 """
 ====================================================================================
 Video Annotation Tool
-Copyright (C) 2023 Alex Leykin @ CIL
+Copyright (C) 2023 Alex Leykin @ Customer Interface Lab
 Email: cil@indiana.edu
 http://cil.iu.edu
 
@@ -666,7 +666,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         msg.setInformativeText(
             """
 Video Annotation Tool
-<p>Copyright \xa9 2023 Alex Leykin @ CIL </p>
+<p>Copyright \xa9 2023 Alex Leykin @ Customer Interface Lab </p>
 <p>Email: <a href="mailto:cil@indiana.edu">cil@indiana.edu</a></p>
 <p><a href="http://cil.iu.edu">http://cil.iu.edu</a></p>
 

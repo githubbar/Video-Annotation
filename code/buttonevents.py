@@ -2,7 +2,7 @@
 """
 ====================================================================================
 Video Annotation Tool
-Copyright (C) 2023 Alex Leykin @ CIL
+Copyright (C) 2023 Alex Leykin @ Customer Interface Lab
 Email: cil@indiana.edu
 http://cil.iu.edu
 

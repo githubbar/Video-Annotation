@@ -2,7 +2,7 @@
 """
 ====================================================================================
 Video Annotation Tool
-Copyright (C) 2023 Alex Leykin @ CIL
+Copyright (C) 2023 Alex Leykin @ Customer Interface Lab
 Email: cil@indiana.edu
 http://cil.iu.edu
 
@@ -18,7 +18,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-            
 ====================================================================================
 """
 import os
