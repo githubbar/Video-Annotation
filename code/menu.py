@@ -1,8 +1,26 @@
 # -*- coding: utf-8 -*-
-#Annotation Tool: For annotating track time series over human tracking video
-#Copyright: Alex Leykin @ CIL
-#Email: cil@indiana.edu
-#http://indiana.edu/~cil
+"""
+====================================================================================
+Video Annotation Tool
+Copyright (C) 2023 Alex Leykin @ CIL
+Email: cil@indiana.edu
+http://cil.iu.edu
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+            
+====================================================================================
+"""
 """ Creates a main menu """
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -65,9 +83,13 @@ def createMenu(w):
         predictaction.setShortcut('/')
         predictaction.triggered.connect(w.predictPath)
         loadfixations = QAction('Load fixations', w)
-        loadfixations.triggered.connect(w.loadFixations)        
+        loadfixations.triggered.connect(w.loadFixations)
+        findbadnodes = QAction('Find Bad Nodes', w)
+        findbadnodes.triggered.connect(w.findBadNodes)        
+
         actionMenu.addAction(predictaction)
         actionMenu.addAction(loadfixations)                
+        actionMenu.addAction(findbadnodes)
         helpMenu = menubar.addMenu('&Help')
         helpaction = QAction('Help', w)
         helpaction.setShortcut('Ctrl+F1')

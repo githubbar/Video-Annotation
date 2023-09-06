@@ -1,13 +1,26 @@
 # -*- coding: utf-8 -*-
 
 """
-Annotation Tool: For annotating track time series over tracking video
-Copyright: Alex Leykin @ CIL
-Email: cil@indiana.edu
-http://indiana.edu/~cil
-        
 ====================================================================================
+Video Annotation Tool
+Copyright (C) 2023 Alex Leykin @ CIL
+Email: cil@indiana.edu
+http://cil.iu.edu
 
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+            
+====================================================================================
 """
 import logging, os
 
@@ -22,6 +35,7 @@ from PyQt5.QtGui import QIcon, QKeySequence
 from vacommands import RemoveCommand
 
 from fileio import findFataFile, QDataExportDialog, fileio
+from track import Path
 
 # Create a class for our main window
 class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.SearchWidget):
@@ -78,7 +92,7 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         self.actions[0].setChecked(True)
 
         # Video View
-        self.Instance = vlc.Instance('--fullscreen')
+        self.Instance = vlc.Instance('--fullscreen --verbose 3')
         self.mediaPlayer = self.Instance.media_player_new()
         self.isPaused = True
         self.playButton.setIcon(QIcon(os.path.join(self.appPath, 'icons/player_play.png')))
@@ -264,12 +278,32 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
         elif sys.platform == "darwin":  # for MacOS
             self.mediaPlayer.set_agl(self.videoPlayer.windId())
 
+    def findBadNodes(self):
+        s = ''
+        for item in self.graphicsView.scene.items():
+            if type(item) == Path:
+                for i, t1 in enumerate(item.startTime):
+                    if t1> item.stopTime[i]:
+                        s += f'TIME ERROR! track:{item.id} start={t1} stop={item.stopTime[i]} \n'
+                        
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        
+        msg.setText("Node time errors listed below")
+        msg.setInformativeText("See details...")
+        msg.setWindowTitle("Details")
+        msg.setDetailedText(s)
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.exec_()
+        
     def loadData(self, filename):
+                
         """Load additional track data"""
         if filename == False:
             filename, _filter = QFileDialog.getOpenFileName(self, "Open File", os.getcwd(), 'CSV Files (*.csv)')
         if filename:
             self.graphicsView.scene.loadData(str(filename))
+        return None
 
     def loadFixations(self, filename):
         """Load additional track data"""
@@ -629,19 +663,27 @@ class Main(PyQt5.QtWidgets.QMainWindow, buttonevents.ButtonEvents, searchwidget.
 
         msg = QMessageBox(self);
         msg.setWindowTitle('About')
-        msg.setInformativeText('<p>Copyright \xa9 2013-2020 <a href="https://kelley.iu.edu/faculty-research/departments/marketing/research/labs/customer-interface-lab.cshtml">Customer Interface Lab</a>, <a href="http://iub.edu">Indiana University.</a> All Rights Reserved.' + \
-            '<p>Redistribution and use of this software for commercial purposes is strictly prohibited.' + \
-            '<p>THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED WARRANTIES,\
-        INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND\
-        FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS,\
-        COPYRIGHT HOLDERS OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,\
-        INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\
-        LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\
-        PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\
-        LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE\
-        OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF\
-        ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.' + \
-            '<p><p>Email: <a href="mailto:cil@indiana.edu">cil@indiana.edu</a>' + \
+        msg.setInformativeText(
+            """
+Video Annotation Tool
+<p>Copyright \xa9 2023 Alex Leykin @ CIL </p>
+<p>Email: <a href="mailto:cil@indiana.edu">cil@indiana.edu</a></p>
+<p><a href="http://cil.iu.edu">http://cil.iu.edu</a></p>
+
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+</p>
+"""+ \
             '<p>Build number: ' + str(self.BUILD_NUMBER) + \
             '<p>Build date: ' + time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getmtime(application_name))))
         msg.setStandardButtons(QMessageBox.Ok)
@@ -689,5 +731,10 @@ def main():
 
   
 if __name__ == "__main__":
+    # import vlc
+    # # print(vlc.__file__)
+    # i=vlc.Instance('--verbose 3')
+    # print(type(i))
+    # p=i.MediaPlayer()
     main()
 
